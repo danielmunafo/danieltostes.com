@@ -143,7 +143,9 @@ On every PR the pipeline runs: **lint**, **format check**, **unit tests**, **bui
 
 ### Main branch
 
-On merge to `main`, the pipeline (depending on workflow setup) can perform a full production build, upload `out/` to S3, and invalidate the CloudFront cache. Correctness is enforced before deployment.
+On merge to `main`, the pipeline runs the same checks and then **deploys**: uploads `out/` to S3 and invalidates the CloudFront cache. Correctness is enforced before deployment.
+
+**Required GitHub secrets** (for the deploy job, OIDC role-based): `AWS_ROLE_ARN`, `AWS_S3_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID`.
 
 ---
 

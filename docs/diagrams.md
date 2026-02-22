@@ -30,14 +30,22 @@ sequenceDiagram
 
 ## 2) S3 + CloudFront + Route 53
 
-flowchart LR
-U[User Browser] -->|DNS lookup| R53[Route 53 Hosted Zone]
-R53 -->|A/AAAA Alias| CF[CloudFront Distribution]
-CF -->|Origin fetch (cache miss)| S3[(S3 Bucket: static site)]
-CF -->|Edge cache (cache hit)| U
+```mermaid
+flowchart TD
 
-CF -.->|TLS cert (ACM)| ACM[AWS Certificate Manager]
-CF -.->|Logs (optional)| LOGS[(S3 Logs Bucket)]
+    User[User Browser]
+
+    Route53[Route 53<br/>DNS]
+    CloudFront[CloudFront<br/>CDN Distribution]
+    S3[(S3 Bucket<br/>Static Files)]
+    ACM[ACM<br/>TLS Certificate]
+
+    User -->|DNS Lookup| Route53
+    Route53 -->|Alias Record| CloudFront
+    CloudFront -->|Origin (cache miss)| S3
+    CloudFront -->|HTTPS (TLS)| ACM
+    CloudFront -->|Cached Response| User
+```
 
 Benefits by component
 
