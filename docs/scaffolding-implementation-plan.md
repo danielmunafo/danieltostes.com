@@ -6,7 +6,7 @@ This document describes the execution plan and technology choices for the initia
 
 ## Alignment with Architecture and Diagrams
 
-- **Architecture:** The implementation follows [docs/architecture.md](./architecture.md): static-first export, S3/CloudFront deployment target, no runtime server, Lighthouse target ≥ 95, MUI + theme tokens, i18n with per-locale loading.
+- **Architecture:** The implementation follows [docs/architecture.md](./architecture.md): static-first export, S3/CloudFront deployment target, no runtime server, Lighthouse target ≥ 80, MUI + theme tokens, i18n with per-locale loading.
 - **Diagrams:** CI/CD and deployment flow match [docs/diagrams.md](./diagrams.md) (GitHub Actions → build → S3 sync → CloudFront invalidation; Route 53 → CloudFront → S3).
 - Referencing these docs gives reviewers a single source of truth for _why_ choices were made, not only _what_ was built.
 
@@ -21,7 +21,7 @@ This document describes the execution plan and technology choices for the initia
 | **i18n**      | next-intl, 4 locales (en, pt-BR, es, it), one route per locale, on-demand message chunks                                   |
 | **Quality**   | ESLint + Prettier, Husky + lint-staged, Vitest (unit), Playwright (e2e)                                                    |
 | **DX**        | .vscode recommendations, format on save, `npm run start` serves `out/`                                                     |
-| **CI**        | GitHub Actions: lint, format check, unit tests, build, e2e against static `out/`; separate Lighthouse CI job (assert ≥95). |
+| **CI**        | GitHub Actions: lint, format check, unit tests, build, e2e against static `out/`; separate Lighthouse CI job (assert ≥80). |
 
 ---
 
@@ -105,7 +105,7 @@ With `output: 'export'`, there is no Next.js server. **Decision:** `start` scrip
 5. **MUI + theme** — `src/theme/`, CssBaseline, dark/light toggle, ThemeModeContext (constants and descriptive condition variables per AGENTS.md).
 6. **i18n** — next-intl, `src/i18n/request.ts`, `src/messages/*.json`, `[locale]` layout and page, `generateStaticParams` (Next.js convention: called at build time only, no in-repo references) for en/pt-BR/es/it, root redirect to `/en`.
 7. **Tests** — Vitest + setup, one theme unit test; Playwright + smoke e2e (home + locale links); `test:e2e` builds and serves `out/` then runs Playwright.
-8. **CI** — GitHub Actions: install, lint, format check, unit tests, build, Playwright install, e2e (`test:e2e:ci`); separate job for Lighthouse CI (`lighthouserc.cjs`, assert ≥95).
+8. **CI** — GitHub Actions: install, lint, format check, unit tests, build, Playwright install, e2e (`test:e2e:ci`); separate job for Lighthouse CI (`lighthouserc.cjs`, assert ≥80).
 9. **Docs and scripts** — README scripts; `.gitignore` for test/output dirs.
 
 ---

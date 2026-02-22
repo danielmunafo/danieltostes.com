@@ -10,7 +10,7 @@ The goal is to ship a recruiter-friendly experience while keeping the implementa
 
 - **Credible senior-signal**: clear conventions, repeatable delivery, disciplined trade-offs.
 - **Static-first hosting**: no server runtime required (cheap, reliable, low ops).
-- **Performance baseline**: Lighthouse target **≥ 95** on a representative build.
+- **Performance baseline**: Lighthouse target **≥ 80** on a representative build.
 - **Maintainability**: predictable architecture, minimal “framework magic”, small dependency surface.
 - **Good UX**: clean design system, accessible components, i18n support, theme toggle.
 
@@ -120,7 +120,7 @@ Performance is treated as a baseline requirement, not a post-launch optimization
 
 ### Targets
 
-- Lighthouse: **≥ 95** (Performance) on a representative build.
+- Lighthouse: **≥ 80** (Performance) on a representative build.
 - Keep initial JS small:
   - Avoid heavy dependencies without clear value.
   - Prefer code splitting by route; lazy-load non-critical components.

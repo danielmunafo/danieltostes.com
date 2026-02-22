@@ -7,7 +7,7 @@ This document describes how to configure GitHub Actions to deploy to both dev an
 The CI/CD workflow (`.github/workflows/ci.yml`) runs three jobs:
 
 1. **lint-test-build** — Lint, format check, unit tests, build, E2E tests; uploads `out/` as an artifact. Must pass.
-2. **lighthouseci** — Runs Lighthouse CI against the static build; asserts Performance, Accessibility, Best Practices, and SEO ≥ 95 (config: `lighthouserc.cjs`). **Required** — workflow fails if assertions fail.
+2. **lighthouseci** — Runs Lighthouse CI against the static build; asserts Performance, Accessibility, Best Practices, and SEO ≥ 80 (config: `lighthouserc.cjs`). **Required** — workflow fails if assertions fail.
 3. **deploy** — Downloads the artifact, syncs to S3, invalidates CloudFront. Depends on `lint-test-build` only.
 
 Deploy targets two environments:

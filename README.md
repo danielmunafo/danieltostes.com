@@ -2,7 +2,7 @@
 
 [![Build](https://img.shields.io/github/actions/workflow/status/danielmunafo/danieltostes.com/ci.yml?branch=main&label=build)](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml)
 [![CI](https://img.shields.io/github/actions/workflow/status/danielmunafo/danieltostes.com/ci.yml?branch=main&label=CI)](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml)
-[![Lighthouse](https://img.shields.io/badge/Lighthouse-95%2B-green)](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml)
+[![Lighthouse](https://img.shields.io/badge/Lighthouse-80%2B-green)](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml)
 
 Personal portfolio site for Daniel Munafó Tostes — Senior Software Engineer focused on scalable product platforms, distributed systems, and cloud-native architecture.
 
@@ -60,7 +60,7 @@ Dynamic capability is intentionally constrained.
 
 ### 2. Performance as Baseline
 
-Lighthouse target: **≥ 95**
+Lighthouse target: **≥ 80**
 
 Performance is treated as a requirement, not an afterthought.
 
@@ -147,7 +147,7 @@ The top-of-readme badges (Build, CI, Lighthouse) reflect the status of this work
 | Job                 | Purpose                                                                                                                                                                                                           |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **lint-test-build** | Lint, format check, unit tests (Vitest), build, E2E (Playwright), then upload `out/` as artifact.                                                                                                                 |
-| **lighthouseci**    | Runs [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) against the static build; asserts Performance, Accessibility, Best Practices, and SEO ≥ 95. **Required** — workflow fails if assertions fail. |
+| **lighthouseci**    | Runs [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) against the static build; asserts Performance, Accessibility, Best Practices, and SEO ≥ 80. **Required** — workflow fails if assertions fail. |
 | **deploy**          | Downloads `out/`, syncs to S3, invalidates CloudFront. Depends only on `lint-test-build`.                                                                                                                         |
 
 `lint-test-build` and `lighthouseci` run in parallel. Deploy runs after `lint-test-build` succeeds.
@@ -162,9 +162,9 @@ On merge to `main`, the same checks run and the pipeline **deploys to production
 
 ### Lighthouse CI
 
-The **lighthouseci** job runs on every PR and push and **must pass**; the workflow fails if any category score is below 95.
+The **lighthouseci** job runs on every PR and push and **must pass**; the workflow fails if any category score is below 80.
 
-- **Config:** `lighthouserc.cjs` (collect from `./out`, assert category scores ≥ 0.95, optional upload to temporary public storage).
+- **Config:** `lighthouserc.cjs` (collect from `./out`, assert category scores ≥ 0.8, optional upload to temporary public storage).
 - **Local run:** `npm run test:lighthouse` (after `npm run build`).
 - **Optional secret:** To post Lighthouse results as GitHub status checks and report links on PRs, install the [Lighthouse CI GitHub App](https://github.com/apps/lighthouse-ci) and add the token as `LHCI_GITHUB_APP_TOKEN`. Without it, the job still runs and must pass; it just does not post status checks.
 
