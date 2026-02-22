@@ -128,7 +128,6 @@ Performance is treated as a baseline requirement, not a post-launch optimization
 ### Practical approaches
 
 - Use Next.js defaults for code splitting.
-- Avoid aggressive PWA precaching of large bundles.
 - Keep UI library usage disciplined (no “component sprawl”).
 
 ---
@@ -144,18 +143,6 @@ Performance is treated as a baseline requirement, not a post-launch optimization
   - Pre-render a default locale and switch client-side (less ideal for SEO per locale).
 
 The implementation aims to keep locale loading **predictable and minimal**.
-
----
-
-## PWA Strategy (Minimal)
-
-PWA support is treated as an optional enhancement, not a core requirement.
-
-Principles:
-
-- Prefer **small and safe caching rules** over aggressive offline-first behavior.
-- Avoid precaching large JS bundles by default.
-- Ensure updates don’t trap users on stale assets.
 
 ---
 

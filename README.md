@@ -34,7 +34,6 @@ There is no runtime server.
 There are no API routes.  
 The site is built once and distributed globally via CDN.
 
-Both `dev` and `build` use **webpack** (not Turbopack) for MUI/Emotion hydration compatibility.  
 Root layout uses MUI’s `AppRouterCacheProvider` per [MUI Next.js integration](https://mui.com/material-ui/integrations/nextjs/).
 
 For detailed reasoning, see:
@@ -64,7 +63,6 @@ Performance is treated as a requirement, not an afterthought.
 - Small initial JavaScript
 - Route-based code splitting
 - Minimal dependency surface
-- Controlled PWA caching
 
 ### 3. Explicit Trade-offs
 
@@ -200,16 +198,6 @@ Each environment has its own S3 bucket and CloudFront distribution, configured v
 - Message chunks are loaded on demand per locale (no single bundle with all languages).
 - Language can be switched in-app without full navigation (client-side re-render). The URL does not change on switch, so the current route stays the same; use a locale-specific URL to open or share a given language.
 - Locale and time-zone constants live in `src/i18n/request.ts` and `src/constants/site.ts`.
-
----
-
-## PWA
-
-PWA support is intentionally minimal and conservative.
-
-- **Web app manifest** and **service worker** via `@ducanh2912/next-pwa` (runs with webpack build).
-- Controlled caching strategy; no aggressive offline-first behavior.
-- Goal: predictable behavior before advanced caching complexity.
 
 ---
 
