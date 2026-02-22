@@ -55,8 +55,9 @@ export function LocaleRuntimeProvider({
         .then((m) => {
           setMessages(m.default);
           setLocaleState(newLocale);
-          // Intentionally not updating the URL (replaceState) so the browser/SW
-          // does not refetch the manifest and other assets on every language switch.
+          // URL is intentionally not updated so the browser/SW does not refetch the
+          // manifest and other assets on every language switch. Locale-specific
+          // URLs (/en, /pt-BR, etc.) remain the source of truth for sharing and SEO.
         })
         .finally(() => setIsSwitching(false));
     },

@@ -13,7 +13,7 @@ export const LOCALE_OPTIONS: { code: Locale; label: string }[] = [
   { code: "it", label: "IT" },
 ];
 
-function isValidLocale(locale: string | undefined): locale is Locale {
+export function isValidLocale(locale: string | undefined): locale is Locale {
   return locale !== undefined && LOCALES.includes(locale as Locale);
 }
 

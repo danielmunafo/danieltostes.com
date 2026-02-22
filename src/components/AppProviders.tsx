@@ -39,8 +39,7 @@ const Header = styled("header")(({ theme }) => ({
   paddingBottom: theme.spacing(1),
   paddingLeft: theme.spacing(2),
   paddingRight: theme.spacing(2),
-  borderBottom: 1,
-  borderColor: theme.palette.divider,
+  borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
 const Main = styled("main")({

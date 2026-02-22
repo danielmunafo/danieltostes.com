@@ -170,9 +170,9 @@ Benefits:
 
 **next-intl** with four locales: **en**, **pt-BR**, **es**, **it**.
 
-- One route per locale: `/en`, `/pt-BR`, `/es`, `/it`. Root `/` redirects to the default locale.
+- One route per locale: `/en`, `/pt-BR`, `/es`, `/it`. Root `/` redirects to the default locale. These URLs are the source of truth for direct access, sharing, and SEO (each has a stable, indexable URL).
 - Message chunks are loaded on demand per locale (no single bundle with all languages).
-- Language can be switched in-app without full navigation (client-side re-render).
+- Language can be switched in-app without full navigation (client-side re-render). The URL does not change on switch, so the current route stays the same; use a locale-specific URL to open or share a given language.
 - Locale and time-zone constants live in `src/i18n/request.ts` and `src/constants/site.ts`.
 
 ---
