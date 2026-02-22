@@ -6,11 +6,11 @@ export type Locale = (typeof LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = "en";
 
-export const LOCALE_OPTIONS: { code: Locale; label: string }[] = [
-  { code: "en", label: "EN" },
-  { code: "pt-BR", label: "PT" },
-  { code: "es", label: "ES" },
-  { code: "it", label: "IT" },
+export const LOCALE_OPTIONS: { code: Locale; label: string; name: string }[] = [
+  { code: "en", label: "EN", name: "English" },
+  { code: "pt-BR", label: "PT", name: "Português" },
+  { code: "es", label: "ES", name: "Español" },
+  { code: "it", label: "IT", name: "Italiano" },
 ];
 
 export function isValidLocale(locale: string | undefined): locale is Locale {
