@@ -42,6 +42,7 @@ For detailed reasoning, see:
 - `docs/architecture.md`
 - `docs/diagrams.md`
 - `docs/scaffolding-implementation-plan.md`
+- `docs/deployment-setup.md`
 
 ---
 
@@ -139,32 +140,55 @@ Pre-commit hooks (Husky + lint-staged) run lint and format on staged files.
 
 ### Pull requests
 
-On every PR the pipeline runs: **lint**, **format check**, **unit tests**, **build**, **E2E tests** (Playwright against the built `out/`).
+On every PR the pipeline runs: **lint**, **format check**, **unit tests**, **build**, **E2E tests** (Playwright against the built `out/`), and then **deploys to dev environment** for preview and testing.
 
 ### Main branch
 
-On merge to `main`, the pipeline runs the same checks and then **deploys**: uploads `out/` to S3 and invalidates the CloudFront cache. Correctness is enforced before deployment.
+On merge to `main`, the pipeline runs the same checks and then **deploys to production**: uploads `out/` to S3 and invalidates the CloudFront cache. Correctness is enforced before deployment.
 
-**Required GitHub secrets** (for the deploy job, OIDC role-based): `AWS_ROLE_ARN`, `AWS_S3_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID`.
+### Environments
+
+The workflow uses GitHub environments with conditional deployment:
+
+- **dev**: Deployed automatically on pull requests for preview and testing
+- **production**: Deployed automatically on merge to `main`
+
+**Required GitHub secrets**:
+
+- `AWS_ROLE_ARN`: IAM role for AWS authentication (OIDC-based, used by both environments)
+- `AWS_S3_BUCKET`: S3 bucket name (environment-specific, configured in GitHub environment)
+- `CLOUDFRONT_DISTRIBUTION_ID`: CloudFront distribution ID (environment-specific, configured in GitHub environment)
+
+For detailed setup instructions, see [`docs/deployment-setup.md`](./docs/deployment-setup.md).
 
 ---
 
 ## AWS Deployment Model
 
-The site is deployed using a static-first infrastructure model:
+The site is deployed using a static-first infrastructure model with two environments:
+
+### Infrastructure Components
 
 - **S3**: Durable storage for static assets (HTML, JS, CSS, images)
 - **CloudFront**: Global CDN for edge caching and HTTPS termination
 - **Route 53**: DNS management for the custom domain
 - **ACM (AWS Certificate Manager)**: Managed TLS certificates
 
-Benefits:
+### Environments
+
+- **dev**: Preview environment for testing pull requests before merge
+- **production**: Live environment for the main branch
+
+Each environment has its own S3 bucket and CloudFront distribution, configured via GitHub secrets.
+
+### Benefits
 
 - No runtime server
 - Minimal operational overhead
 - Global edge performance
 - Predictable cost model
 - Reduced attack surface
+- Safe preview/testing workflow before production
 
 ---
 
