@@ -1,0 +1,10 @@
+{
+  "Home": {
+    "title": "Bem-vindo",
+    "subtitle": "Página inicial — mais conteúdo nos próximos PRs."
+  },
+  "ThemeToggle": {
+    "light": "Mudar para modo escuro",
+    "dark": "Mudar para modo claro"
+  }
+}

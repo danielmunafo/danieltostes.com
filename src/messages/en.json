@@ -1,0 +1,10 @@
+{
+  "Home": {
+    "title": "Welcome",
+    "subtitle": "Root page — more content in following PRs."
+  },
+  "ThemeToggle": {
+    "light": "Switch to dark mode",
+    "dark": "Switch to light mode"
+  }
+}
