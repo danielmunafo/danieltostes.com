@@ -6,7 +6,7 @@ This document describes the execution plan and technology choices for the initia
 
 ## Alignment with Architecture and Diagrams
 
-- **Architecture:** The implementation follows [docs/architecture.md](./architecture.md): static-first export, S3/CloudFront deployment target, no runtime server, Lighthouse target ≥ 95, MUI + theme tokens, i18n with per-locale loading, minimal PWA.
+- **Architecture:** The implementation follows [docs/architecture.md](./architecture.md): static-first export, S3/CloudFront deployment target, no runtime server, Lighthouse target ≥ 95, MUI + theme tokens, i18n with per-locale loading.
 - **Diagrams:** CI/CD and deployment flow match [docs/diagrams.md](./diagrams.md) (GitHub Actions → build → S3 sync → CloudFront invalidation; Route 53 → CloudFront → S3).
 - Referencing these docs gives reviewers a single source of truth for _why_ choices were made, not only _what_ was built.
 
@@ -19,7 +19,6 @@ This document describes the execution plan and technology choices for the initia
 | **App shell** | Next.js 16, App Router, TypeScript, `output: 'export'`, `src/` layout                    |
 | **Styling**   | MUI + Emotion, design tokens in `src/theme/`, CssBaseline, dark/light theme toggle       |
 | **i18n**      | next-intl, 4 locales (en, pt-BR, es, it), one route per locale, on-demand message chunks |
-| **PWA**       | Web app manifest, service worker via `@ducanh2912/next-pwa` (webpack build)              |
 | **Quality**   | ESLint + Prettier, Husky + lint-staged, Vitest (unit), Playwright (e2e)                  |
 | **DX**        | .vscode recommendations, format on save, `npm run start` serves `out/`                   |
 | **CI**        | GitHub Actions: lint, format check, unit tests, build, e2e against static `out/`         |
@@ -33,7 +32,7 @@ This document describes the execution plan and technology choices for the initia
 | Pros                                                  | Cons                                                                              |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------- |
 | File-based routing and code splitting out of the box. | No runtime SSR, API routes, or server actions.                                    |
-| Strong ecosystem (i18n, metadata, PWA integration).   | Some features (e.g. on-demand image optimization) not available without a server. |
+| Strong ecosystem (i18n, metadata).                    | Some features (e.g. on-demand image optimization) not available without a server. |
 | Familiar to many reviewers and interviewers.          | Framework overhead vs. a minimal Vite setup.                                      |
 | Fits architecture: static-first, S3 deploy.           |                                                                                   |
 
@@ -79,19 +78,7 @@ This document describes the execution plan and technology choices for the initia
 
 ---
 
-### 5. PWA: `@ducanh2912/next-pwa` with webpack build
-
-| Pros                                             | Cons                                                                                                             |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| Generates service worker and Workbox config.     | Next.js 16 defaults to Turbopack; this plugin is webpack-based, so production build uses `next build --webpack`. |
-| Configurable precache and runtime caching.       | Generated `public/sw.js` and workbox files are ignored by ESLint.                                                |
-| Manifest via Next.js `app/manifest.ts` (static). |                                                                                                                  |
-
-**Decision:** Use next-pwa for SW + manifest; run `next build --webpack` so the plugin runs. PWA is “minimal” per [architecture.md – PWA Strategy](./architecture.md#pwa-strategy-minimal).
-
----
-
-### 6. Testing: Vitest (unit) + Playwright (e2e)
+### 5. Testing: Vitest (unit) + Playwright (e2e)
 
 | Pros                                                                         | Cons                                                               |
 | ---------------------------------------------------------------------------- | ------------------------------------------------------------------ |
@@ -103,7 +90,7 @@ This document describes the execution plan and technology choices for the initia
 
 ---
 
-### 7. `npm start` serves `out/` (no `next start`)
+### 6. `npm start` serves `out/` (no `next start`)
 
 With `output: 'export'`, there is no Next.js server. **Decision:** `start` script runs `serve out -p 3000` so “start” means “serve the static export.” Build once with `npm run build`, then `npm start` to preview.
 
@@ -117,10 +104,9 @@ With `output: 'export'`, there is no Next.js server. **Decision:** `start` scrip
 4. **Husky + lint-staged** — Pre-commit lint and format on staged files.
 5. **MUI + theme** — `src/theme/`, CssBaseline, dark/light toggle, ThemeModeContext (constants and descriptive condition variables per AGENTS.md).
 6. **i18n** — next-intl, `src/i18n/request.ts`, `src/messages/*.json`, `[locale]` layout and page, `generateStaticParams` (Next.js convention: called at build time only, no in-repo references) for en/pt-BR/es/it, root redirect to `/en`.
-7. **PWA** — Manifest (`app/manifest.ts`), next-pwa, build with `--webpack`.
-8. **Tests** — Vitest + setup, one theme unit test; Playwright + smoke e2e (home + locale links); `test:e2e` builds and serves `out/` then runs Playwright.
-9. **CI** — GitHub Actions: install, lint, format check, unit tests, build, Playwright install, e2e (`test:e2e:ci`).
-10. **Docs and scripts** — README scripts; `.gitignore` for test/output dirs; ESLint ignore for PWA-generated files.
+7. **Tests** — Vitest + setup, one theme unit test; Playwright + smoke e2e (home + locale links); `test:e2e` builds and serves `out/` then runs Playwright.
+8. **CI** — GitHub Actions: install, lint, format check, unit tests, build, Playwright install, e2e (`test:e2e:ci`).
+9. **Docs and scripts** — README scripts; `.gitignore` for test/output dirs.
 
 ---
 
@@ -128,7 +114,7 @@ With `output: 'export'`, there is no Next.js server. **Decision:** `start` scrip
 
 - **Lint and format:** `npm run lint`, `npm run format:check`
 - **Unit tests:** `npm run test`
-- **Build:** `npm run build` (produces `out/` and `public/sw.js`)
+- **Build:** `npm run build` (produces `out/`)
 - **E2E:** `npm run test:e2e` (builds, serves `out/`, runs Playwright)
 - **Preview static site:** `npm run build && npm start` → http://localhost:3000 (then try `/en`, `/pt-BR`, etc.)
 - **CI:** Push or open PR; workflow runs lint, format, unit, build, e2e
@@ -137,7 +123,7 @@ With `output: 'export'`, there is no Next.js server. **Decision:** `start` scrip
 
 ## References
 
-- [docs/architecture.md](./architecture.md) — Goals, constraints, static export, Next.js vs Vite, MUI, i18n, PWA, bundle budget.
+- [docs/architecture.md](./architecture.md) — Goals, constraints, static export, Next.js vs Vite, MUI, i18n, bundle budget.
 - [docs/diagrams.md](./diagrams.md) — CI/CD sequence, S3 + CloudFront + Route 53.
 - [docs/lighthouse-and-performance.md](./lighthouse-and-performance.md) — How we address Lighthouse insights (cache, legacy JS, MUI tree-shaking) and what is deploy/environment.
 - [AGENTS.md](../AGENTS.md) — Coding practices, CSS/styling rules, constants and condition variables.

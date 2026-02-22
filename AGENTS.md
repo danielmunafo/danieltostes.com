@@ -4,7 +4,7 @@ Personal blog/CV site. Next.js, static export (`output: 'export'`), S3 hosting. 
 
 ## Stack
 
-- Next.js (React), TypeScript (ESM/ESNext), MUI + Emotion, PWA
+- Next.js (React), TypeScript (ESM/ESNext), MUI + Emotion
 - Lint: ESLint + Prettier. Test: Playwright + Vitest.
 - DX: Git hooks (Husky + lint-staged), .vscode (format on save, recommended extensions).
 - i18n: 4 locales (en, pt-BR, es, it). Dark/light theme. Lighthouse ≥ 95. Deploy: GitHub → AWS (bundle small, on-demand where possible).
