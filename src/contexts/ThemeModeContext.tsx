@@ -19,6 +19,8 @@ const THEME_MODES: readonly [ThemeMode, ThemeMode] = [
 ];
 const DEFAULT_THEME_MODE: ThemeMode = THEME_MODE_LIGHT;
 const STORAGE_KEY = "theme-mode";
+const OS_PREFERS_DARK_THEME = "(prefers-color-scheme: dark)";
+const MUI_COLOR_SCHEME_DOCUMENT_KEY = "data-mui-color-scheme";
 
 type ThemeModeContextValue = {
   mode: ThemeMode;
@@ -36,8 +38,8 @@ function getInitialMode(): ThemeMode {
   if (isWindowUndefined) return DEFAULT_THEME_MODE;
   const stored = localStorage.getItem(STORAGE_KEY);
   if (isThemeMode(stored)) return stored;
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  return prefersDark ? THEME_MODES[1] : THEME_MODES[0];
+  const osPrefersDark = window.matchMedia(OS_PREFERS_DARK_THEME).matches;
+  return osPrefersDark ? THEME_MODES[1] : THEME_MODES[0];
 }
 
 export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
@@ -52,7 +54,7 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     if (!mounted) return;
     localStorage.setItem(STORAGE_KEY, mode);
-    document.documentElement.setAttribute("data-mui-color-scheme", mode);
+    document.documentElement.setAttribute(MUI_COLOR_SCHEME_DOCUMENT_KEY, mode);
   }, [mode, mounted]);
 
   const toggleMode = useCallback(() => {
