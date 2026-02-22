@@ -1,4 +1,4 @@
-/** Shared site-wide constants for metadata, PWA manifest, and theme. */
+/** Shared site-wide constants for metadata and theme. */
 
 export const THEME_MODE_LIGHT = "light";
 export const THEME_MODE_DARK = "dark";
@@ -14,9 +14,9 @@ export const SITE_DESCRIPTION = "Personal blog and CV";
 
 export const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/dantostes/";
 
-/** Used for PWA theme_color and MUI light primary. */
+/** MUI light theme primary. */
 export const THEME_COLOR_PRIMARY = "#1976d2";
-/** Used for PWA background_color and MUI light background default. */
+/** MUI light theme default background. */
 export const BACKGROUND_LIGHT = "#ffffff";
 /** MUI light theme paper/surface background. */
 export const PAPER_LIGHT = "#f5f5f5";
@@ -26,6 +26,3 @@ export const THEME_COLOR_PRIMARY_DARK = "#90caf9";
 export const BACKGROUND_DARK = "#121212";
 /** MUI dark theme paper/surface background. */
 export const PAPER_DARK = "#1e1e1e";
-
-export const PWA_START_URL = "/";
-export const PWA_FAVICON_SRC = "/favicon.ico";
