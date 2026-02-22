@@ -53,23 +53,25 @@ Create two S3 buckets:
 
 1. **Dev bucket** (e.g., `danieltostes-dev`)
    - Configure for static website hosting
-   - Block public access (CloudFront will access it)
+   - Either: block public access and use a bucket policy that allows only CloudFront (OAC), or allow public read so objects are publicly readable (e.g. via bucket policy or object ACLs)
 
 2. **Production bucket** (e.g., `danieltostes-com`)
    - Configure for static website hosting
-   - Block public access (CloudFront will access it)
+   - Same choice as dev: private bucket + CloudFront-only policy, or public read
+
+**Bucket policy:** To let CloudFront read objects, attach a bucket policy that allows the CloudFront distribution via **Origin Access Control (OAC)**. In the S3 bucket → Permissions → Bucket policy, add a statement that allows `s3:GetObject` for the CloudFront distribution’s OAC **Private bucket (recommended):** use the policy snippet AWS suggests when you create/edit the OAC. **Public objects:** you can instead allow public `s3:GetObject` in the bucket policy; objects do not need an ACL. Without a policy that grants access (to CloudFront or to the public), CloudFront or direct access gets 403.
 
 ### CloudFront Distributions
 
 Create two CloudFront distributions:
 
 1. **Dev distribution**
-   - Origin: Dev S3 bucket
+   - Origin: Dev S3 bucket (use **Origin Access Control**, not “Origin access identity (legacy)”)
    - Default root object: `index.html`
    - Error pages configured for SPA routing (404 → /index.html)
 
 2. **Production distribution**
-   - Origin: Production S3 bucket
+   - Origin: Production S3 bucket (use **Origin Access Control**)
    - Custom domain (e.g., `danieltostes.com`)
    - TLS certificate from ACM
    - Default root object: `index.html`
@@ -105,3 +107,7 @@ Create two CloudFront distributions:
 
 - Ensure secrets are added to the **environment** (dev/production), not just repository secrets
 - Check the environment names match exactly: `dev` and `production`
+
+## Future considerations
+
+Deploying the S3 buckets, CloudFront distributions, and related AWS resources via **Terraform** (or another IaC tool) would allow provisioning and updates on demand, version-controlled and repeatable. That approach is not in scope for this project; this guide assumes resources are created and configured manually in the AWS Console.
