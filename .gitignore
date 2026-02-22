@@ -24,12 +24,6 @@
 # production / build
 /build
 
-# PWA (next-pwa generated at build time)
-/public/sw.js
-/public/sw.js.map
-/public/workbox-*.js
-/public/worker-*.js
-
 # env files (opt-in to commit if needed)
 .env*
 
