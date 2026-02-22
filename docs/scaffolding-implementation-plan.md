@@ -14,14 +14,14 @@ This document describes the execution plan and technology choices for the initia
 
 ## What Was Delivered
 
-| Area          | Deliverable                                                                              |
-| ------------- | ---------------------------------------------------------------------------------------- |
-| **App shell** | Next.js 16, App Router, TypeScript, `output: 'export'`, `src/` layout                    |
-| **Styling**   | MUI + Emotion, design tokens in `src/theme/`, CssBaseline, dark/light theme toggle       |
-| **i18n**      | next-intl, 4 locales (en, pt-BR, es, it), one route per locale, on-demand message chunks |
-| **Quality**   | ESLint + Prettier, Husky + lint-staged, Vitest (unit), Playwright (e2e)                  |
-| **DX**        | .vscode recommendations, format on save, `npm run start` serves `out/`                   |
-| **CI**        | GitHub Actions: lint, format check, unit tests, build, e2e against static `out/`         |
+| Area          | Deliverable                                                                                                                |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **App shell** | Next.js 16, App Router, TypeScript, `output: 'export'`, `src/` layout                                                      |
+| **Styling**   | MUI + Emotion, design tokens in `src/theme/`, CssBaseline, dark/light theme toggle                                         |
+| **i18n**      | next-intl, 4 locales (en, pt-BR, es, it), one route per locale, on-demand message chunks                                   |
+| **Quality**   | ESLint + Prettier, Husky + lint-staged, Vitest (unit), Playwright (e2e)                                                    |
+| **DX**        | .vscode recommendations, format on save, `npm run start` serves `out/`                                                     |
+| **CI**        | GitHub Actions: lint, format check, unit tests, build, e2e against static `out/`; separate Lighthouse CI job (assert ≥95). |
 
 ---
 
@@ -105,7 +105,7 @@ With `output: 'export'`, there is no Next.js server. **Decision:** `start` scrip
 5. **MUI + theme** — `src/theme/`, CssBaseline, dark/light toggle, ThemeModeContext (constants and descriptive condition variables per AGENTS.md).
 6. **i18n** — next-intl, `src/i18n/request.ts`, `src/messages/*.json`, `[locale]` layout and page, `generateStaticParams` (Next.js convention: called at build time only, no in-repo references) for en/pt-BR/es/it, root redirect to `/en`.
 7. **Tests** — Vitest + setup, one theme unit test; Playwright + smoke e2e (home + locale links); `test:e2e` builds and serves `out/` then runs Playwright.
-8. **CI** — GitHub Actions: install, lint, format check, unit tests, build, Playwright install, e2e (`test:e2e:ci`).
+8. **CI** — GitHub Actions: install, lint, format check, unit tests, build, Playwright install, e2e (`test:e2e:ci`); separate job for Lighthouse CI (`lighthouserc.cjs`, assert ≥95).
 9. **Docs and scripts** — README scripts; `.gitignore` for test/output dirs.
 
 ---
@@ -117,7 +117,7 @@ With `output: 'export'`, there is no Next.js server. **Decision:** `start` scrip
 - **Build:** `npm run build` (produces `out/`)
 - **E2E:** `npm run test:e2e` (builds, serves `out/`, runs Playwright)
 - **Preview static site:** `npm run build && npm start` → http://localhost:3000 (then try `/en`, `/pt-BR`, etc.)
-- **CI:** Push or open PR; workflow runs lint, format, unit, build, e2e
+- **CI:** Push or open PR; workflow runs lint, format, unit, build, e2e, and Lighthouse CI (see [README – CI/CD](../README.md#cicd))
 
 ---
 

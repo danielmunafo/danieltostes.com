@@ -1,5 +1,9 @@
 # danieltostes.com
 
+[![Build](https://img.shields.io/github/actions/workflow/status/danielmunafo/danieltostes.com/ci.yml?branch=main&label=build)](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/danielmunafo/danieltostes.com/ci.yml?branch=main&label=CI)](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml)
+[![Lighthouse](https://img.shields.io/badge/Lighthouse-95%2B-green)](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml)
+
 Personal portfolio site for Daniel Munafó Tostes — Senior Software Engineer focused on scalable product platforms, distributed systems, and cloud-native architecture.
 
 This repository is intentionally engineered as a **static-first, production-grade web application** deployed to **AWS S3 + CloudFront**, with CI/CD via GitHub Actions.
@@ -136,13 +140,33 @@ Pre-commit hooks (Husky + lint-staged) run lint and format on staged files.
 
 **Workflow:** `.github/workflows/ci.yml`
 
+The top-of-readme badges (Build, CI, Lighthouse) reflect the status of this workflow. Build and CI are dynamic (latest run on `main`); Lighthouse shows the enforced minimum (see [Lighthouse CI](#lighthouse-ci) below).
+
+### Pipeline jobs
+
+| Job                 | Purpose                                                                                                                                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **lint-test-build** | Lint, format check, unit tests (Vitest), build, E2E (Playwright), then upload `out/` as artifact.                                                                                                                 |
+| **lighthouseci**    | Runs [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) against the static build; asserts Performance, Accessibility, Best Practices, and SEO ≥ 95. **Required** — workflow fails if assertions fail. |
+| **deploy**          | Downloads `out/`, syncs to S3, invalidates CloudFront. Depends only on `lint-test-build`.                                                                                                                         |
+
+`lint-test-build` and `lighthouseci` run in parallel. Deploy runs after `lint-test-build` succeeds.
+
 ### Pull requests
 
-On every PR the pipeline runs: **lint**, **format check**, **unit tests**, **build**, **E2E tests** (Playwright against the built `out/`), and then **deploys to dev environment** for preview and testing.
+On every PR the pipeline runs **lint**, **format check**, **unit tests**, **build**, **E2E tests**, and **Lighthouse CI**. If all pass, it **deploys to the dev environment** for preview (using the artifact from `lint-test-build`).
 
 ### Main branch
 
-On merge to `main`, the pipeline runs the same checks and then **deploys to production**: uploads `out/` to S3 and invalidates the CloudFront cache. Correctness is enforced before deployment.
+On merge to `main`, the same checks run and the pipeline **deploys to production**: uploads `out/` to S3 and invalidates the CloudFront cache.
+
+### Lighthouse CI
+
+The **lighthouseci** job runs on every PR and push and **must pass**; the workflow fails if any category score is below 95.
+
+- **Config:** `lighthouserc.cjs` (collect from `./out`, assert category scores ≥ 0.95, optional upload to temporary public storage).
+- **Local run:** `npm run test:lighthouse` (after `npm run build`).
+- **Optional secret:** To post Lighthouse results as GitHub status checks and report links on PRs, install the [Lighthouse CI GitHub App](https://github.com/apps/lighthouse-ci) and add the token as `LHCI_GITHUB_APP_TOKEN`. Without it, the job still runs and must pass; it just does not post status checks.
 
 ### Environments
 
@@ -151,13 +175,15 @@ The workflow uses GitHub environments with conditional deployment:
 - **dev**: Deployed automatically on pull requests for preview and testing
 - **production**: Deployed automatically on merge to `main`
 
-**Required GitHub secrets**:
+**Required GitHub secrets** (see [`docs/deployment-setup.md`](./docs/deployment-setup.md)):
 
 - `AWS_ROLE_ARN`: IAM role for AWS authentication (OIDC-based, used by both environments)
 - `AWS_S3_BUCKET`: S3 bucket name (environment-specific, configured in GitHub environment)
 - `CLOUDFRONT_DISTRIBUTION_ID`: CloudFront distribution ID (environment-specific, configured in GitHub environment)
 
-For detailed setup instructions, see [`docs/deployment-setup.md`](./docs/deployment-setup.md).
+**Optional:**
+
+- `LHCI_GITHUB_APP_TOKEN`: Token from the [Lighthouse CI GitHub App](https://github.com/apps/lighthouse-ci); enables status checks and report links on PRs.
 
 ---
 

@@ -22,6 +22,8 @@ sequenceDiagram
   GA->>GA: Unit tests (Vitest)
   GA->>GA: Build + Next export (out/)
   GA->>GA: E2E smoke (Playwright)
+  GA->>GA: Upload out/ artifact
+  Note over GA: Lighthouse CI job runs in parallel (build, then assert ≥95)
   GA->>S3Dev: Upload to dev (sync out/ → dev bucket)
   GA->>CFDev: Invalidate dev cache
 
@@ -32,6 +34,8 @@ sequenceDiagram
   GA->>GA: Unit tests (Vitest)
   GA->>GA: Build + Next export (out/)
   GA->>GA: E2E smoke (Playwright)
+  GA->>GA: Upload out/ artifact
+  Note over GA: Lighthouse CI job runs in parallel (build, then assert ≥95)
   GA->>S3Prod: Upload to production (sync out/ → prod bucket)
   GA->>CFProd: Invalidate production cache
 

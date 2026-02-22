@@ -4,7 +4,13 @@ This document describes how to configure GitHub Actions to deploy to both dev an
 
 ## Overview
 
-The CI/CD workflow (`.github/workflows/ci.yml`) automatically deploys to two environments:
+The CI/CD workflow (`.github/workflows/ci.yml`) runs three jobs:
+
+1. **lint-test-build** — Lint, format check, unit tests, build, E2E tests; uploads `out/` as an artifact. Must pass.
+2. **lighthouseci** — Runs Lighthouse CI against the static build; asserts Performance, Accessibility, Best Practices, and SEO ≥ 95 (config: `lighthouserc.cjs`). **Required** — workflow fails if assertions fail.
+3. **deploy** — Downloads the artifact, syncs to S3, invalidates CloudFront. Depends on `lint-test-build` only.
+
+Deploy targets two environments:
 
 - **dev**: Deployed on pull requests for preview and testing
 - **production**: Deployed on merge to `main`
@@ -42,6 +48,14 @@ Navigate to **Settings → Secrets and variables → Actions → Repository secr
 | Secret Name    | Description                          | Example                                            |
 | -------------- | ------------------------------------ | -------------------------------------------------- |
 | `AWS_ROLE_ARN` | IAM role ARN for OIDC authentication | `arn:aws:iam::123456789012:role/GitHubActionsRole` |
+
+#### Lighthouse CI GitHub App token
+
+The **lighthouseci** job is required and must pass. Only the token below is optional (for PR status checks and report links).
+
+| Secret Name             | Description                                                                                                                                                                                                                                          |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LHCI_GITHUB_APP_TOKEN` | Token from the [Lighthouse CI GitHub App](https://github.com/apps/lighthouse-ci). When set, Lighthouse CI posts status checks and report links on PRs. The **lighthouseci** job runs and must pass either way; this secret only adds PR integration. |
 
 > **Note:** The `AWS_ROLE_ARN` is shared across both environments. If you need separate roles per environment, you can also configure this as an environment secret instead.
 
