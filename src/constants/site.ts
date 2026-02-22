@@ -10,6 +10,8 @@ export const DEFAULT_TIME_ZONE = "UTC";
 export const SITE_URL = "https://danieltostes.com";
 export const SITE_NAME = "danieltostes.com";
 export const SITE_SHORT_NAME = "danieltostes";
+/** Display name for the app bar and branding. */
+export const SITE_AUTHOR_DISPLAY_NAME = "Daniel Tostes";
 export const SITE_DESCRIPTION = "Personal blog and CV";
 
 export const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/dantostes/";
