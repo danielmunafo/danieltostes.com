@@ -68,14 +68,14 @@ Create two CloudFront distributions:
 1. **Dev distribution**
    - Origin: Dev S3 bucket (use **Origin Access Control**, not “Origin access identity (legacy)”)
    - Default root object: `index.html`
-   - Error pages configured for SPA routing (404 → /index.html)
+   - **Custom error pages (required for SPA/locale paths):** In the distribution, add two custom error responses so paths like `/en` or `/pt-BR` are handled by the app instead of 403/404 from S3: **403 Forbidden** → HTTP 200, response page `/index.html`; **404 Not Found** → HTTP 200, response page `/index.html`.
 
 2. **Production distribution**
    - Origin: Production S3 bucket (use **Origin Access Control**)
    - Custom domain (e.g., `danieltostes.com`)
    - TLS certificate from ACM
    - Default root object: `index.html`
-   - Error pages configured for SPA routing (404 → /index.html)
+   - Same custom error pages as dev: 403 and 404 → 200 with `/index.html`.
 
 ## Testing the Setup
 
