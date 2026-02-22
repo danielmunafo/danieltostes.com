@@ -17,6 +17,9 @@
 /blob-report
 /playwright/.cache
 
+# Lighthouse CI
+.lighthouseci/
+
 # Next.js
 /.next/
 /out/
