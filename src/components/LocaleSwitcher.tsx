@@ -1,39 +1,69 @@
 "use client";
 
+import { useState } from "react";
+import LanguageIcon from "@mui/icons-material/Language";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import { useLocale } from "next-intl";
-import Box from "@mui/material/Box";
 import { useLocaleRuntime } from "@/contexts/LocaleRuntimeContext";
 import { LOCALE_OPTIONS } from "@/i18n/request";
 
 export function LocaleSwitcher() {
   const locale = useLocale();
   const { setLocale, isSwitching } = useLocaleRuntime();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSelect = (code: (typeof LOCALE_OPTIONS)[number]["code"]) => {
+    setLocale(code);
+    handleClose();
+  };
+
+  const currentName =
+    LOCALE_OPTIONS.find((o) => o.code === locale)?.name ?? locale;
 
   return (
-    <Box component="nav" sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-      {LOCALE_OPTIONS.map(({ code, label }) => (
-        <Box
-          key={code}
-          component="button"
-          type="button"
-          onClick={() => setLocale(code)}
-          disabled={isSwitching}
-          aria-pressed={locale === code}
-          sx={{
-            fontSize: "0.875rem",
-            border: "none",
-            background: "none",
-            cursor: isSwitching ? "wait" : "pointer",
-            color: "inherit",
-            font: "inherit",
-            textDecoration: locale === code ? "underline" : "none",
-            "&:hover": { textDecoration: "underline" },
-            "&:disabled": { opacity: 0.7 },
-          }}
-        >
-          {label}
-        </Box>
-      ))}
-    </Box>
+    <>
+      <IconButton
+        id="locale-menu-button"
+        color="inherit"
+        onClick={handleOpen}
+        disabled={isSwitching}
+        aria-label={currentName}
+        aria-controls={open ? "locale-menu" : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? "true" : undefined}
+      >
+        <LanguageIcon aria-hidden />
+      </IconButton>
+      <Menu
+        id="locale-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        slotProps={{ list: { "aria-labelledby": "locale-menu-button" } }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        {LOCALE_OPTIONS.map(({ code, name }) => (
+          <MenuItem
+            key={code}
+            selected={locale === code}
+            onClick={() => handleSelect(code)}
+          >
+            {name}
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
   );
 }
