@@ -154,7 +154,7 @@ The top-of-readme badges (Build, CI, Lighthouse) reflect the status of this work
 
 ### Pull requests
 
-On every PR the pipeline runs **lint**, **format check**, **unit tests**, **build**, **E2E tests**, and **Lighthouse CI**. If all pass, it **deploys to the dev environment** for preview (using the artifact from `lint-test-build`).
+On every PR the pipeline runs **lint**, **format check**, **unit tests**, **build**, **E2E tests**, and **Lighthouse CI**. When `lint-test-build` succeeds, it **deploys to the dev environment** for preview (using the artifact from `lint-test-build`).
 
 ### Main branch
 
