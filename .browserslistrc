@@ -1,0 +1,6 @@
+# Target modern browsers to reduce legacy polyfills (Lighthouse).
+# Aligns with Next.js defaults and keeps bundle smaller.
+last 2 Chrome versions
+last 2 Firefox versions
+last 2 Safari versions
+last 2 Edge versions
