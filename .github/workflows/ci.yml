@@ -1,9 +1,11 @@
 name: CI
 
 on:
-  push:
-    branches: [main, scaffolding]
   pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
 
 jobs:
   lint-test-build:
@@ -46,10 +48,12 @@ jobs:
 
   deploy:
     needs: lint-test-build
-    if: false
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    environment: ${{ github.event_name == 'pull_request' && 'dev' || 'production' }}
     permissions:
       id-token: write
+      contents: read
     steps:
       - name: Download static output
         uses: actions/download-artifact@v4
@@ -66,4 +70,6 @@ jobs:
         run: aws s3 sync . s3://${{ secrets.AWS_S3_BUCKET }}/ --delete
 
       - name: Invalidate CloudFront
-        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+        run: aws cloudfront create-invalidation \
+          --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+          --paths "/*"
