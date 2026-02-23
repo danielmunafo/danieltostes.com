@@ -8,6 +8,8 @@ import MenuItem from "@mui/material/MenuItem";
 import { useLocale } from "next-intl";
 import { useLocaleRuntime } from "@/contexts/LocaleRuntimeContext";
 import { LOCALE_OPTIONS } from "@/i18n/request";
+import { BORDER_BY_MODE, GLASS_BG_BY_MODE } from "@/constants/site";
+import { GLASS_BLUR } from "@/constants/sections";
 
 export function LocaleSwitcher() {
   const locale = useLocale();
@@ -50,7 +52,20 @@ export function LocaleSwitcher() {
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
-        slotProps={{ list: { "aria-labelledby": "locale-menu-button" } }}
+        slotProps={{
+          list: { "aria-labelledby": "locale-menu-button" },
+          paper: {
+            sx: (theme) => {
+              const mode = theme.palette.mode;
+              return {
+                backgroundColor: GLASS_BG_BY_MODE[mode],
+                backdropFilter: `blur(${GLASS_BLUR}px)`,
+                WebkitBackdropFilter: `blur(${GLASS_BLUR}px)`,
+                border: `1px solid ${BORDER_BY_MODE[mode]}`,
+              };
+            },
+          },
+        }}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
