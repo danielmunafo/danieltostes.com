@@ -28,3 +28,27 @@ export const THEME_COLOR_PRIMARY_DARK = "#90caf9";
 export const BACKGROUND_DARK = "#121212";
 /** MUI dark theme paper/surface background. */
 export const PAPER_DARK = "#1e1e1e";
+
+/** Border color for glass/surface elements, keyed by theme mode. */
+export const BORDER_BY_MODE = {
+  light: "rgba(0,0,0,0.08)",
+  dark: "rgba(255,255,255,0.1)",
+} as const satisfies Record<ThemeMode, string>;
+
+/** Background color for frosted-glass overlays (e.g. TopBar, dropdowns), keyed by theme mode. */
+export const GLASS_BG_BY_MODE = {
+  light: "rgba(255,255,255,0.75)",
+  dark: "rgba(0,0,0,0.75)",
+} as const satisfies Record<ThemeMode, string>;
+
+/** Text/icon color on glass overlays (e.g. TopBar), keyed by theme mode. */
+export const TEXT_ON_GLASS_BY_MODE = {
+  light: "#000000",
+  dark: "#ffffff",
+} as const satisfies Record<ThemeMode, string>;
+
+/** Box shadow for glass overlays (e.g. TopBar), keyed by theme mode. */
+export const GLASS_SHADOW_BY_MODE = {
+  light: "0 1px 4px rgba(0,0,0,0.12)",
+  dark: "0 1px 4px rgba(0,0,0,0.4)",
+} as const satisfies Record<ThemeMode, string>;
