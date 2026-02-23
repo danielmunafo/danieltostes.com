@@ -43,13 +43,18 @@ export function ExperienceSection() {
               sectionId={SECTION_ID}
               side={getItemSide(SECTION_ID, roleIdx)}
               iconSrc={EXPERIENCE_ROLE_ICONS[roleIdx]?.src}
+              iconAlt={role.company}
               iconScale={EXPERIENCE_ROLE_ICONS[roleIdx]?.scale}
             >
-              <Typography variant="h4" sx={{ fontWeight: 600 }}>
+              <Typography variant="h3" component="h3" sx={{ fontWeight: 600 }}>
                 {role.company}
               </Typography>
 
-              <Typography variant="subtitle1" sx={{ opacity: 0.8, mb: 0.5 }}>
+              <Typography
+                component="p"
+                variant="subtitle1"
+                sx={{ opacity: 0.8, mb: 0.5 }}
+              >
                 {role.position} &middot; {role.period}
               </Typography>
 

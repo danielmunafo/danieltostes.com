@@ -23,6 +23,8 @@ interface SectionItemProps {
   side: "left" | "right";
   /** Optional image path for the icon; falls back to a colored placeholder. */
   iconSrc?: string;
+  /** Alt text for the icon image when iconSrc is set (required for accessibility). */
+  iconAlt?: string;
   /** Optional scale multiplier for the icon image (e.g. 1.2 = 20% zoom in). */
   iconScale?: number;
   children: React.ReactNode;
@@ -37,6 +39,7 @@ export function SectionItem({
   sectionId,
   side,
   iconSrc,
+  iconAlt,
   iconScale,
   children,
 }: SectionItemProps) {
@@ -62,6 +65,7 @@ export function SectionItem({
       {hasIcon && (
         <ItemIcon
           src={iconSrc}
+          slotProps={{ img: { alt: iconAlt ?? "" } }}
           sx={{
             borderColor: color,
             backgroundColor: isLight ? "#ffffff" : "#000000",

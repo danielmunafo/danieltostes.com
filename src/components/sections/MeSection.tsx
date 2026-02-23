@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { SITE_AUTHOR_DISPLAY_NAME } from "@/constants/site";
 import { getItemSide } from "@/constants/sections";
 import { SectionItem } from "./SectionItem";
 
@@ -21,6 +22,7 @@ export function MeSection() {
         sectionId={SECTION_ID}
         side={getItemSide(SECTION_ID, 0)}
         iconSrc="/me.jpeg"
+        iconAlt={SITE_AUTHOR_DISPLAY_NAME}
       >
         <Typography variant="body1" sx={{ opacity: 0.7 }}>
           {t("placeholder")}
