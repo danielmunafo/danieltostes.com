@@ -15,7 +15,7 @@ export const SITE_AUTHOR_DISPLAY_NAME = "Daniel Tostes";
 export const SITE_DESCRIPTION = "Personal blog and CV";
 
 /** Default page title for metadata and Open Graph. */
-export const META_TITLE = "Daniel Munafó Tostes – Senior Software Engineer";
+export const META_TITLE = "Daniel Munafó Tostes - Senior Software Engineer";
 /** Default meta description (search and general). */
 export const META_DESCRIPTION =
   "Senior Software Engineer building scalable product platforms, distributed systems, and cloud-native architectures.";
@@ -24,6 +24,9 @@ export const META_OG_TAGLINE =
   "Scalable systems • Static-first architecture • Cloud-native engineering";
 
 export const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/dantostes/";
+
+/** Site publish date (ISO 8601) for Open Graph and crawlers. */
+export const META_PUBLISHED_TIME = "2025-02-23T00:00:00.000Z";
 
 /** MUI light theme primary. */
 export const THEME_COLOR_PRIMARY = "#1976d2";
