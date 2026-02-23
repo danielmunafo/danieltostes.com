@@ -9,7 +9,13 @@ The page uses two visual layers to create a parallax scrolling CV/portfolio with
 - **Circular icons**: One per titled content block (where applicable), positioned 50% inside / 50% outside the content column, alternating left/right per item. Each icon has a thin solid border matching the section color. Background matches TopBar color (black/white) for transparent SVGs. Hidden on mobile. Icons without `iconSrc` are not rendered and have no extra side padding.
 - **Icon scaling**: Icons support an optional `iconScale` multiplier. Upscaled icons (>1) zoom the image while maintaining `cover` fit. Downscaled icons (<1) switch to `contain` fit with inner padding to show the full image without cropping.
 - **Footer**: Centered legal line at the bottom of the page.
-- **Responsive**: On mobile (`xs`/`sm`), the content column stretches to 92% and icons are hidden.
+- **Responsive**: On mobile (below `md` breakpoint):
+  - Content column stretches to 92% width
+  - Icons are hidden and their extra side-padding is removed
+  - All padding, margins, and divider spacing are halved (e.g. 32px → 16px, `spacing(8)` → `spacing(4)`)
+  - `SectionItem` minimum height drops to `auto` (no icon-based constraint)
+  - Parallax transform is fully disabled (background is static) — eliminates scroll jank and repainting
+  - `willChange` is reduced to `opacity` only (no GPU layer promotion for transform)
 
 ## Theming
 

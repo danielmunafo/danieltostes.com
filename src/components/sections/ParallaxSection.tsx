@@ -74,4 +74,9 @@ const ContentColumn = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(8),
   borderRadius: theme.shape.borderRadius,
   overflow: "visible",
+  [theme.breakpoints.down("md")]: {
+    padding: theme.spacing(3, 2),
+    marginTop: theme.spacing(4),
+    marginBottom: theme.spacing(4),
+  },
 }));

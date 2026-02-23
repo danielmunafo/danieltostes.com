@@ -82,7 +82,9 @@ export function ExperienceSection() {
               </Box>
             </SectionItem>
 
-            {!isLast && <Divider sx={{ borderColor: "divider", my: 4 }} />}
+            {!isLast && (
+              <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
+            )}
           </Box>
         );
       })}

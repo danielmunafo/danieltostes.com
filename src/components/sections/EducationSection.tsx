@@ -47,7 +47,7 @@ export function EducationSection() {
         ))}
       </SectionItem>
 
-      <Divider sx={{ borderColor: "divider", my: 4 }} />
+      <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
 
       <SectionItem
         sectionId={SECTION_ID}
@@ -65,7 +65,7 @@ export function EducationSection() {
         ))}
       </SectionItem>
 
-      <Divider sx={{ borderColor: "divider", my: 4 }} />
+      <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
 
       <SectionItem sectionId={SECTION_ID} side={getItemSide(SECTION_ID, 2)}>
         <Typography variant="h3" gutterBottom>
@@ -82,7 +82,7 @@ export function EducationSection() {
         </Box>
       </SectionItem>
 
-      <Divider sx={{ borderColor: "divider", my: 4 }} />
+      <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
 
       <SectionItem sectionId={SECTION_ID} side={getItemSide(SECTION_ID, 3)}>
         <Typography variant="h3" gutterBottom>

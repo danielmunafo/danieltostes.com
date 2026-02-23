@@ -15,6 +15,9 @@ import {
   type SectionId,
 } from "@/constants/sections";
 
+const MOBILE_PADDING_X = CONTENT_COLUMN_PADDING_X / 2;
+const MOBILE_PADDING_Y = SECTION_ITEM_PADDING_Y / 2;
+
 interface SectionItemProps {
   sectionId: SectionId;
   side: "left" | "right";
@@ -46,8 +49,14 @@ export function SectionItem({
   return (
     <ItemWrapper
       sx={{
-        pl: `${CONTENT_COLUMN_PADDING_X + (hasIcon && isLeft ? ICON_SIDE_PADDING : 0)}px`,
-        pr: `${CONTENT_COLUMN_PADDING_X + (hasIcon && !isLeft ? ICON_SIDE_PADDING : 0)}px`,
+        pl: {
+          xs: `${MOBILE_PADDING_X}px`,
+          md: `${CONTENT_COLUMN_PADDING_X + (hasIcon && isLeft ? ICON_SIDE_PADDING : 0)}px`,
+        },
+        pr: {
+          xs: `${MOBILE_PADDING_X}px`,
+          md: `${CONTENT_COLUMN_PADDING_X + (hasIcon && !isLeft ? ICON_SIDE_PADDING : 0)}px`,
+        },
       }}
     >
       {hasIcon && (
@@ -83,7 +92,7 @@ export function SectionItem({
   );
 }
 
-const ItemWrapper = styled(Box)({
+const ItemWrapper = styled(Box)(({ theme }) => ({
   position: "relative",
   display: "flex",
   flexDirection: "column",
@@ -91,7 +100,12 @@ const ItemWrapper = styled(Box)({
   minHeight: SECTION_ITEM_MIN_HEIGHT,
   paddingTop: SECTION_ITEM_PADDING_Y,
   paddingBottom: SECTION_ITEM_PADDING_Y,
-});
+  [theme.breakpoints.down("md")]: {
+    minHeight: "auto",
+    paddingTop: MOBILE_PADDING_Y,
+    paddingBottom: MOBILE_PADDING_Y,
+  },
+}));
 
 const ItemIcon = styled(Avatar)({
   position: "absolute",

@@ -61,7 +61,7 @@ export function SummarySection() {
         </Box>
       </SectionItem>
 
-      <Divider sx={{ borderColor: "divider", my: 4 }} />
+      <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
 
       <SectionItem sectionId={SECTION_ID} side={getItemSide(SECTION_ID, 1)}>
         <Typography variant="h3" gutterBottom>

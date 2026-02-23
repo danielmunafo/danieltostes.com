@@ -1,6 +1,7 @@
 "use client";
 
 import Box from "@mui/material/Box";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import {
   PARALLAX_FACTOR,
@@ -16,12 +17,14 @@ interface SectionBackgroundProps {
 
 /**
  * Fixed full-viewport layer showing the active section's background.
- * Applies a parallax transform and crossfades between section backgrounds.
+ * Applies a parallax transform on desktop and crossfades between section backgrounds.
+ * Parallax is disabled on mobile to avoid scroll jank.
  */
 export function SectionBackground({ activeSection }: SectionBackgroundProps) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const gradients = SECTION_BG_GRADIENTS[theme.palette.mode];
-  const parallaxOffset = useParallaxScroll(PARALLAX_FACTOR);
+  const parallaxOffset = useParallaxScroll(isMobile ? 0 : PARALLAX_FACTOR);
 
   return (
     <Box
@@ -46,14 +49,14 @@ export function SectionBackground({ activeSection }: SectionBackgroundProps) {
               top: 0,
               left: 0,
               width: "100%",
-              height: "150%",
+              height: isMobile ? "100%" : "150%",
               background: gradients[id],
               backgroundSize: "cover",
               backgroundPosition: "center",
               opacity: isActive ? 1 : 0,
               transition: "opacity 0.8s ease-in-out",
-              transform: `translateY(-${parallaxOffset}px)`,
-              willChange: "transform, opacity",
+              transform: isMobile ? "none" : `translateY(-${parallaxOffset}px)`,
+              willChange: isMobile ? "opacity" : "transform, opacity",
             }}
           />
         );
