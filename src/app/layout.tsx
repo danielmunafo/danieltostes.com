@@ -1,7 +1,14 @@
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/constants/site";
+import {
+  LINKEDIN_PROFILE_URL,
+  META_DESCRIPTION,
+  META_TITLE,
+  SITE_AUTHOR_DISPLAY_NAME,
+  SITE_NAME,
+  SITE_URL,
+} from "@/constants/site";
 import { DEFAULT_LOCALE } from "@/i18n/request";
 import "./globals.css";
 
@@ -11,18 +18,39 @@ const roboto = Roboto({
   variable: "--font-roboto-sans",
 });
 
+const OG_IMAGE_PATH = "/og-image.png";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: SITE_NAME,
+    default: META_TITLE,
     template: `%s | ${SITE_NAME}`,
   },
-  description: SITE_DESCRIPTION,
+  description: META_DESCRIPTION,
+  authors: [{ name: SITE_AUTHOR_DISPLAY_NAME, url: LINKEDIN_PROFILE_URL }],
   icons: { icon: "/logo.svg" },
   openGraph: {
     type: "website",
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
+    title: META_TITLE,
+    description: META_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_AUTHOR_DISPLAY_NAME,
+    images: [
+      {
+        url: OG_IMAGE_PATH,
+        width: 1200,
+        height: 630,
+        alt: META_TITLE,
+        type: "image/png",
+      },
+    ],
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: META_TITLE,
+    description: META_DESCRIPTION,
+    images: [OG_IMAGE_PATH],
   },
   robots: { index: true, follow: true },
 };
