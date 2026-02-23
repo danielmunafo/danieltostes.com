@@ -1,5 +1,9 @@
 # danieltostes.com
 
+[![CI](https://github.com/danieltostes/danieltostes.com/actions/workflows/ci.yml/badge.svg)](https://github.com/danieltostes/danieltostes.com/actions/workflows/ci.yml) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fdanieltostes.com)](https://danieltostes.com)
+
+![Open Graph image](public/og-image.png)
+
 Personal portfolio site for Daniel Munafó Tostes — Senior Software Engineer focused on scalable product platforms, distributed systems, and cloud-native architecture.
 
 This repository is intentionally engineered as a **static-first, production-grade web application** deployed to **AWS S3 + CloudFront**, with CI/CD via GitHub Actions.
