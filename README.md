@@ -1,8 +1,15 @@
-# danieltostes.com
+# [danieltostes.com](https://danieltostes.com)
 
-[![CI](https://github.com/danieltostes/danieltostes.com/actions/workflows/ci.yml/badge.svg)](https://github.com/danieltostes/danieltostes.com/actions/workflows/ci.yml) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fdanieltostes.com)](https://danieltostes.com)
+[![CI](https://github.com/danieltostes/danieltostes.com/actions/workflows/ci.yml/badge.svg)](https://github.com/danieltostes/danieltostes.com/actions/workflows/ci.yml)
+
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fdanieltostes.com)](https://danieltostes.com)
 
 ![Open Graph image](public/og-image.png)
+
+## Live
+
+🌍 https://danieltostes.com
+🌍 https://dev.danieltostes.com
 
 Personal portfolio site for Daniel Munafó Tostes — Senior Software Engineer focused on scalable product platforms, distributed systems, and cloud-native architecture.
 
@@ -12,12 +19,6 @@ It serves two purposes:
 
 1. Public portfolio.
 2. Demonstration of engineering discipline: performance, explicit trade-offs, and maintainable structure.
-
----
-
-## Live
-
-🌍 https://danieltostes.com
 
 ---
 
