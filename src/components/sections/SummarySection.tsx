@@ -6,6 +6,7 @@ import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 import { useTheme } from "@mui/material/styles";
+import { SITE_NAME } from "@/constants/site";
 import { CHIP_BG, SUMMARY_SKILLS, getItemSide } from "@/constants/sections";
 import { SectionItem } from "./SectionItem";
 
@@ -26,6 +27,7 @@ export function SummarySection() {
         sectionId={SECTION_ID}
         side={getItemSide(SECTION_ID, 0)}
         iconSrc="/logo.svg"
+        iconAlt={SITE_NAME}
       >
         <Typography variant="body1" sx={{ mb: 3 }}>
           {t("description")}

@@ -34,13 +34,14 @@ export function EducationSection() {
         sectionId={SECTION_ID}
         side={getItemSide(SECTION_ID, 0)}
         iconSrc="/cps.png"
+        iconAlt="CPS"
       >
         {edu.map((item, i) => (
           <Box key={i} sx={{ mb: i < edu.length - 1 ? 2 : 0 }}>
-            <Typography variant="h4" sx={{ fontWeight: 600 }}>
+            <Typography variant="h3" component="h3" sx={{ fontWeight: 600 }}>
               {item.degree}
             </Typography>
-            <Typography variant="subtitle1" sx={{ opacity: 0.8 }}>
+            <Typography component="p" variant="subtitle1" sx={{ opacity: 0.8 }}>
               {item.institution}
             </Typography>
           </Box>
@@ -53,6 +54,7 @@ export function EducationSection() {
         sectionId={SECTION_ID}
         side={getItemSide(SECTION_ID, 1)}
         iconSrc="/aws.svg"
+        iconAlt="AWS"
         iconScale={0.8}
       >
         <Typography variant="h3" gutterBottom>
