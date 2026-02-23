@@ -6,5 +6,138 @@
   "ThemeToggle": {
     "light": "Switch to dark mode",
     "dark": "Switch to light mode"
+  },
+  "Summary": {
+    "title": "Summary",
+    "description": "Senior Software Engineer specializing in stabilizing and scaling cloud-native platforms. 9+ years delivering production-grade systems in fintech and high-traffic consumer environments. Strong ownership across architecture, infrastructure, observability, and AI integrations. Experienced in improving reliability, reducing operational risk, and accelerating delivery in distributed teams.",
+    "coreLabel": "Core",
+    "coreValue": "TypeScript, Node.js, React, Java, AWS",
+    "architectureLabel": "Architecture",
+    "architectureValue": "Microservices/Modular Monoliths, DDD, Clean Code, Clean Arch, Event-Driven Systems, REST/GraphQL/Federation, Kafka",
+    "infraLabel": "Infra & Ops",
+    "infraValue": "Kubernetes, Terraform, CI/CD, Observability",
+    "aiLabel": "AI",
+    "aiValue": "AI integrations, OpenAI, Agents",
+    "impactTitle": "Selected Impact",
+    "impact": [
+      "Migrated legacy financial workflows to cloud-native infrastructure in regulated banking environment.",
+      "Designed and scaled event-driven systems serving multi-market products.",
+      "Implemented observability frameworks enabling data-driven operational decisions.",
+      "Built AI-integrated product architecture from concept to production."
+    ],
+    "icon": "Summary"
+  },
+  "Experience": {
+    "title": "Experience",
+    "roles": [
+      {
+        "company": "Personal Fitness Platform",
+        "period": "Aug/2025 – Present",
+        "position": "Founder & Software Engineer",
+        "desc": [
+          "Architecting and building an AI-driven mobile and backend platform focused on personalized fitness and wellbeing.",
+          "Leading end-to-end product development: market research, system design, backend architecture, AI integration, and DevOps automation.",
+          "Designed scalable backend using Clean Architecture and event-driven patterns.",
+          "Implemented CI/CD pipelines, infrastructure as code (Terraform), container orchestration (Kubernetes), and full observability stack (New Relic, Sentry).",
+          "Developing AI-driven coaching workflows using OpenAI and agent patterns."
+        ],
+        "tech": "React Native (Expo), React, Node.js, TypeScript, GraphQL (Apollo Federation), BullMQ, Redis, Kafka, Kubernetes, Docker, Terraform, PostgreSQL, New Relic, Sentry, OpenAI"
+      },
+      {
+        "company": "Ageras (Kontist)",
+        "period": "Jul/2024 – Jun/2025",
+        "position": "Senior Software Engineer",
+        "desc": [
+          "Built and maintained core functionality for invoicing and banking products serving small businesses across Europe.",
+          "Implemented company-level technical decisions, helping standardize engineering practices and improve long-term maintainability.",
+          "Led initiatives to improve observability and monitoring, enabling data-driven product and operational decisions."
+        ],
+        "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS, Terraform, Docker, PostgreSQL, Datadog, Sentry"
+      },
+      {
+        "company": "Klarna",
+        "period": "Mar/2022 – Jun/2024",
+        "position": "Software Engineer",
+        "desc": [
+          "Developed and evolved Klarna's transactional email and marketing campaign platform, supporting high-volume, multi-market communication.",
+          "Implemented a new marketing decision-engine model enabling personalized content delivery using machine-learning content + vector search + AI recommendations matching."
+        ],
+        "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Datadog, OpsGenie"
+      },
+      {
+        "company": "MercadoLivre",
+        "period": "Oct/2020 – Feb/2022",
+        "position": "Senior Software Engineer",
+        "desc": [
+          "Designed and implemented microservices and micro-frontends to support tax compliance and user experience across Latin America.",
+          "Led development of back-office systems for tax exemption management and refund processing."
+        ],
+        "tech": "Java, React, Node.js, TypeScript, Express, Sass, Datadog, New Relic"
+      },
+      {
+        "company": "Itaú Unibanco",
+        "period": "Jun/2020 – Oct/2020",
+        "position": "Software Engineer",
+        "desc": [
+          "Migrated critical legacy mainframe functionality to modern cloud-based and containerized solutions.",
+          "Developed internal portals and workflow state machines for overdraft and financial operations."
+        ],
+        "tech": "Java, Spring State Machine, AngularJS, Kafka, Cassandra, AWS, OpenShift, Grafana"
+      },
+      {
+        "company": "PagSeguro PagBank",
+        "period": "Nov/2019 – Jun/2020",
+        "position": "Systems Developer",
+        "desc": [
+          "Built internal tools to reduce incident response time and improve troubleshooting for application support teams.",
+          "Implemented CI/CD pipelines and containerized services while adhering to strict security and compliance requirements."
+        ],
+        "tech": "Node.js, Java, Docker, Jenkins, Mesos/Marathon, Splunk, New Relic"
+      },
+      {
+        "company": "Five Validation",
+        "period": "Mar/2017 – Nov/2019",
+        "position": "Full Stack Systems Developer",
+        "desc": [
+          "Designed and delivered software solutions for computer systems validation, reducing operational overhead and manual effort.",
+          "Scaled technical practices ensuring code quality, documentation standards, and controlled release processes."
+        ],
+        "tech": "Java, PostgreSQL, React, AWS CodeBuild, S3, CloudFront, RDS, Route53, Jenkins, SonarQube"
+      }
+    ],
+    "icon": "Experience"
+  },
+  "Education": {
+    "title": "Education & Courses",
+    "edu": [
+      {
+        "degree": "Technologist in Systems Analysis and Development",
+        "institution": "FATEC José Crespo Gonzales"
+      },
+      {
+        "degree": "Technician in Informatics",
+        "institution": "ETEC Fernando Prestes"
+      }
+    ],
+    "coursesTitle": "Courses",
+    "courses": [
+      { "name": "Architecting on AWS", "provider": "Amazon Web Services" },
+      { "name": "Systems Operations on AWS", "provider": "Amazon Web Services" }
+    ],
+    "languagesTitle": "Languages",
+    "languages": [
+      { "name": "🇧🇷 Portuguese", "level": "Native" },
+      { "name": "🇬🇧 English", "level": "Fluent" },
+      { "name": "🇪🇸 Spanish", "level": "Professional Proficiency" },
+      { "name": "🇮🇹 Italian", "level": "Elementary" }
+    ],
+    "workPermitsTitle": "Work Permits",
+    "permits": ["🇪🇺 EU", "Brazil"],
+    "icon": "Education"
+  },
+  "Me": {
+    "title": "About Me",
+    "placeholder": "Coming soon — hobbies, interests, and more.",
+    "icon": "About Me"
   }
 }

@@ -55,9 +55,8 @@ export function LocaleRuntimeProvider({
         .then((m) => {
           setMessages(m.default);
           setLocaleState(newLocale);
-          // URL is intentionally not updated so the browser does not refetch
-          // metadata and other assets on every language switch. Locale-specific
-          // URLs (/en, /pt-BR, etc.) remain the source of truth for sharing and SEO.
+          const newPath = `/${newLocale}`;
+          window.history.replaceState(null, "", newPath);
         })
         .finally(() => setIsSwitching(false));
     },

@@ -17,7 +17,7 @@ const THEME_MODES: readonly [ThemeMode, ThemeMode] = [
   THEME_MODE_LIGHT,
   THEME_MODE_DARK,
 ];
-const DEFAULT_THEME_MODE: ThemeMode = THEME_MODE_LIGHT;
+const DEFAULT_THEME_MODE: ThemeMode = THEME_MODE_DARK;
 const STORAGE_KEY = "theme-mode";
 const MUI_COLOR_SCHEME_DOCUMENT_KEY = "data-mui-color-scheme";
 

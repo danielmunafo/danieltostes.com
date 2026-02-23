@@ -6,5 +6,138 @@
   "ThemeToggle": {
     "light": "Mudar para modo escuro",
     "dark": "Mudar para modo claro"
+  },
+  "Summary": {
+    "title": "Resumo",
+    "description": "Engenheiro de Software Sênior especializado em estabilizar e escalar plataformas cloud-native. Mais de 9 anos entregando sistemas de produção em ambientes de fintech e alto tráfego. Forte domínio em arquitetura, infraestrutura, observabilidade e integrações com IA. Experiência em melhorar confiabilidade, reduzir risco operacional e acelerar entregas em times distribuídos.",
+    "coreLabel": "Principal",
+    "coreValue": "TypeScript, Node.js, React, Java, AWS",
+    "architectureLabel": "Arquitetura",
+    "architectureValue": "Microsserviços/Monolitos Modulares, DDD, Clean Code, Clean Arch, Sistemas Event-Driven, REST/GraphQL/Federation, Kafka",
+    "infraLabel": "Infra & Ops",
+    "infraValue": "Kubernetes, Terraform, CI/CD, Observabilidade",
+    "aiLabel": "IA",
+    "aiValue": "Integrações com IA, OpenAI, Agentes",
+    "impactTitle": "Impacto Selecionado",
+    "impact": [
+      "Migrei workflows financeiros legados para infraestrutura cloud-native em ambiente bancário regulado.",
+      "Projetei e escalei sistemas event-driven atendendo produtos multi-mercado.",
+      "Implementei frameworks de observabilidade viabilizando decisões operacionais baseadas em dados.",
+      "Construí arquitetura de produto integrada com IA do conceito à produção."
+    ],
+    "icon": "Resumo"
+  },
+  "Experience": {
+    "title": "Experiência",
+    "roles": [
+      {
+        "company": "Plataforma de Fitness Pessoal",
+        "period": "Ago/2025 – Presente",
+        "position": "Fundador & Engenheiro de Software",
+        "desc": [
+          "Arquitetei e construí uma plataforma mobile e backend orientada por IA focada em fitness e bem-estar personalizados.",
+          "Liderei desenvolvimento de produto ponta a ponta: pesquisa de mercado, design de sistemas, arquitetura backend, integração com IA e automação DevOps.",
+          "Projetei backend escalável utilizando Clean Architecture e padrões event-driven.",
+          "Implementei pipelines CI/CD, infraestrutura como código (Terraform), orquestração de containers (Kubernetes) e stack completa de observabilidade (New Relic, Sentry).",
+          "Desenvolvi workflows de coaching orientados por IA usando OpenAI e padrões de agentes."
+        ],
+        "tech": "React Native (Expo), React, Node.js, TypeScript, GraphQL (Apollo Federation), BullMQ, Redis, Kafka, Kubernetes, Docker, Terraform, PostgreSQL, New Relic, Sentry, OpenAI"
+      },
+      {
+        "company": "Ageras (Kontist)",
+        "period": "Jul/2024 – Jun/2025",
+        "position": "Engenheiro de Software Sênior",
+        "desc": [
+          "Construí e mantive funcionalidades core para produtos de faturamento e bancários servindo pequenas empresas na Europa.",
+          "Implementei decisões técnicas a nível de empresa, ajudando a padronizar práticas de engenharia e melhorar a manutenibilidade a longo prazo.",
+          "Liderei iniciativas para melhorar observabilidade e monitoramento, viabilizando decisões de produto e operacionais baseadas em dados."
+        ],
+        "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS, Terraform, Docker, PostgreSQL, Datadog, Sentry"
+      },
+      {
+        "company": "Klarna",
+        "period": "Mar/2022 – Jun/2024",
+        "position": "Engenheiro de Software",
+        "desc": [
+          "Desenvolvi e evoluí a plataforma de email transacional e campanhas de marketing da Klarna, suportando comunicação de alto volume e multi-mercado.",
+          "Implementei um novo modelo de decision-engine de marketing permitindo entrega de conteúdo personalizado usando machine-learning + busca vetorial + recomendações IA."
+        ],
+        "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Datadog, OpsGenie"
+      },
+      {
+        "company": "MercadoLivre",
+        "period": "Out/2020 – Fev/2022",
+        "position": "Engenheiro de Software Sênior",
+        "desc": [
+          "Projetei e implementei microsserviços e micro-frontends para suportar conformidade fiscal e experiência do usuário na América Latina.",
+          "Liderei desenvolvimento de sistemas back-office para gestão de isenção fiscal e processamento de reembolsos."
+        ],
+        "tech": "Java, React, Node.js, TypeScript, Express, Sass, Datadog, New Relic"
+      },
+      {
+        "company": "Itaú Unibanco",
+        "period": "Jun/2020 – Out/2020",
+        "position": "Engenheiro de Software",
+        "desc": [
+          "Migrei funcionalidades críticas de mainframe legado para soluções modernas baseadas em nuvem e containerizadas.",
+          "Desenvolvi portais internos e máquinas de estado de workflow para operações de cheque especial e financeiras."
+        ],
+        "tech": "Java, Spring State Machine, AngularJS, Kafka, Cassandra, AWS, OpenShift, Grafana"
+      },
+      {
+        "company": "PagSeguro PagBank",
+        "period": "Nov/2019 – Jun/2020",
+        "position": "Desenvolvedor de Sistemas",
+        "desc": [
+          "Construí ferramentas internas para reduzir tempo de resposta a incidentes e melhorar troubleshooting para equipes de suporte.",
+          "Implementei pipelines CI/CD e serviços containerizados respeitando requisitos rigorosos de segurança e conformidade."
+        ],
+        "tech": "Node.js, Java, Docker, Jenkins, Mesos/Marathon, Splunk, New Relic"
+      },
+      {
+        "company": "Five Validation",
+        "period": "Mar/2017 – Nov/2019",
+        "position": "Desenvolvedor Full Stack de Sistemas",
+        "desc": [
+          "Projetei e entreguei soluções de software para validação de sistemas computacionais, reduzindo overhead operacional e esforço manual.",
+          "Escalei práticas técnicas garantindo qualidade de código, padrões de documentação e processos de release controlados."
+        ],
+        "tech": "Java, PostgreSQL, React, AWS CodeBuild, S3, CloudFront, RDS, Route53, Jenkins, SonarQube"
+      }
+    ],
+    "icon": "Experiência"
+  },
+  "Education": {
+    "title": "Educação & Cursos",
+    "edu": [
+      {
+        "degree": "Tecnólogo em Análise e Desenvolvimento de Sistemas",
+        "institution": "FATEC José Crespo Gonzales"
+      },
+      {
+        "degree": "Técnico em Informática",
+        "institution": "ETEC Fernando Prestes"
+      }
+    ],
+    "coursesTitle": "Cursos",
+    "courses": [
+      { "name": "Architecting on AWS", "provider": "Amazon Web Services" },
+      { "name": "Systems Operations on AWS", "provider": "Amazon Web Services" }
+    ],
+    "languagesTitle": "Idiomas",
+    "languages": [
+      { "name": "🇧🇷 Português", "level": "Nativo" },
+      { "name": "🇬🇧 Inglês", "level": "Fluente" },
+      { "name": "🇪🇸 Espanhol", "level": "Proficiência Profissional" },
+      { "name": "🇮🇹 Italiano", "level": "Elementar" }
+    ],
+    "workPermitsTitle": "Permissões de Trabalho",
+    "permits": ["🇪🇺 UE", "Brasil"],
+    "icon": "Educação"
+  },
+  "Me": {
+    "title": "Sobre Mim",
+    "placeholder": "Em breve — hobbies, interesses e mais.",
+    "icon": "Sobre Mim"
   }
 }
