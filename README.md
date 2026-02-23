@@ -1,8 +1,6 @@
 # [danieltostes.com](https://danieltostes.com)
 
-[![CI](https://img.shields.io/github/actions/workflow/status/danieltostes/danieltostes.com/ci.yml?branch=main)](https://github.com/danieltostes/danieltostes.com/actions/workflows/ci.yml)
-
-[![Website](https://img.shields.io/website?url=https%3A%2F%2Fdanieltostes.com)](https://danieltostes.com)
+[![CI](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml?query=branch%3Amain) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fdanieltostes.com)](https://danieltostes.com)
 
 ![Open Graph image](public/og-image.png)
 
@@ -232,5 +230,6 @@ The content and branding remain the intellectual property of Daniel Munafó Tost
 
 If reviewing this repository as part of a hiring process:
 
+CV: Available on the live site
 LinkedIn: [Daniel Tostes](https://www.linkedin.com/in/dantostes/)
 Email: dann.tostes@gmail.com
