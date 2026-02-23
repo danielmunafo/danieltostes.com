@@ -25,9 +25,6 @@ export const META_OG_TAGLINE =
 
 export const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/dantostes/";
 
-/** Site publish date (ISO 8601) for Open Graph and crawlers. */
-export const META_PUBLISHED_TIME = "2025-02-23T00:00:00.000Z";
-
 /** MUI light theme primary. */
 export const THEME_COLOR_PRIMARY = "#1976d2";
 /** MUI light theme default background. */

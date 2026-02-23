@@ -4,7 +4,6 @@ import { Roboto } from "next/font/google";
 import {
   LINKEDIN_PROFILE_URL,
   META_DESCRIPTION,
-  META_PUBLISHED_TIME,
   META_TITLE,
   SITE_AUTHOR_DISPLAY_NAME,
   SITE_NAME,
@@ -31,7 +30,7 @@ export const metadata: Metadata = {
   authors: [{ name: SITE_AUTHOR_DISPLAY_NAME, url: LINKEDIN_PROFILE_URL }],
   icons: { icon: "/logo.svg" },
   openGraph: {
-    type: "article",
+    type: "website",
     title: META_TITLE,
     description: META_DESCRIPTION,
     url: SITE_URL,
@@ -46,7 +45,6 @@ export const metadata: Metadata = {
       },
     ],
     locale: "en_US",
-    publishedTime: META_PUBLISHED_TIME,
   },
   twitter: {
     card: "summary_large_image",
