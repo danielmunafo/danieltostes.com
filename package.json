@@ -22,10 +22,13 @@
     "@mui/icons-material": "^7.3.8",
     "@mui/material": "^7.3.8",
     "@mui/material-nextjs": "^7.3.8",
+    "mermaid": "^11.12.3",
     "next": "16.1.6",
     "next-intl": "^4.8.3",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

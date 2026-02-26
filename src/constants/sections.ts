@@ -4,6 +4,7 @@ import type { ThemeMode } from "./site";
 
 export const SECTION_IDS = [
   "summary",
+  "impact",
   "experience",
   "education",
   "me",
@@ -14,14 +15,16 @@ export type SectionId = (typeof SECTION_IDS)[number];
 export const SECTION_COLORS = {
   dark: {
     summary: "#0D1B2A",
+    impact: "#1A3D3D",
     experience: "#1B4332",
-    education: "#4A1942",
+    education: "#2E1B4E",
     me: "#6B2737",
   },
   light: {
     summary: "#C9D6E3",
+    impact: "#C5E3DF",
     experience: "#C9E3D4",
-    education: "#D9C9E3",
+    education: "#E8DCF5",
     me: "#E3C9D1",
   },
 } as const satisfies Record<ThemeMode, Record<SectionId, string>>;
@@ -30,16 +33,18 @@ export const SECTION_COLORS = {
 export const SECTION_BG_GRADIENTS = {
   dark: {
     summary: "linear-gradient(135deg, #1a3a5c 0%, #0a1929 50%, #1a2a3c 100%)",
+    impact: "linear-gradient(135deg, #2a5a5a 0%, #0a2e2e 50%, #1a3a3a 100%)",
     experience:
       "linear-gradient(135deg, #2d5a3f 0%, #0a2e1a 50%, #1a3a2a 100%)",
-    education: "linear-gradient(135deg, #6b2fa0 0%, #2a0e40 50%, #4a1a60 100%)",
+    education: "linear-gradient(135deg, #5b3d8a 0%, #2E1B4E 50%, #3d2862 100%)",
     me: "linear-gradient(135deg, #8b3a4a 0%, #3a0e1a 50%, #5a2030 100%)",
   },
   light: {
     summary: "linear-gradient(135deg, #dae5f0 0%, #c0d0e0 50%, #d0dce8 100%)",
+    impact: "linear-gradient(135deg, #d5f0ed 0%, #c0e0dc 50%, #d0e8e5 100%)",
     experience:
       "linear-gradient(135deg, #daf0e5 0%, #c0e0d0 50%, #d0e8dc 100%)",
-    education: "linear-gradient(135deg, #e5daf0 0%, #d0c0e0 50%, #dcd0e8 100%)",
+    education: "linear-gradient(135deg, #e8daf5 0%, #d8c8e8 50%, #e2d4f0 100%)",
     me: "linear-gradient(135deg, #f0dade 0%, #e0c0c8 50%, #e8d0d4 100%)",
   },
 } as const satisfies Record<ThemeMode, Record<SectionId, string>>;
@@ -100,13 +105,19 @@ export const CHIP_BG = {
  * Returns "left" or "right" for an item at the given index within a section.
  * Even-indexed sections start left, odd-indexed sections start right;
  * items within a section alternate from there.
+ * Experience starts with the icon on the right; education starts with the icon on the left.
  */
 export function getItemSide(
   sectionId: SectionId,
   itemIndex: number
 ): "left" | "right" {
   const sectionIdx = SECTION_IDS.indexOf(sectionId);
-  const baseIsLeft = sectionIdx % 2 === 0;
+  const baseIsLeft =
+    sectionId === "experience"
+      ? false
+      : sectionId === "education"
+        ? true
+        : sectionIdx % 2 === 0;
   const flipForItem = itemIndex % 2 !== 0;
   const isLeft = baseIsLeft !== flipForItem;
   return isLeft ? "left" : "right";
@@ -123,6 +134,14 @@ export const EXPERIENCE_ROLE_ICONS: readonly { src: string; scale?: number }[] =
     { src: "/pagseguro.svg" },
     { src: "/five.png", scale: 0.8 },
   ];
+
+/** Icon config for each impact item, in the same order as Summary.impact in i18n. */
+export const IMPACT_ICONS: readonly { src: string; scale?: number }[] = [
+  { src: "/content/impact/0/image.svg", scale: 0.99 },
+  { src: "/file.svg" },
+  { src: "/window.svg" },
+  { src: "/logo.svg", scale: 0.9 },
+];
 
 export const SUMMARY_SKILLS = [
   { labelKey: "coreLabel", valueKey: "coreValue" },

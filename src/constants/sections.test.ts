@@ -48,16 +48,17 @@ describe("getItemSide", () => {
   });
 
   it("odd-indexed sections start right", () => {
-    expect(getItemSide("experience", 0)).toBe("right");
-    expect(getItemSide("experience", 1)).toBe("left");
+    expect(getItemSide("impact", 0)).toBe("right");
+    expect(getItemSide("impact", 1)).toBe("left");
   });
 
   it("covers all sections at item 0", () => {
     const expected: Record<SectionId, "left" | "right"> = {
       summary: "left",
+      impact: "right",
       experience: "right",
       education: "left",
-      me: "right",
+      me: "left",
     };
     for (const id of SECTION_IDS) {
       expect(getItemSide(id, 0)).toBe(expected[id]);

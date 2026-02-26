@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
-import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 import { useTheme } from "@mui/material/styles";
 import { SITE_NAME } from "@/constants/site";
@@ -34,6 +33,18 @@ export function SummarySection() {
         </Typography>
 
         <Box>
+          <Box sx={{ mb: 1.5 }}>
+            <Typography
+              variant="subtitle1"
+              component="span"
+              sx={{ fontWeight: 600, mr: 1 }}
+            >
+              {t("experienceLabel")}:
+            </Typography>
+            <Typography component="span" variant="body1">
+              {t("experienceValue")}
+            </Typography>
+          </Box>
           {SUMMARY_SKILLS.map(({ labelKey, valueKey }) => (
             <Box key={labelKey} sx={{ mb: 1.5 }}>
               <Typography
@@ -59,22 +70,6 @@ export function SummarySection() {
                   ))}
               </Box>
             </Box>
-          ))}
-        </Box>
-      </SectionItem>
-
-      <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
-
-      <SectionItem sectionId={SECTION_ID} side={getItemSide(SECTION_ID, 1)}>
-        <Typography variant="h3" gutterBottom>
-          {t("impactTitle")}
-        </Typography>
-
-        <Box component="ul" sx={{ pl: 2 }}>
-          {(t.raw("impact") as string[]).map((text, i) => (
-            <Typography key={i} component="li" variant="body1" sx={{ mb: 1 }}>
-              {text}
-            </Typography>
           ))}
         </Box>
       </SectionItem>

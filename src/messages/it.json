@@ -9,7 +9,9 @@
   },
   "Summary": {
     "title": "Riepilogo",
-    "description": "Ingegnere Software Senior specializzato nella stabilizzazione e scalabilità di piattaforme cloud-native. Oltre 9 anni di esperienza nella consegna di sistemi di produzione in ambienti fintech e ad alto traffico. Forte padronanza di architettura, infrastruttura, osservabilità e integrazioni con IA. Esperienza nel migliorare l'affidabilità, ridurre il rischio operativo e accelerare le consegne in team distribuiti.",
+    "experienceLabel": "Esperienza",
+    "experienceValue": "9+ anni",
+    "description": "Ingegnere Software Senior specializzato nella stabilizzazione e scalabilità di piattaforme cloud-native. Consegna di sistemi di produzione in ambienti fintech e ad alto traffico. Forte padronanza di architettura, infrastruttura, osservabilità e integrazioni con IA. Esperienza nel migliorare l'affidabilità, ridurre il rischio operativo e accelerare le consegne in team distribuiti.",
     "coreLabel": "Principale",
     "coreValue": "TypeScript, Node.js, React, Java, AWS",
     "architectureLabel": "Architettura",
@@ -17,14 +19,75 @@
     "infraLabel": "Infra & Ops",
     "infraValue": "Kubernetes, Terraform, CI/CD, Osservabilità",
     "aiLabel": "IA",
-    "aiValue": "Integrazioni con IA, OpenAI, Agenti",
+    "aiValue": "Cursor, Co-pilot, OpenAI, Agenti",
     "impactTitle": "Impatto Selezionato",
+    "impactAnonymizeNote": "Tutti gli elementi seguenti e i relativi dettagli riflettono iniziative reali; cifre, nomi e tempistiche specifiche sono stati anonimizzati per conformità agli NDA.",
     "impact": [
-      "Ho migrato workflow finanziari legacy a infrastruttura cloud-native in ambiente bancario regolamentato.",
-      "Ho progettato e scalato sistemi event-driven servendo prodotti multi-mercato.",
-      "Ho implementato framework di osservabilità abilitando decisioni operative basate sui dati.",
-      "Ho costruito architettura di prodotto integrata con IA dal concetto alla produzione."
+      {
+        "title": "Consegnato Nuovo Workflow Finanziario Cloud-Native in Ambiente Bancario Regolamentato",
+        "dialogTitle": "Assunzione Scoperto Mobile - Orchestratore SAGA Distribuito",
+        "description": "Ho progettato e implementato un workflow finanziario di missione critica come microservizi scalabili e event-driven in un sistema bancario regolamentato.\n\nLanciato con zero downtime, abilitando alta concorrenza, forte tracciabilità e resilienza di livello produzione sotto carico finanziario di picco.",
+        "chips": [
+          "Complessità: Alta",
+          "Concorrenza: Alta",
+          "Vincolo Temporale: Estremo",
+          "Contesto Compliance: Sì",
+          "Pattern Architetturale: SAGA"
+        ]
+      },
+      {
+        "title": "Sistemi Event-Driven per Prodotti Multi-mercato",
+        "dialogTitle": "Sistemi Event-Driven per Prodotti Multi-mercato",
+        "description": "Ho progettato e scalato architetture event-driven servendo prodotti multi-mercato ad alto volume. Definiti contratti di eventi, confini chiari tra servizi e visibilità operativa per piattaforme transazionali e di marketing.\n\nAbilitata consegna di contenuti personalizzati tramite modelli di decision engine, conformità fiscale e UX coerente tra mercati.",
+        "chips": [
+          "Architettura: Event-Driven",
+          "Scala: Multi-mercato",
+          "Alto Volume",
+          "Contratti di Eventi",
+          "Decision Engine"
+        ]
+      },
+      {
+        "title": "Framework di Osservabilità per Operazioni Basate sui Dati",
+        "dialogTitle": "Framework di Osservabilità per Operazioni Basate sui Dati",
+        "description": "Ho implementato framework di osservabilità (metriche, tracing, logging, alerting) che hanno abilitato decisioni operative e di prodotto basate sui dati. Definiti SLO, dashboard e pratiche di on-call.\n\nRidotto il tempo di risposta agli incidenti con migliore tooling e documentazione.",
+        "chips": [
+          "Metriche",
+          "Tracing",
+          "SLO",
+          "Alerting",
+          "Ops Basate sui Dati"
+        ]
+      },
+      {
+        "title": "Architettura di Prodotto Integrata con IA",
+        "dialogTitle": "Architettura di Prodotto Integrata con IA",
+        "description": "Ho costruito architettura di prodotto integrata con IA dal concetto alla produzione: flussi di coaching con IA, pattern di agenti e raccomandazioni personalizzate. Progettati backend scalabili e integrazione con provider come OpenAI.\n\nGarantita osservabilità e rollout sicuro delle funzionalità IA.",
+        "chips": [
+          "Integrazione IA",
+          "OpenAI",
+          "Agenti",
+          "Osservabilità",
+          "Produzione"
+        ]
+      }
     ],
+    "impactDetails": [
+      {
+        "body": "In Itaú Unibanco ho guidato la migrazione di workflow critici da mainframe legacy a soluzioni cloud e containerizzate. Questo ha comportato la definizione dell'architettura target, il coordinamento con sicurezza e compliance, e la consegna di portali interni e state machine per operazioni di scoperto e finanziarie. Il lavoro ha ridotto il rischio operativo e gettato le basi per iniziative cloud-native in un ambiente regolamentato.",
+        "bodyPath": "impact/0"
+      },
+      {
+        "body": "In Klarna e MercadoLivre ho progettato e scalato sistemi event-driven che hanno servito prodotti multi-mercato. Ha incluso l'evoluzione di piattaforme transazionali e di marketing, l'implementazione di modelli di decision engine per contenuti personalizzati, e la costruzione di microservizi e micro-frontend per conformità fiscale e UX tra regioni. Focus su confini chiari, contratti di eventi e visibilità operativa."
+      },
+      {
+        "body": "In diversi ruoli ho implementato framework di osservabilità (metriche, tracing, logging, alerting) che hanno abilitato decisioni operative e di prodotto basate sui dati. Ha incluso la definizione di SLO, dashboard e pratiche di on-call, e la riduzione del tempo di risposta agli incidenti con migliore tooling e documentazione. L'obiettivo è stato sempre rendere il comportamento del sistema comprensibile e azionabile per il team."
+      },
+      {
+        "body": "Dal concetto alla produzione ho costruito architettura di prodotto integrata con IA: flussi di coaching con IA, pattern di agenti e raccomandazioni personalizzate. Ha comportato la progettazione di backend scalabili, l'integrazione con provider come OpenAI, e la garanzia di osservabilità e rollout sicuro. Focus sul mantenere le funzionalità IA manutenibili e allineate agli standard di prodotto e ingegneria."
+      }
+    ],
+    "impactDetailClose": "Chiudi",
     "icon": "Riepilogo"
   },
   "Experience": {
