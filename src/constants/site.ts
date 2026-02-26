@@ -24,6 +24,8 @@ export const META_OG_TAGLINE =
   "Scalable systems • Static-first architecture • Cloud-native engineering";
 
 export const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/dantostes/";
+export const GITHUB_PROFILE_URL = "https://github.com/danielmunafo";
+export const CONTACT_EMAIL = "dann.tostes@gmail.com";
 
 /** MUI light theme primary. */
 export const THEME_COLOR_PRIMARY = "#1976d2";

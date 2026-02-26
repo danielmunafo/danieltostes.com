@@ -11,6 +11,22 @@ describe("MeSection", () => {
 
   it("renders the placeholder text", () => {
     renderWithProviders(<MeSection />);
-    expect(screen.getByText(/Coming soon/)).toBeInTheDocument();
+    expect(screen.getByText(/Get in touch/)).toBeInTheDocument();
+  });
+
+  it("renders contact links", () => {
+    renderWithProviders(<MeSection />);
+    expect(screen.getByRole("link", { name: "LinkedIn" })).toHaveAttribute(
+      "href",
+      "https://www.linkedin.com/in/dantostes/"
+    );
+    expect(screen.getByRole("link", { name: "GitHub" })).toHaveAttribute(
+      "href",
+      "https://github.com/danielmunafo"
+    );
+    expect(screen.getByRole("link", { name: "Email" })).toHaveAttribute(
+      "href",
+      "mailto:dann.tostes@gmail.com"
+    );
   });
 });
