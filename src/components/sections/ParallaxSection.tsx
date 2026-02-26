@@ -17,6 +17,8 @@ interface ParallaxSectionProps {
   sectionId: SectionId;
   /** Skip the 100vh minimum so the section only takes its natural height. */
   compact?: boolean;
+  /** When true, adds top margin so the first section is spaced from the top; avoids double gap between sections. */
+  isFirst?: boolean;
   children: React.ReactNode;
 }
 
@@ -27,6 +29,7 @@ interface ParallaxSectionProps {
 export function ParallaxSection({
   sectionId,
   compact,
+  isFirst = false,
   children,
 }: ParallaxSectionProps) {
   const theme = useTheme();
@@ -40,6 +43,7 @@ export function ParallaxSection({
       sx={compact ? { minHeight: "auto" } : undefined}
     >
       <ContentColumn
+        isFirst={isFirst}
         sx={{
           backgroundColor: glassColor,
           backdropFilter: `blur(${GLASS_BLUR}px)`,
@@ -67,16 +71,18 @@ const SectionWrapper = styled(Box)({
   zIndex: 1,
 });
 
-const ContentColumn = styled(Box)(({ theme }) => ({
+const ContentColumn = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "isFirst",
+})<{ isFirst?: boolean }>(({ theme, isFirst }) => ({
   position: "relative",
   padding: theme.spacing(6, 4),
-  marginTop: theme.spacing(8),
+  marginTop: isFirst ? theme.spacing(8) : 0,
   marginBottom: theme.spacing(8),
   borderRadius: theme.shape.borderRadius,
   overflow: "visible",
   [theme.breakpoints.down("md")]: {
     padding: theme.spacing(3, 2),
-    marginTop: theme.spacing(4),
+    marginTop: isFirst ? theme.spacing(4) : 0,
     marginBottom: theme.spacing(4),
   },
 }));
