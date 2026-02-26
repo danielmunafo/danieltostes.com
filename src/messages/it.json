@@ -137,7 +137,10 @@
   },
   "Me": {
     "title": "Su di Me",
-    "placeholder": "In arrivo — hobby, interessi e altro.",
+    "placeholder": "Contattami tramite i link qui sotto.",
+    "linkedinLabel": "LinkedIn",
+    "githubLabel": "GitHub",
+    "emailLabel": "Email",
     "icon": "Su di Me"
   }
 }

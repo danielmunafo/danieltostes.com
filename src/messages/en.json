@@ -137,7 +137,10 @@
   },
   "Me": {
     "title": "About Me",
-    "placeholder": "Coming soon — hobbies, interests, and more.",
+    "placeholder": "Get in touch via the links below.",
+    "linkedinLabel": "LinkedIn",
+    "githubLabel": "GitHub",
+    "emailLabel": "Email",
     "icon": "About Me"
   }
 }
