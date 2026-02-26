@@ -34,11 +34,25 @@ export function MeSection() {
         <Typography variant="body1" sx={{ opacity: 0.7 }}>
           {t("placeholder")}
         </Typography>
-        <Stack direction="row" spacing={2} sx={{ mt: 1.5 }} flexWrap="wrap" useFlexGap>
-          <Link href={LINKEDIN_PROFILE_URL} target="_blank" rel="noopener noreferrer">
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{ mt: 1.5 }}
+          flexWrap="wrap"
+          useFlexGap
+        >
+          <Link
+            href={LINKEDIN_PROFILE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {t("linkedinLabel")}
           </Link>
-          <Link href={GITHUB_PROFILE_URL} target="_blank" rel="noopener noreferrer">
+          <Link
+            href={GITHUB_PROFILE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {t("githubLabel")}
           </Link>
           <Link href={`mailto:${CONTACT_EMAIL}`}>{t("emailLabel")}</Link>
