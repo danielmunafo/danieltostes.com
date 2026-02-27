@@ -53,6 +53,9 @@ export function ImpactSection() {
       .then((text) => {
         if (text != null)
           setFetchedBodies((prev) => ({ ...prev, [key]: text }));
+      })
+      .catch(() => {
+        // Silently ignore prefetch errors to avoid unhandled promise rejections
       });
   };
 

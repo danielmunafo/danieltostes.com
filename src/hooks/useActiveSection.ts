@@ -27,7 +27,8 @@ function getActiveSectionState(): ActiveSectionState {
     if (rect.top <= viewportCenterY && rect.bottom >= viewportCenterY) {
       activeSection = id;
       previousSection = i > 0 ? SECTION_IDS[i - 1] : null;
-      const progressIntoSection = (viewportCenterY - rect.top) / rect.height;
+      const safeHeight = Math.max(1, rect.height);
+      const progressIntoSection = (viewportCenterY - rect.top) / safeHeight;
       const blendProgress = Math.min(
         1,
         progressIntoSection / BLEND_ZONE_FRACTION
