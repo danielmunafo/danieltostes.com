@@ -76,11 +76,11 @@
           "Projetei e entreguei uma plataforma de automação de garantias orientada a IA, substituindo fluxos manuais de suporte por um motor de decisão escalável baseado em JSON integrado a modelos de avaliação por imagem.",
           "Implementei processamento assíncrono com retries limitados e salvaguardas de escalonamento, integrei atualizações de casos no Salesforce e automações de chatbot e permiti evolução dinâmica de regras de negócio sem impactar produção."
         ],
-        "tech": "TypeScript, Node.js, GraphQL, BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture"
+        "tech": "TypeScript, Node.js, GraphQL (Apollo Federation), BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture"
       },
       {
         "company": "Plataforma de Fitness Pessoal",
-        "period": "Ago/2025 - Presente",
+        "period": "Jul/2025 - Presente",
         "position": "Fundador & Engenheiro de Software",
         "desc": [
           "Fundando e construindo uma plataforma de fitness nativa em IA que entrega treinos e fluxos de bem-estar personalizados em sistemas mobile e backend.",
@@ -89,7 +89,7 @@
           "Implementei automação de infraestrutura, CI/CD, orquestração de containers e observabilidade full-stack para confiabilidade em nível de produção.",
           "Projetando fluxos de coaching com IA baseados em agentes integrando LLMs para orientação adaptativa e contextual ao usuário."
         ],
-        "tech": "React Native (Expo), React, Node.js, TypeScript, GraphQL (Apollo Federation), BullMQ, Redis, Kafka, Kubernetes, Docker, Terraform, PostgreSQL, New Relic, Sentry, OpenAI"
+        "tech": "React Native (Expo), React, Node.js, TypeScript, New Relic, Sentry, OpenAI"
       },
       {
         "company": "Ageras (Kontist)",

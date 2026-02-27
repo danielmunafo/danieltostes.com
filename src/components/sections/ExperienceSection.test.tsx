@@ -29,6 +29,6 @@ describe("ExperienceSection", () => {
   it("renders tech chips for roles", () => {
     renderWithProviders(<ExperienceSection />);
     expect(screen.getAllByText("Node.js").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Kubernetes").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("React").length).toBeGreaterThan(0);
   });
 });
