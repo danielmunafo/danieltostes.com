@@ -69,21 +69,31 @@
     "title": "Experiencia",
     "roles": [
       {
+        "company": "Cliente Confidencial (Contrato)",
+        "period": "Ago/2025 - Dic/2025",
+        "position": "Ingeniero de Software Senior",
+        "desc": [
+          "Diseñé y entregué una plataforma de automatización de reclamaciones de garantía impulsada por IA, sustituyendo flujos manuales de soporte por un motor de decisión escalable basado en JSON integrado con modelos de evaluación por imagen.",
+          "Implementé procesamiento asíncrono con reintentos acotados y salvaguardas de escalado, integré actualizaciones de casos en Salesforce y automatizaciones de chatbot, y permití la evolución dinámica de reglas de negocio sin afectar producción."
+        ],
+        "tech": "TypeScript, Node.js, GraphQL, BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture"
+      },
+      {
         "company": "Plataforma de Fitness Personal",
-        "period": "Ago/2025 – Presente",
+        "period": "Ago/2025 - Presente",
         "position": "Fundador & Ingeniero de Software",
         "desc": [
-          "Arquitectando y construyendo una plataforma móvil y backend impulsada por IA enfocada en fitness y bienestar personalizados.",
-          "Liderando desarrollo de producto de extremo a extremo: investigación de mercado, diseño de sistemas, arquitectura backend, integración con IA y automatización DevOps.",
-          "Diseñé backend escalable utilizando Clean Architecture y patrones event-driven.",
-          "Implementé pipelines CI/CD, infraestructura como código (Terraform), orquestación de contenedores (Kubernetes) y stack completo de observabilidad (New Relic, Sentry).",
-          "Desarrollando flujos de coaching con IA usando OpenAI y patrones de agentes."
+          "Fundando y construyendo una plataforma de fitness nativa en IA que ofrece entrenamientos y flujos de bienestar personalizados en sistemas móvil y backend.",
+          "Liderando la ejecución de producto de extremo a extremo: validación de mercado, modelado de dominio, arquitectura backend distribuida y sistemas de coaching impulsados por IA.",
+          "Arquitectura de backend escalable y orientado a eventos con Clean Architecture y fronteras modulares de servicio.",
+          "Implementé automatización de infraestructura, CI/CD, orquestación de contenedores y observabilidad full-stack para fiabilidad de nivel producción.",
+          "Diseñando flujos de coaching con IA basados en agentes que integran LLMs para guía adaptativa y contextual al usuario."
         ],
         "tech": "React Native (Expo), React, Node.js, TypeScript, GraphQL (Apollo Federation), BullMQ, Redis, Kafka, Kubernetes, Docker, Terraform, PostgreSQL, New Relic, Sentry, OpenAI"
       },
       {
         "company": "Ageras (Kontist)",
-        "period": "Jul/2024 – Jun/2025",
+        "period": "Jul/2024 - Jun/2025",
         "position": "Ingeniero de Software Senior",
         "desc": [
           "Construí y mantuve funcionalidades core para productos de facturación y banca sirviendo a pequeñas empresas en Europa.",
@@ -94,7 +104,7 @@
       },
       {
         "company": "Klarna",
-        "period": "Mar/2022 – Jun/2024",
+        "period": "Mar/2022 - Jun/2024",
         "position": "Ingeniero de Software",
         "desc": [
           "Desarrollé y evolucioné la plataforma de email transaccional y campañas de marketing de Klarna, soportando comunicación de alto volumen y multi-mercado.",
@@ -104,7 +114,7 @@
       },
       {
         "company": "MercadoLivre",
-        "period": "Oct/2020 – Feb/2022",
+        "period": "Oct/2020 - Feb/2022",
         "position": "Ingeniero de Software Senior",
         "desc": [
           "Diseñé e implementé microservicios y micro-frontends para cumplimiento fiscal y experiencia de usuario en América Latina.",
@@ -114,7 +124,7 @@
       },
       {
         "company": "Itaú Unibanco",
-        "period": "Jun/2020 – Oct/2020",
+        "period": "Jun/2020 - Oct/2020",
         "position": "Ingeniero de Software",
         "desc": [
           "Migré funcionalidades críticas de mainframe legado a soluciones modernas en la nube y containerizadas.",
@@ -124,7 +134,7 @@
       },
       {
         "company": "PagSeguro PagBank",
-        "period": "Nov/2019 – Jun/2020",
+        "period": "Nov/2019 - Jun/2020",
         "position": "Desarrollador de Sistemas",
         "desc": [
           "Construí herramientas internas para reducir tiempo de respuesta a incidentes y mejorar troubleshooting para equipos de soporte.",
@@ -134,7 +144,7 @@
       },
       {
         "company": "Five Validation",
-        "period": "Mar/2017 – Nov/2019",
+        "period": "Mar/2017 - Nov/2019",
         "position": "Desarrollador Full Stack de Sistemas",
         "desc": [
           "Diseñé y entregué soluciones de software para validación de sistemas informáticos, reduciendo sobrecarga operacional y esfuerzo manual.",

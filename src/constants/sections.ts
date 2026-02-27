@@ -126,6 +126,7 @@ export function getItemSide(
 /** Icon config for each experience role, in the same order as the i18n roles array. */
 export const EXPERIENCE_ROLE_ICONS: readonly { src: string; scale?: number }[] =
   [
+    { src: "/confidential.svg" },
     { src: "/potenzo.svg" },
     { src: "/ageras.svg" },
     { src: "/klarna.svg", scale: 1.05 },

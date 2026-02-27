@@ -75,21 +75,31 @@
     "title": "Experience",
     "roles": [
       {
+        "company": "Confidential Client (Contract)",
+        "period": "Aug/2025 - Dec/2025",
+        "position": "Senior Software Engineer",
+        "desc": [
+          "Designed and delivered an AI-driven warranty claim automation platform, replacing manual support workflows with a scalable JSON-based decision engine integrated with image evaluation models.",
+          "Implemented asynchronous processing with bounded retries and escalation safeguards, integrated Salesforce case management updates and chatbot automations, and enabled dynamic business rule evolution without disrupting production."
+        ],
+        "tech": "TypeScript, Node.js, GraphQL, BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture"
+      },
+      {
         "company": "Personal Fitness Platform",
-        "period": "Aug/2025 – Present",
+        "period": "Aug/2025 - Present",
         "position": "Founder & Software Engineer",
         "desc": [
-          "Architecting and building an AI-driven mobile and backend platform focused on personalized fitness and wellbeing.",
-          "Leading end-to-end product development: market research, system design, backend architecture, AI integration, and DevOps automation.",
-          "Designed scalable backend using Clean Architecture and event-driven patterns.",
-          "Implemented CI/CD pipelines, infrastructure as code (Terraform), container orchestration (Kubernetes), and full observability stack (New Relic, Sentry).",
-          "Developing AI-driven coaching workflows using OpenAI and agent patterns."
+          "Founding and building an AI-native fitness platform delivering personalized training and wellbeing workflows across mobile and backend systems.",
+          "Leading end-to-end product execution: market validation, domain modeling, distributed backend architecture, and AI-driven coaching systems.",
+          "Architected a scalable, event-driven backend using Clean Architecture and modular service boundaries.",
+          "Implemented infrastructure automation, CI/CD, container orchestration, and full-stack observability to support production-grade reliability.",
+          "Designing agent-based AI coaching workflows integrating LLMs for adaptive, context-aware user guidance."
         ],
         "tech": "React Native (Expo), React, Node.js, TypeScript, GraphQL (Apollo Federation), BullMQ, Redis, Kafka, Kubernetes, Docker, Terraform, PostgreSQL, New Relic, Sentry, OpenAI"
       },
       {
         "company": "Ageras (Kontist)",
-        "period": "Jul/2024 – Jun/2025",
+        "period": "Jul/2024 - Jun/2025",
         "position": "Senior Software Engineer",
         "desc": [
           "Built and maintained core functionality for invoicing and banking products serving small businesses across Europe.",
@@ -100,7 +110,7 @@
       },
       {
         "company": "Klarna",
-        "period": "Mar/2022 – Jun/2024",
+        "period": "Mar/2022 - Jun/2024",
         "position": "Software Engineer",
         "desc": [
           "Developed and evolved Klarna's transactional email and marketing campaign platform, supporting high-volume, multi-market communication.",
@@ -110,7 +120,7 @@
       },
       {
         "company": "MercadoLivre",
-        "period": "Oct/2020 – Feb/2022",
+        "period": "Oct/2020 - Feb/2022",
         "position": "Senior Software Engineer",
         "desc": [
           "Designed and implemented microservices and micro-frontends to support tax compliance and user experience across Latin America.",
@@ -120,7 +130,7 @@
       },
       {
         "company": "Itaú Unibanco",
-        "period": "Jun/2020 – Oct/2020",
+        "period": "Jun/2020 - Oct/2020",
         "position": "Software Engineer",
         "desc": [
           "Migrated critical legacy mainframe functionality to modern cloud-based and containerized solutions.",
@@ -130,7 +140,7 @@
       },
       {
         "company": "PagSeguro PagBank",
-        "period": "Nov/2019 – Jun/2020",
+        "period": "Nov/2019 - Jun/2020",
         "position": "Systems Developer",
         "desc": [
           "Built internal tools to reduce incident response time and improve troubleshooting for application support teams.",
@@ -140,7 +150,7 @@
       },
       {
         "company": "Five Validation",
-        "period": "Mar/2017 – Nov/2019",
+        "period": "Mar/2017 - Nov/2019",
         "position": "Full Stack Systems Developer",
         "desc": [
           "Designed and delivered software solutions for computer systems validation, reducing operational overhead and manual effort.",
