@@ -56,7 +56,7 @@ describe("getItemSide", () => {
     const expected: Record<SectionId, "left" | "right"> = {
       summary: "left",
       impact: "right",
-      experience: "right",
+      experience: "left",
       education: "left",
       me: "left",
     };
