@@ -105,7 +105,7 @@ export const CHIP_BG = {
  * Returns "left" or "right" for an item at the given index within a section.
  * Even-indexed sections start left, odd-indexed sections start right;
  * items within a section alternate from there.
- * Experience starts with the icon on the right; education starts with the icon on the left.
+ * Experience and education both start with the icon on the left.
  */
 export function getItemSide(
   sectionId: SectionId,
@@ -113,11 +113,9 @@ export function getItemSide(
 ): "left" | "right" {
   const sectionIdx = SECTION_IDS.indexOf(sectionId);
   const baseIsLeft =
-    sectionId === "experience"
-      ? false
-      : sectionId === "education"
-        ? true
-        : sectionIdx % 2 === 0;
+    sectionId === "experience" || sectionId === "education"
+      ? true
+      : sectionIdx % 2 === 0;
   const flipForItem = itemIndex % 2 !== 0;
   const isLeft = baseIsLeft !== flipForItem;
   return isLeft ? "left" : "right";
