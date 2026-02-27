@@ -23,12 +23,14 @@ describe("ExperienceSection", () => {
   it("renders role positions and periods", () => {
     renderWithProviders(<ExperienceSection />);
     expect(screen.getByText(/Founder & Software Engineer/)).toBeInTheDocument();
-    expect(screen.getAllByText(/Aug\/2025/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Jul\/2025|Aug\/2025/).length).toBeGreaterThan(
+      0
+    );
   });
 
   it("renders tech chips for roles", () => {
     renderWithProviders(<ExperienceSection />);
     expect(screen.getAllByText("Node.js").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Kubernetes").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("OpenAI").length).toBeGreaterThan(0);
   });
 });
