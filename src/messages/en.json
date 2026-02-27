@@ -82,11 +82,11 @@
           "Designed and delivered an AI-driven warranty claim automation platform, replacing manual support workflows with a scalable JSON-based decision engine integrated with image evaluation models.",
           "Implemented asynchronous processing with bounded retries and escalation safeguards, integrated Salesforce case management updates and chatbot automations, and enabled dynamic business rule evolution without disrupting production."
         ],
-        "tech": "TypeScript, Node.js, GraphQL, BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture"
+        "tech": "TypeScript, Node.js, GraphQL (Apollo Federation), BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture"
       },
       {
         "company": "Personal Fitness Platform",
-        "period": "Aug/2025 - Present",
+        "period": "Jul/2025 - Present",
         "position": "Founder & Software Engineer",
         "desc": [
           "Founding and building an AI-native fitness platform delivering personalized training and wellbeing workflows across mobile and backend systems.",
@@ -95,7 +95,7 @@
           "Implemented infrastructure automation, CI/CD, container orchestration, and full-stack observability to support production-grade reliability.",
           "Designing agent-based AI coaching workflows integrating LLMs for adaptive, context-aware user guidance."
         ],
-        "tech": "React Native (Expo), React, Node.js, TypeScript, GraphQL (Apollo Federation), BullMQ, Redis, Kafka, Kubernetes, Docker, Terraform, PostgreSQL, New Relic, Sentry, OpenAI"
+        "tech": "React Native (Expo), React, Node.js, TypeScript, New Relic, Sentry, OpenAI"
       },
       {
         "company": "Ageras (Kontist)",
