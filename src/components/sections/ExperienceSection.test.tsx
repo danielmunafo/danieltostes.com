@@ -23,7 +23,7 @@ describe("ExperienceSection", () => {
   it("renders role positions and periods", () => {
     renderWithProviders(<ExperienceSection />);
     expect(screen.getByText(/Founder & Software Engineer/)).toBeInTheDocument();
-    expect(screen.getByText(/Aug\/2025/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Aug\/2025/).length).toBeGreaterThan(0);
   });
 
   it("renders tech chips for roles", () => {
