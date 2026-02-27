@@ -1,229 +1,95 @@
 ### Resumo Executivo
 
-Projetei e entreguei um serviço de orquestração distribuído baseado em SAGA que permite aos clientes aderir ao cheque especial diretamente pelos canais móveis.
+Projetei e implementei um sistema de automação de garantias orientado a IA para uma marca de consumo, transformando um fluxo manual e pesado em suporte em um pipeline de decisão escalável e baseado em regras.
 
-A solução coordena múltiplos domínios de backend (autorização, risco, serviços de conta, notificação) garantindo consistência eventual, tolerância a falhas e alta concorrência em ambiente bancário regulado.
+Entreguei uma arquitetura resiliente e eficiente em custo, capaz de processar avaliações baseadas em imagens e aplicar regras de negócio dinâmicas sob restrições rígidas de confiabilidade.
 
-### Impacto no Negócio
+### Impacto e Resultados
 
-- Habilitou onboarding do produto cheque especial pelo canal mobile
-- Reduziu dependência operacional de agência/contratação manual
-- Aumentou adoção de produtos digitais
-- Reforçou rastreabilidade e visibilidade operacional
-- Contenção de falhas por estratégia de retry estruturado + DLQ
+- Redução da sobrecarga manual no processamento de garantias.
+- Aumento da cobertura de automação mantendo salvaguardas de escalonamento para suporte.
+- Estabelecimento de um framework de automação escalável e de baixo custo adaptável a regras de negócio em evolução.
 
-### Visão da Arquitetura
-
-O serviço de orquestração atua como motor de fluxo centralizado, coordenando serviços de domínio de forma assíncrona por fluxos de eventos e persistindo o estado da saga para recuperação e escalabilidade horizontal.
+### Diagrama de Arquitetura
 
 ```mermaid
 flowchart LR
-    subgraph Client Layer
-        Mobile[Mobile App]
+    Portal[Web Portal] -->|Submit or Update Claim| Processor[Warranty Claim Processing System]
+
+    subgraph Warranty Claim Processing System
+        Workers[Workers]
+        Rules[JSON Decision Engine]
     end
 
-    subgraph Edge Layer
-        API[API Gateway / BFF]
-    end
+    Processor --> Workers
+    Workers --> Rules
+    Rules --> Workers
 
-    subgraph Orchestration Layer
-        Orchestrator[SAGA Orchestrator<br/>State Machine Service]
-    end
+    Workers -->|Request Image Evaluation| AI[AI Image Evaluation Service]
+    AI -->|Labels and Scores| Workers
 
-    subgraph Domain Services
-        Auth[Authorization Service]
-        Risk[Risk Engine]
-        Account[Account Service]
-        Notification[Notification Service]
-    end
-
-    subgraph Event Backbone
-        Kafka[(Apache Kafka)]
-        DLQ[(Dead Letter Queue)]
-    end
-
-    subgraph Persistence
-        Cassandra[(Cassandra<br/>Saga State Store)]
-    end
-
-    subgraph Observability
-        Logs[Centralized Logs]
-        Grafana[Grafana Dashboards]
-    end
-
-    Mobile --> API
-    API --> Orchestrator
-
-    Orchestrator --> Auth
-    Orchestrator --> Risk
-    Orchestrator --> Account
-    Orchestrator --> Notification
-
-    Orchestrator <--> Kafka
-    Kafka --> DLQ
-
-    Orchestrator --> Cassandra
-
-    Orchestrator --> Logs
-    Logs --> Grafana
+    Workers -->|Update Case Status| Portal
 ```
 
-Infraestrutura de suporte:
-
-- Backbone de eventos: Apache Kafka
-- Dead Letter Queue (DLQ) para inscrições com falha
-- Persistência de estado: Cassandra (snapshots da saga)
-- Observabilidade: logging centralizado e dashboards Grafana
-- Streaming analítico: Apache Spark
-- Relatórios e BI: Amazon Redshift
-
-#### Características da Arquitetura
-
-- Orquestração SAGA orientada a máquina de estados
-- Comunicação event-driven entre serviços
-- Snapshots persistentes da saga para recuperação após falha
-- Instâncias worker stateless para escalabilidade horizontal
-- Tratamento idempotente de eventos
-- Estratégia de retry limitada com isolamento de falhas
-- Observabilidade operacional completa (logs + métricas)
-
-### Modelo da Máquina de Estados
-
-Cada solicitação de contratação é modelada como uma máquina de estados determinística com transições apenas para frente.
-
-#### Estados Principais
-
-- STARTED
-- AUTHORIZED
-- RISK_APPROVED
-- ACCOUNT_UPDATED
-- NOTIFIED
-- COMPLETED
-- FAILED
-
-As transições são orientadas a snapshot e monotônicas: após a saga avançar para um estado mais recente, eventos antigos ou duplicados não podem sobrescrevê-lo.
-
-### Diagrama de Sequência – Contratação em Cheque Especial Event-Driven (Kafka)
+## Diagrama de Sequência
 
 ```mermaid
 sequenceDiagram
-    participant Mobile
-    participant BFF
-    participant Saga
-    participant Kafka
-    participant Services
-    participant DLQ
+    participant Portal as Web Portal
+    participant Processor as Claim Processing System
+    participant Queue as Internal Job Queue
+    participant Worker as Worker
+    participant AI as AI Image Service
+    participant Rules as JSON Decision Engine
+    participant Support as Support Escalation
 
-    Mobile->>BFF: Submit Enrollment
-    BFF->>Saga: Start Saga (HTTP)
+    Portal->>Processor: Submit / Update Warranty Claim
+    Processor->>Queue: Enqueue Claim Job
 
-    Saga->>Kafka: Publish Authorization Requested
-    Kafka->>Services: Authorization Service Consumes
-    Services->>Kafka: Authorization Result Event
-    Kafka->>Saga: Consume Authorization Result
+    Queue->>Worker: Dequeue Job
+    Worker->>Portal: Fetch Claim Data + Images
 
-    alt Authorization Approved
-        Saga->>Kafka: Publish Risk Check Requested
-        Kafka->>Services: Risk Service Consumes
-        Services->>Kafka: Risk Result Event
-        Kafka->>Saga: Consume Risk Result
+    Worker->>AI: Send Images for Evaluation
+    AI-->>Worker: Return Labels / Scores
 
-        alt Risk Approved
-            Saga->>Kafka: Publish Account Update Requested
-            Kafka->>Services: Account Service Consumes
-            Services->>Kafka: Account Update Result
-            Kafka->>Saga: Consume Account Result
+    Worker->>Rules: Evaluate Business Rules (claim data + AI output)
+    Rules-->>Worker: Decision Result
 
-            alt Update Success
-                Saga->>Saga: Transition -> COMPLETED
-            else Failure
-                Saga->>Kafka: Publish Failure Event
-                Kafka->>DLQ: Route to Support
-            end
-        else Risk Failure
-            Saga->>Kafka: Publish Failure Event
-            Kafka->>DLQ: Route to Support
+    alt Decision = Auto-Process
+        Worker->>Portal: Update Claim Status
+        Worker-->>Queue: Acknowledge Job (success)
+    else Decision = Escalate or Failure
+        loop Retry up to 3 times
+            Worker->>Worker: Retry Processing
         end
-    else Authorization Failure (3 retries or TTL exceeded)
-        Saga->>Kafka: Publish Failure Event
-        Kafka->>DLQ: Route to Support
+        Worker->>Support: Send to Manual Review
+        Worker-->>Queue: Acknowledge Job (escalated)
     end
 ```
 
-### Fluxo de Contratação e Tratamento de Falhas
+### Orquestração de Fluxo e Confiabilidade
 
-1. Cliente envia contratação em cheque especial pelo mobile.
-2. API dispara nova instância da saga (estado = STARTED).
-3. Estado da saga persistido no Cassandra.
+- Implementei processamento assíncrono com BullMQ + Redis para alta disponibilidade e tolerância a falhas.
+- Introduzi lógica de retry limitada (3 tentativas) com escalonamento automático para equipes de suporte em cenários imprevistos.
+- Integrei atualizações automáticas de status de caso com sistemas de CRM para manter visibilidade operacional.
+- Implementei alertas e monitoramento para garantir confiabilidade contínua do sistema.
 
-4. Etapa de autorização
-   - Invocar serviço de autorização
-   - Em sucesso → transição para AUTHORIZED
-   - Em falha → retry (até 3 tentativas)
+### Arquitetura de Decisão e Processamento
 
-5. Avaliação de risco
-   - Invocar motor de risco
-   - Em aprovação → transição para RISK_APPROVED
-   - Em falha → retry (tentativas limitadas)
+- Construí um motor de decisão baseado em JSON que permite ingestão e avaliação dinâmica de regras com base nos resultados da classificação de imagens por IA.
+- Garanti comportamento determinístico e extensibilidade por meio de fronteiras arquiteturais claras.
 
-6. Atualização de conta
-   - Atualizar limite de cheque especial
-   - Em sucesso → transição para ACCOUNT_UPDATED
-   - Em falha → retry (tentativas limitadas)
+### Plataforma e Práticas de Engenharia
 
-7. Notificação
-   - Enviar mensagem de confirmação
-   - Transição para COMPLETED
-
-### Estratégia de Retry e Dead Letter
-
-- Cada etapa suporta até 3 tentativas de retry
-- Um TTL global de aproximadamente 5 minutos limita a execução da saga
-- Se os retries se esgotarem ou o TTL for excedido:
-  - A contratação é encaminhada à Dead Letter Queue (DLQ)
-  - O caso segue para uma equipe de suporte dedicada para processamento manual
-
-Esse desenho evita retries indefinidos, protege a estabilidade do sistema e garante que solicitações do cliente não se percam em silêncio.
-
-### Modelo de Idempotência e Concorrência
-
-- Sem locking distribuído no Cassandra
-- Workers do orquestrador stateless e horizontalmente escaláveis
-- Processamento duplicado não corrompe o estado
-
-Se um sistema downstream já tiver processado uma solicitação:
-
-- O sistema downstream rejeita a operação duplicada
-- A máquina de estados ignora eventos desatualizados
-- A comparação por snapshot garante apenas transições de avanço
-
-A progressão do estado é monotônica.  
-Eventos mais antigos não podem sobrescrever um estado de saga mais avançado.
-
-Isso garante segurança sem introduzir gargalos de coordenação.
-
-### Observabilidade e Transparência Operacional
-
-- Logs estruturados para cada transição da saga
-- Agregação centralizada de logs
-- Rastros operacionais consultáveis no Grafana
-- Monitoramento da DLQ para fluxos de intervenção manual
-- Métricas em tempo real para sistemas de analytics e reporting
-
-As equipes operacionais conseguem rastrear qualquer contratação de ponta a ponta em segundos.
-
-### Desenho de Escalabilidade e Resiliência
-
-- Workers orquestradores stateless
-- Coordenação distribuída baseada em Kafka
-- Persistência do estado da saga em Cassandra
-- Capacidade segura de replay e retomada
-- Modelo de retry limitado evitando falhas em cascata
-- Projetado para alta concorrência em picos de uso mobile
+- Implantação na AWS com Kubernetes e infraestrutura gerenciada via Terraform e ArgoCD.
+- Aplicação dos princípios de Clean Architecture para separação de responsabilidades e manutenibilidade de longo prazo.
+- Integração de serviços GraphQL (Apollo Federation) em um ecossistema baseado em TypeScript.
+- Uso de integrações de modelos de IA (incluindo serviços Google AI) para avaliação de imagens.
+- Manutenção de alto nível de testabilidade e documentação, com fluxos de planejamento estruturados e atualizações automatizadas de documentação.
 
 ---
 
-_Associado ao Itaú Unibanco_
+_Engajamento Confidencial com Cliente (Contrato)_
 
 _Detalhes como prazos, métricas e identificadores internos foram generalizados em conformidade com acordos de confidencialidade._
 
@@ -231,4 +97,4 @@ _Detalhes como prazos, métricas e identificadores internos foram generalizados 
 
 ### Tech Stack
 
-Java, Spring Boot, Spring State Machine, Apache Kafka, Cassandra, Apache Spark, Amazon Redshift, Docker, JUnit, Grafana
+TypeScript, Node.js, GraphQL, Apollo Federation, BullMQ, Redis, AWS, Kubernetes, Terraform, ArgoCD, AI Model Integrations, Google AI, Clean Architecture

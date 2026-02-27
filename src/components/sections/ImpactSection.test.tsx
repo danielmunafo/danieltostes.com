@@ -8,21 +8,21 @@ describe("ImpactSection", () => {
     renderWithProviders(<ImpactSection />);
     expect(screen.getByText("Selected Impact")).toBeInTheDocument();
     expect(
-      screen.getByText(/Delivered New Cloud-Native Financial Workflow/)
+      screen.getByText(/AI-Driven Warranty Claim Automation Platform/)
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Event-Driven Systems for Multi-Market/)
+      screen.getByText(/AI-Driven Personalized Content in Transactional Emails/)
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Observability Frameworks for Data-Driven/)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/AI-Integrated Product Architecture/)
+      screen.getByText(
+        /Mobile Overdraft Hiring - Distributed SAGA Orchestrator/
+      )
     ).toBeInTheDocument();
   });
 
   it("opens dialog with detail when an impact item is clicked", async () => {
-    const mdBody = "## Mobile Overdraft\n*Associated with Itaú Unibanco*";
+    const mdBody =
+      "## Warranty Claims\n*Confidential Client Engagement (Contract)*";
     globalThis.fetch = async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url.includes("impact/0") && url.includes(".md"))
@@ -35,12 +35,10 @@ describe("ImpactSection", () => {
     const dialog = screen.getByRole("dialog");
     expect(dialog).toBeInTheDocument();
     expect(
-      within(dialog).getByText(
-        /Mobile Overdraft Hiring - Distributed SAGA Orchestrator/
-      )
+      within(dialog).getByText(/AI-Driven Warranty Claim Automation Platform/)
     ).toBeInTheDocument();
     await waitFor(() => {
-      expect(within(dialog).getByText(/Itaú Unibanco/)).toBeInTheDocument();
+      expect(within(dialog).getByText(/Warranty Claims/)).toBeInTheDocument();
     });
     expect(
       within(dialog).getByRole("button", { name: /close/i })

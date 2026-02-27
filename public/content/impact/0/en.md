@@ -1,229 +1,95 @@
 ### Executive Summary
 
-Designed and delivered a distributed SAGA-based orchestration service enabling customers to subscribe to overdraft ("Cheque Especial") directly through mobile channels.
+Designed and implemented an AI-driven warranty claim automation system for a consumer brand, transforming a manual, support-heavy workflow into a scalable, rule-based decision pipeline.
 
-The solution coordinates multiple backend domains (authorization, risk, account services, notification) while guaranteeing eventual consistency, fault tolerance, and high concurrency in a regulated banking environment.
+Delivered a resilient, cost-efficient architecture capable of processing image-based evaluations and applying dynamic business rules under strict reliability constraints.
 
-### Business Impact
+### Impact & Results
 
-- Enabled mobile channel onboarding for overdraft product
-- Reduced operational dependency on branch/manual enrollment
-- Increased digital product adoption
-- Strengthened auditability and operational visibility
-- Contained failure scenarios through structured retry + DLQ strategy
+- Reduced manual warranty claim processing overhead.
+- Increased automation coverage while maintaining support escalation safeguards.
+- Established a scalable, low-cost automation framework adaptable to evolving business rules.
 
-### Architecture Overview
-
-The orchestration service operates as a centralized workflow engine coordinating domain services asynchronously through event streams while persisting saga state for recoverability and horizontal scalability.
+### Architecture Diagram=
 
 ```mermaid
 flowchart LR
-    subgraph Client Layer
-        Mobile[Mobile App]
+    Portal[Web Portal] -->|Submit or Update Claim| Processor[Warranty Claim Processing System]
+
+    subgraph Warranty Claim Processing System
+        Workers[Workers]
+        Rules[JSON Decision Engine]
     end
 
-    subgraph Edge Layer
-        API[API Gateway / BFF]
-    end
+    Processor --> Workers
+    Workers --> Rules
+    Rules --> Workers
 
-    subgraph Orchestration Layer
-        Orchestrator[SAGA Orchestrator<br/>State Machine Service]
-    end
+    Workers -->|Request Image Evaluation| AI[AI Image Evaluation Service]
+    AI -->|Labels and Scores| Workers
 
-    subgraph Domain Services
-        Auth[Authorization Service]
-        Risk[Risk Engine]
-        Account[Account Service]
-        Notification[Notification Service]
-    end
-
-    subgraph Event Backbone
-        Kafka[(Apache Kafka)]
-        DLQ[(Dead Letter Queue)]
-    end
-
-    subgraph Persistence
-        Cassandra[(Cassandra<br/>Saga State Store)]
-    end
-
-    subgraph Observability
-        Logs[Centralized Logs]
-        Grafana[Grafana Dashboards]
-    end
-
-    Mobile --> API
-    API --> Orchestrator
-
-    Orchestrator --> Auth
-    Orchestrator --> Risk
-    Orchestrator --> Account
-    Orchestrator --> Notification
-
-    Orchestrator <--> Kafka
-    Kafka --> DLQ
-
-    Orchestrator --> Cassandra
-
-    Orchestrator --> Logs
-    Logs --> Grafana
+    Workers -->|Update Case Status| Portal
 ```
 
-Supporting Infrastructure:
-
-- Event Backbone: Apache Kafka
-- Dead Letter Queue (DLQ) for failed enrollments
-- State Persistence: Cassandra (Saga snapshots)
-- Observability: Centralized logging + Grafana dashboards
-- Analytics Streaming: Apache Spark
-- Reporting & BI: Amazon Redshift
-
-#### Architectural Characteristics
-
-- State-machine–driven SAGA orchestration
-- Event-driven communication between services
-- Persistent saga snapshots enabling crash recovery
-- Stateless worker instances for horizontal scalability
-- Idempotent event handling
-- Bounded retry strategy with failure isolation
-- Full operational observability (logs + metrics)
-
-### State Machine Model
-
-Each enrollment request is modeled as a deterministic state machine with forward-only transitions.
-
-#### Core States
-
-- STARTED
-- AUTHORIZED
-- RISK_APPROVED
-- ACCOUNT_UPDATED
-- NOTIFIED
-- COMPLETED
-- FAILED
-
-State transitions are snapshot-driven and monotonic: once a saga advances to a newer state, older or duplicated events cannot override it.
-
-### Sequence Diagram – Event-Driven Overdraft Enrollment (Kafka-Based)
+## Sequence Diagram
 
 ```mermaid
 sequenceDiagram
-    participant Mobile
-    participant BFF
-    participant Saga
-    participant Kafka
-    participant Services
-    participant DLQ
+    participant Portal as Web Portal
+    participant Processor as Claim Processing System
+    participant Queue as Internal Job Queue
+    participant Worker as Worker
+    participant AI as AI Image Service
+    participant Rules as JSON Decision Engine
+    participant Support as Support Escalation
 
-    Mobile->>BFF: Submit Enrollment
-    BFF->>Saga: Start Saga (HTTP)
+    Portal->>Processor: Submit / Update Warranty Claim
+    Processor->>Queue: Enqueue Claim Job
 
-    Saga->>Kafka: Publish Authorization Requested
-    Kafka->>Services: Authorization Service Consumes
-    Services->>Kafka: Authorization Result Event
-    Kafka->>Saga: Consume Authorization Result
+    Queue->>Worker: Dequeue Job
+    Worker->>Portal: Fetch Claim Data + Images
 
-    alt Authorization Approved
-        Saga->>Kafka: Publish Risk Check Requested
-        Kafka->>Services: Risk Service Consumes
-        Services->>Kafka: Risk Result Event
-        Kafka->>Saga: Consume Risk Result
+    Worker->>AI: Send Images for Evaluation
+    AI-->>Worker: Return Labels / Scores
 
-        alt Risk Approved
-            Saga->>Kafka: Publish Account Update Requested
-            Kafka->>Services: Account Service Consumes
-            Services->>Kafka: Account Update Result
-            Kafka->>Saga: Consume Account Result
+    Worker->>Rules: Evaluate Business Rules (claim data + AI output)
+    Rules-->>Worker: Decision Result
 
-            alt Update Success
-                Saga->>Saga: Transition -> COMPLETED
-            else Failure
-                Saga->>Kafka: Publish Failure Event
-                Kafka->>DLQ: Route to Support
-            end
-        else Risk Failure
-            Saga->>Kafka: Publish Failure Event
-            Kafka->>DLQ: Route to Support
+    alt Decision = Auto-Process
+        Worker->>Portal: Update Claim Status
+        Worker-->>Queue: Acknowledge Job (success)
+    else Decision = Escalate or Failure
+        loop Retry up to 3 times
+            Worker->>Worker: Retry Processing
         end
-    else Authorization Failure (3 retries or TTL exceeded)
-        Saga->>Kafka: Publish Failure Event
-        Kafka->>DLQ: Route to Support
+        Worker->>Support: Send to Manual Review
+        Worker-->>Queue: Acknowledge Job (escalated)
     end
 ```
 
-### Enrollment Flow & Failure Handling
+### Workflow Orchestration & Reliability
 
-1. Customer submits overdraft enrollment via mobile.
-2. API triggers new saga instance (state = STARTED).
-3. Saga state persisted to Cassandra.
+- Implemented asynchronous processing using BullMQ + Redis to ensure high availability and fault tolerance.
+- Introduced bounded retry logic (3 attempts) with automatic escalation to support teams for unforeseen paths.
+- Integrated automated case status updates with CRM systems to maintain operational visibility.
+- Implemented alerting and monitoring to ensure continuous system reliability.
 
-4. Authorization Step
-   - Invoke Authorization Service
-   - On success → transition to AUTHORIZED
-   - On failure → retry (up to 3 attempts)
+### Decision & Processing Architecture
 
-5. Risk Assessment
-   - Invoke Risk Engine
-   - On approval → transition to RISK_APPROVED
-   - On failure → retry (bounded attempts)
+- Built a JSON-based decision engine enabling dynamic rule ingestion and evaluation based on AI image classification results.
+- Ensured deterministic behavior and extensibility through clean architectural boundaries.
 
-6. Account Update
-   - Update overdraft limit
-   - On success → transition to ACCOUNT_UPDATED
-   - On failure → retry (bounded attempts)
+### Platform & Engineering Practices
 
-7. Notification
-   - Send confirmation message
-   - Transition to COMPLETED
-
-### Retry & Dead Letter Strategy
-
-- Each step supports up to 3 retry attempts
-- A global time-to-live (TTL) of approximately 5 minutes bounds saga execution
-- If retries are exhausted or TTL exceeded:
-  - The enrollment is routed to a Dead Letter Queue (DLQ)
-  - The case is forwarded to a dedicated support team for manual processing
-
-This design avoids indefinite retries and protects system stability while ensuring customer requests are never silently lost.
-
-### Idempotency & Concurrency Model
-
-- No distributed locking on Cassandra
-- Orchestrator workers are stateless and horizontally scalable
-- Duplicate processing does not corrupt state
-
-If a downstream system has already processed a request:
-
-- The downstream system rejects the duplicate operation
-- The state machine ignores outdated events
-- Snapshot comparison ensures only forward-progress transitions are applied
-
-State progression is monotonic.  
-Older events cannot override a more advanced saga state.
-
-This guarantees safety without introducing coordination bottlenecks.
-
-### Observability & Operational Transparency
-
-- Structured logs for every saga transition
-- Centralized log aggregation
-- Queryable operational traces in Grafana
-- DLQ monitoring for manual intervention workflows
-- Real-time metrics feeding analytics and reporting systems
-
-Operational teams can trace any enrollment end-to-end within seconds.
-
-### Scalability & Resilience Design
-
-- Stateless orchestrator workers
-- Kafka-based distributed coordination
-- Cassandra-backed saga state persistence
-- Safe replay and resume capability
-- Bounded retry model preventing cascading failures
-- Designed to support high concurrency during peak mobile usage
+- Deployed on AWS using Kubernetes with infrastructure managed via Terraform and ArgoCD.
+- Applied Clean Architecture principles for separation of concerns and long-term maintainability.
+- Integrated GraphQL (Apollo Federation) services within a TypeScript-based ecosystem.
+- Leveraged AI model integrations (including Google AI services) for image evaluation.
+- Maintained high testability and documentation standards, using structured planning workflows and automated documentation updates.
 
 ---
 
-_Associated with Itaú Unibanco_
+_Confidential Client Engagement (Contract)_
 
 _Details such as specific timelines, metrics, and internal identifiers have been generalized in accordance with confidentiality agreements._
 
@@ -231,4 +97,4 @@ _Details such as specific timelines, metrics, and internal identifiers have been
 
 ### Tech Stack
 
-Java, Spring Boot, Spring State Machine, Apache Kafka, Cassandra, Apache Spark, Amazon Redshift, Docker, JUnit, Grafana
+TypeScript, Node.js, GraphQL, Apollo Federation, BullMQ, Redis, AWS, Kubernetes, Terraform, ArgoCD, AI Model Integrations, Google AI, Clean Architecture

@@ -24,68 +24,43 @@
     "impactAnonymizeNote": "Todos os itens abaixo e seus detalhes refletem iniciativas reais; figuras, nomes e cronogramas específicos foram anonimizados para cumprir NDAs.",
     "impact": [
       {
-        "title": "Entrega de Novo Workflow Financeiro Cloud-Native em Ambiente Bancário Regulado",
-        "dialogTitle": "Contratação de Cheque Especial Mobile - Orquestrador SAGA Distribuído",
-        "description": "Projetei e implementei um workflow financeiro de missão crítica como microserviços escaláveis e orientados a eventos em um sistema bancário regulado.\n\nLançado com zero downtime, habilitando alta concorrência, forte rastreabilidade e resiliência em nível de produção sob pico de carga financeira.",
+        "title": "Plataforma de Automação de Garantias com IA",
+        "description": "Construí um sistema de automação de garantias com IA usando motor de regras em JSON e workers assíncronos. Integrei modelos de imagem, retentativas limitadas e escalonamento, substituindo o processamento manual por decisão automatizada confiável.",
         "chips": [
           "Complexidade: Alta",
+          "Requisito de Confiabilidade: Alto",
+          "Dependência de IA: Alta",
+          "Volatilidade de Regras de Negócio: Alta",
+          "Restrição de Tempo: Alta"
+        ]
+      },
+      {
+        "title": "Conteúdo Personalizado com IA em Emails Transacionais",
+        "description": "Implementei um motor de decisão vetorial em tempo real para emails transacionais. Fiz match de embeddings de usuário com campanhas ao vivo em ~200ms @ ~100 RPS, injetando personalização com IA em um fluxo crítico de receita.",
+        "chips": [
+          "Valor de Negócio: Alto",
+          "Complexidade: Alta",
+          "Restrição de Latência: Extrema",
+          "Requisito de Confiabilidade: Crítico",
+          "Dependência de IA: Alta"
+        ]
+      },
+      {
+        "title": "Contratação de Cheque Especial Mobile - Orquestrador SAGA Distribuído",
+        "description": "Projetei um orquestrador SAGA distribuído para adesão de cheque especial via mobile. Fluxo event-driven e de alta concorrência com retentativas limitadas, DLQ e implantação com zero downtime em sistema regulado.",
+        "chips": [
+          "Complexidade: Extrema",
           "Concorrência: Alta",
           "Restrição de Tempo: Extrema",
-          "Contexto de Compliance: Sim",
-          "Padrão de Arquitetura: SAGA"
-        ]
-      },
-      {
-        "title": "Sistemas Event-Driven para Produtos Multi-mercado",
-        "dialogTitle": "Sistemas Event-Driven para Produtos Multi-mercado",
-        "description": "Projetei e escalei arquiteturas event-driven atendendo produtos multi-mercado de alto volume. Defini contratos de eventos, limites claros entre serviços e visibilidade operacional para plataformas transacionais e de marketing.\n\nHabilitei entrega de conteúdo personalizado via modelos de motor de decisão, conformidade fiscal e UX consistente entre mercados.",
-        "chips": [
-          "Arquitetura: Event-Driven",
-          "Escala: Multi-mercado",
-          "Alto Volume",
-          "Contratos de Eventos",
-          "Motor de Decisão"
-        ]
-      },
-      {
-        "title": "Frameworks de Observabilidade para Operações Baseadas em Dados",
-        "dialogTitle": "Frameworks de Observabilidade para Operações Baseadas em Dados",
-        "description": "Implementei frameworks de observabilidade (métricas, tracing, logging, alertas) que viabilizaram decisões operacionais e de produto baseadas em dados. Defini SLOs, dashboards e práticas de plantão.\n\nReduzi tempo de resposta a incidentes com melhor ferramentagem e documentação.",
-        "chips": [
-          "Métricas",
-          "Tracing",
-          "SLOs",
-          "Alertas",
-          "Ops Baseadas em Dados"
-        ]
-      },
-      {
-        "title": "Arquitetura de Produto Integrada com IA",
-        "dialogTitle": "Arquitetura de Produto Integrada com IA",
-        "description": "Construí arquitetura de produto integrada com IA do conceito à produção: fluxos de coaching com IA, padrões de agentes e recomendações personalizadas. Projetei backends escaláveis e integração com provedores como OpenAI.\n\nGaranti observabilidade e rollout seguro das funcionalidades de IA.",
-        "chips": [
-          "Integração com IA",
-          "OpenAI",
-          "Agentes",
-          "Observabilidade",
-          "Produção"
+          "Requisito de Confiabilidade: Crítico",
+          "Contexto de Compliance: Sim"
         ]
       }
     ],
     "impactDetails": [
-      {
-        "body": "No Itaú Unibanco liderei a migração de workflows críticos de mainframe legado para soluções em nuvem e containerizadas. Isso envolveu definir a arquitetura alvo, coordenar com segurança e compliance, e entregar portais internos e máquinas de estado para operações de cheque especial e financeiras. O trabalho reduziu risco operacional e estabeleceu a base para iniciativas cloud-native em ambiente regulado.",
-        "bodyPath": "impact/0"
-      },
-      {
-        "body": "Na Klarna e no MercadoLivre projetei e escalei sistemas event-driven que atenderam produtos multi-mercado. Isso incluiu evoluir plataformas transacionais e de marketing, implementar modelos de motor de decisão para conteúdo personalizado, e construir microserviços e micro-frontends para conformidade fiscal e UX entre regiões. Foco em limites claros, contratos de eventos e visibilidade operacional."
-      },
-      {
-        "body": "Em várias posições implementei frameworks de observabilidade (métricas, tracing, logging, alertas) que permitiram decisões operacionais e de produto baseadas em dados. Incluí definição de SLOs, dashboards e práticas de plantão, e redução do tempo de resposta a incidentes com melhor ferramentagem e documentação. O objetivo foi sempre tornar o comportamento do sistema compreensível e acionável para o time."
-      },
-      {
-        "body": "Do conceito à produção construí arquitetura de produto integrada com IA: fluxos de coaching com IA, padrões de agentes e recomendações personalizadas. Isso envolveu desenhar backends escaláveis, integrar com provedores como OpenAI, e garantir observabilidade e rollout seguro. Foco em manter funcionalidades de IA sustentáveis e alinhadas com padrões de produto e engenharia."
-      }
+      { "bodyPath": "impact/0" },
+      { "bodyPath": "impact/1" },
+      { "bodyPath": "impact/2" }
     ],
     "impactDetailClose": "Fechar",
     "icon": "Resumo"
@@ -98,11 +73,11 @@
         "period": "Ago/2025 – Presente",
         "position": "Fundador & Engenheiro de Software",
         "desc": [
-          "Arquitetei e construí uma plataforma mobile e backend orientada por IA focada em fitness e bem-estar personalizados.",
-          "Liderei desenvolvimento de produto ponta a ponta: pesquisa de mercado, design de sistemas, arquitetura backend, integração com IA e automação DevOps.",
+          "Arquitetando e construindo uma plataforma mobile e backend orientada por IA focada em fitness e bem-estar personalizados.",
+          "Liderando desenvolvimento de produto ponta a ponta: pesquisa de mercado, design de sistemas, arquitetura backend, integração com IA e automação DevOps.",
           "Projetei backend escalável utilizando Clean Architecture e padrões event-driven.",
           "Implementei pipelines CI/CD, infraestrutura como código (Terraform), orquestração de containers (Kubernetes) e stack completa de observabilidade (New Relic, Sentry).",
-          "Desenvolvi workflows de coaching orientados por IA usando OpenAI e padrões de agentes."
+          "Desenvolvendo workflows de coaching com IA usando OpenAI e padrões de agentes."
         ],
         "tech": "React Native (Expo), React, Node.js, TypeScript, GraphQL (Apollo Federation), BullMQ, Redis, Kafka, Kubernetes, Docker, Terraform, PostgreSQL, New Relic, Sentry, OpenAI"
       },
@@ -112,8 +87,8 @@
         "position": "Engenheiro de Software Sênior",
         "desc": [
           "Construí e mantive funcionalidades core para produtos de faturamento e bancários servindo pequenas empresas na Europa.",
-          "Implementei decisões técnicas a nível de empresa, ajudando a padronizar práticas de engenharia e melhorar a manutenibilidade a longo prazo.",
-          "Liderei iniciativas para melhorar observabilidade e monitoramento, viabilizando decisões de produto e operacionais baseadas em dados."
+          "Implementei decisões técnicas em nível de empresa, padronizando práticas de engenharia e melhorando manutenibilidade a longo prazo.",
+          "Liderei iniciativas de observabilidade e monitoramento, permitindo decisões de produto e operação baseadas em dados."
         ],
         "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS, Terraform, Docker, PostgreSQL, Datadog, Sentry"
       },
@@ -123,7 +98,7 @@
         "position": "Engenheiro de Software",
         "desc": [
           "Desenvolvi e evoluí a plataforma de email transacional e campanhas de marketing da Klarna, suportando comunicação de alto volume e multi-mercado.",
-          "Implementei um novo modelo de decision-engine de marketing permitindo entrega de conteúdo personalizado usando machine-learning + busca vetorial + recomendações IA."
+          "Implementei um novo modelo de decision-engine de marketing para entrega de conteúdo personalizado com machine learning, busca vetorial e matching de recomendações com IA."
         ],
         "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Datadog, OpsGenie"
       },
@@ -132,8 +107,8 @@
         "period": "Out/2020 – Fev/2022",
         "position": "Engenheiro de Software Sênior",
         "desc": [
-          "Projetei e implementei microsserviços e micro-frontends para suportar conformidade fiscal e experiência do usuário na América Latina.",
-          "Liderei desenvolvimento de sistemas back-office para gestão de isenção fiscal e processamento de reembolsos."
+          "Projetei e implementei microsserviços e micro-frontends para conformidade fiscal e experiência do usuário na América Latina.",
+          "Liderei o desenvolvimento de sistemas back-office para gestão de isenção fiscal e processamento de reembolsos."
         ],
         "tech": "Java, React, Node.js, TypeScript, Express, Sass, Datadog, New Relic"
       },
@@ -142,7 +117,7 @@
         "period": "Jun/2020 – Out/2020",
         "position": "Engenheiro de Software",
         "desc": [
-          "Migrei funcionalidades críticas de mainframe legado para soluções modernas baseadas em nuvem e containerizadas.",
+          "Migrei funcionalidades críticas de mainframe legado para soluções modernas em nuvem e containerizadas.",
           "Desenvolvi portais internos e máquinas de estado de workflow para operações de cheque especial e financeiras."
         ],
         "tech": "Java, Spring State Machine, AngularJS, Kafka, Cassandra, AWS, OpenShift, Grafana"
@@ -153,7 +128,7 @@
         "position": "Desenvolvedor de Sistemas",
         "desc": [
           "Construí ferramentas internas para reduzir tempo de resposta a incidentes e melhorar troubleshooting para equipes de suporte.",
-          "Implementei pipelines CI/CD e serviços containerizados respeitando requisitos rigorosos de segurança e conformidade."
+          "Implementei pipelines CI/CD e serviços containerizados em conformidade com requisitos rigorosos de segurança e compliance."
         ],
         "tech": "Node.js, Java, Docker, Jenkins, Mesos/Marathon, Splunk, New Relic"
       },

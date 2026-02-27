@@ -137,10 +137,9 @@ export const EXPERIENCE_ROLE_ICONS: readonly { src: string; scale?: number }[] =
 
 /** Icon config for each impact item, in the same order as Summary.impact in i18n. */
 export const IMPACT_ICONS: readonly { src: string; scale?: number }[] = [
-  { src: "/content/impact/0/image.svg", scale: 0.99 },
-  { src: "/file.svg" },
-  { src: "/window.svg" },
-  { src: "/logo.svg", scale: 0.9 },
+  { src: "/content/impact/0/image.svg", scale: 0.9 },
+  { src: "/content/impact/1/image.svg", scale: 0.9 },
+  { src: "/content/impact/2/image.svg", scale: 0.9 },
 ];
 
 export const SUMMARY_SKILLS = [

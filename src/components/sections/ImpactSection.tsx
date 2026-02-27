@@ -15,7 +15,7 @@ const SECTION_ID = "impact" as const;
 
 type ImpactItem = {
   title: string;
-  dialogTitle: string;
+  dialogTitle?: string;
   description: string;
   chips?: string[];
 };
@@ -31,7 +31,6 @@ export function ImpactSection() {
   const chipBg = CHIP_BG[theme.palette.mode];
   const impactItems = t.raw("impact") as ImpactItem[];
   const impactDetails = t.raw("impactDetails") as {
-    body: string;
     bodyPath?: string;
   }[];
   const [selectedImpactIndex, setSelectedImpactIndex] = useState<number | null>(
@@ -59,33 +58,27 @@ export function ImpactSection() {
 
   const selectedItem =
     selectedImpactIndex !== null ? impactItems[selectedImpactIndex] : null;
-  const selectedTitle =
-    selectedItem &&
-    typeof selectedItem === "object" &&
-    typeof selectedItem.dialogTitle === "string"
-      ? selectedItem.dialogTitle
-      : typeof selectedItem === "string"
-        ? selectedItem
-        : "";
+  const selectedTitle = (() => {
+    if (selectedItem && typeof selectedItem === "object") {
+      if (typeof selectedItem.dialogTitle === "string")
+        return selectedItem.dialogTitle;
+      if (typeof selectedItem.title === "string") return selectedItem.title;
+      return "";
+    }
+    if (typeof selectedItem === "string") return selectedItem;
+    return "";
+  })();
   const selectedDetail =
     selectedImpactIndex !== null &&
     impactDetails[selectedImpactIndex] !== undefined
       ? impactDetails[selectedImpactIndex]
       : null;
-  const selectedBody = selectedDetail?.body ?? "";
   const selectedBodyPath = selectedDetail?.bodyPath;
 
   return (
     <Box>
       <Typography variant="h2" gutterBottom>
         {t("impactTitle")}
-      </Typography>
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        sx={{ mb: 2, fontSize: "0.8125rem", fontStyle: "italic" }}
-      >
-        {t("impactAnonymizeNote")}
       </Typography>
 
       {impactItems.map((item, i) => {
@@ -169,7 +162,7 @@ export function ImpactSection() {
         open={selectedImpactIndex !== null}
         onClose={() => setSelectedImpactIndex(null)}
         title={selectedTitle}
-        body={selectedBody}
+        body=""
         bodyPath={selectedBodyPath}
         locale={locale}
         prefetchedBody={

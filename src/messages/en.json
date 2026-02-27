@@ -24,61 +24,48 @@
     "impactAnonymizeNote": "All items below and their details reflect real initiatives; specific figures, names, and timelines have been anonymized to comply with NDAs.",
     "impact": [
       {
-        "title": "Delivered New Cloud-Native Financial Workflow in Regulated Banking Environment",
-        "dialogTitle": "Mobile Overdraft Hiring - Distributed SAGA Orchestrator",
-        "description": "Designed and implemented a mission-critical financial workflow as scalable, event-driven microservices within a regulated banking system.\nLaunched with zero downtime, enabling high concurrency, strong auditability, and production-grade resilience under peak financial load.",
+        "title": "AI-Driven Warranty Claim Automation Platform",
+        "description": "Built an AI-powered warranty automation system using a JSON rule engine + async workers. Integrated image models, added bounded retries and escalation, and replaced manual claim handling with reliable decisioning.",
         "chips": [
           "Complexity: High",
+          "Reliability Requirement: High",
+          "AI Dependency: High",
+          "Business Rule Volatility: High",
+          "Time Constraint: High"
+        ]
+      },
+      {
+        "title": "AI-Driven Personalized Content in Transactional Emails",
+        "description": "Implemented a real-time vector decision engine for transactional emails. Matched user embeddings to live campaigns in ~200ms @ ~100 RPS, injecting AI personalization into a revenue-critical flow.",
+        "chips": [
+          "Business Value: High",
+          "Complexity: High",
+          "Latency Constraint: Extreme",
+          "Reliability Requirement: Critical",
+          "AI Dependency: High"
+        ]
+      },
+      {
+        "title": "Mobile Overdraft Hiring - Distributed SAGA Orchestrator",
+        "description": "Designed a distributed SAGA orchestrator for mobile overdraft enrollment. Event-driven, high-concurrency workflow with bounded retries, DLQ handling, and zero-downtime rollout in a regulated system.",
+        "chips": [
+          "Complexity: Extreme",
           "Concurrency: High",
           "Time Constraint: Extreme",
-          "Compliance Context: Yes",
-          "Architecture Pattern: SAGA"
-        ]
-      },
-      {
-        "title": "Event-Driven Systems for Multi-Market Products",
-        "dialogTitle": "Event-Driven Systems for Multi-Market Products",
-        "description": "Designed and scaled event-driven architectures serving high-volume, multi-market products across regions. Defined event contracts, clear service boundaries, and operational visibility for transactional and marketing platforms.\n\nEnabled personalized content delivery via decision-engine models, tax compliance and UX consistency across markets, and reduced coupling while improving deployment independence.",
-        "chips": [
-          "Architecture: Event-Driven",
-          "Scale: Multi-Market",
-          "High Volume",
-          "Event Contracts",
-          "Decision Engine"
-        ]
-      },
-      {
-        "title": "Observability Frameworks for Data-Driven Operations",
-        "dialogTitle": "Observability Frameworks for Data-Driven Operations",
-        "description": "Implemented observability frameworks (metrics, tracing, logging, alerting) that enabled data-driven operational and product decisions across teams. Defined SLOs, dashboards, and on-call practices.\n\nReduced incident response time through better tooling and documentation, and made system behavior understandable and actionable for engineering and product stakeholders.",
-        "chips": ["Metrics", "Tracing", "SLOs", "Alerting", "Data-Driven Ops"]
-      },
-      {
-        "title": "AI-Integrated Product Architecture",
-        "dialogTitle": "AI-Integrated Product Architecture",
-        "description": "Built AI-integrated product architecture from concept to production: AI-driven coaching workflows, agent patterns, and personalized recommendations. Designed scalable backends and integrated with providers such as OpenAI.\n\nEnsured observability and safe rollout of AI features, keeping them maintainable and aligned with product and engineering standards.",
-        "chips": [
-          "AI Integration",
-          "OpenAI",
-          "Agents",
-          "Observability",
-          "Production"
+          "Reliability Requirement: Critical",
+          "Compliance Context: Yes"
         ]
       }
     ],
     "impactDetails": [
       {
-        "body": "At Itaú Unibanco I led migration of critical legacy mainframe workflows to cloud-based, containerized solutions. This involved defining target architecture, coordinating with security and compliance, and delivering internal portals and state machines for overdraft and financial operations. The work reduced operational risk and set the base for future cloud-native initiatives in a regulated environment.",
         "bodyPath": "impact/0"
       },
       {
-        "body": "At Klarna and MercadoLivre I designed and scaled event-driven systems that served multi-market products. This included evolving transactional and marketing platforms, implementing decision-engine models for personalized content, and building microservices and micro-frontends for tax compliance and UX across regions. Strong focus on clear boundaries, event contracts, and operational visibility."
+        "bodyPath": "impact/1"
       },
       {
-        "body": "Across roles I implemented observability frameworks (metrics, tracing, logging, alerting) that enabled data-driven operational and product decisions. This included defining SLOs, dashboards, and on-call practices, and reducing incident response time through better tooling and documentation. The goal was always to make system behavior understandable and actionable for the whole team."
-      },
-      {
-        "body": "From concept to production I have built AI-integrated product architecture: AI-driven coaching workflows, agent patterns, and personalized recommendations. This involved designing scalable backends, integrating with providers like OpenAI, and ensuring observability and safe rollout. I focus on keeping AI features maintainable and aligned with product and engineering standards."
+        "bodyPath": "impact/2"
       }
     ],
     "impactDetailClose": "Close",
