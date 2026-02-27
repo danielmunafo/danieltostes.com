@@ -3,41 +3,73 @@
 import { useEffect, useState } from "react";
 import { SECTION_IDS, type SectionId } from "@/constants/sections";
 
+/** Fraction of the section height over which we blend from previous to current (0–1). */
+const BLEND_ZONE_FRACTION = 0.6;
+
+export interface ActiveSectionState {
+  activeSection: SectionId;
+  /** Opacity for the previous section's background (1 at section top, 0 after blend zone). */
+  previousSectionOpacity: number;
+  previousSection: SectionId | null;
+}
+
+function getActiveSectionState(): ActiveSectionState {
+  const viewportCenterY = window.innerHeight / 2;
+  let activeSection: SectionId = SECTION_IDS[0];
+  let previousSection: SectionId | null = null;
+  let previousSectionOpacity = 0;
+
+  for (let i = 0; i < SECTION_IDS.length; i++) {
+    const id = SECTION_IDS[i];
+    const el = document.getElementById(`section-${id}`);
+    if (!el) continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.top <= viewportCenterY && rect.bottom >= viewportCenterY) {
+      activeSection = id;
+      previousSection = i > 0 ? SECTION_IDS[i - 1] : null;
+      const safeHeight = Math.max(1, rect.height);
+      const progressIntoSection = (viewportCenterY - rect.top) / safeHeight;
+      const blendProgress = Math.min(
+        1,
+        progressIntoSection / BLEND_ZONE_FRACTION
+      );
+      previousSectionOpacity = 1 - blendProgress;
+      break;
+    }
+  }
+
+  return { activeSection, previousSectionOpacity, previousSection };
+}
+
 /**
- * Uses IntersectionObserver to detect which section occupies the center
- * of the viewport, returning the active SectionId.
- *
- * A narrow detection band (middle 10% of the viewport) avoids flicker
- * when two sections are partially visible.
+ * Uses scroll position to detect which section contains the viewport center
+ * and how far we've scrolled into it, so the background can blend smoothly
+ * from the previous section over a blend zone.
  */
-export function useActiveSection(): SectionId {
-  const [activeSection, setActiveSection] = useState<SectionId>(SECTION_IDS[0]);
+export function useActiveSection(): ActiveSectionState {
+  const [state, setState] = useState<ActiveSectionState>(() => ({
+    activeSection: SECTION_IDS[0],
+    previousSectionOpacity: 0,
+    previousSection: null,
+  }));
 
   useEffect(() => {
     const isWindowUndefined = typeof window === "undefined";
     if (isWindowUndefined) return;
 
-    const sectionElements = SECTION_IDS.map((id) =>
-      document.getElementById(`section-${id}`)
-    ).filter(Boolean) as HTMLElement[];
+    const update = () => {
+      setState(getActiveSectionState());
+    };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const id = entry.target.id.replace("section-", "") as SectionId;
-            setActiveSection(id);
-            break;
-          }
-        }
-      },
-      { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
-    );
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
 
-    sectionElements.forEach((el) => observer.observe(el));
-
-    return () => observer.disconnect();
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
   }, []);
 
-  return activeSection;
+  return state;
 }

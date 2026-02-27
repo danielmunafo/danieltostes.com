@@ -9,7 +9,9 @@
   },
   "Summary": {
     "title": "Summary",
-    "description": "Senior Software Engineer specializing in stabilizing and scaling cloud-native platforms. 9+ years delivering production-grade systems in fintech and high-traffic consumer environments. Strong ownership across architecture, infrastructure, observability, and AI integrations. Experienced in improving reliability, reducing operational risk, and accelerating delivery in distributed teams.",
+    "experienceLabel": "Experience",
+    "experienceValue": "9+ years",
+    "description": "Senior Software Engineer specializing in stabilizing and scaling cloud-native platforms. Delivering production-grade systems in fintech and high-traffic consumer environments. Strong ownership across architecture, infrastructure, observability, and AI integrations. Experienced in improving reliability, reducing operational risk, and accelerating delivery in distributed teams.",
     "coreLabel": "Core",
     "coreValue": "TypeScript, Node.js, React, Java, AWS",
     "architectureLabel": "Architecture",
@@ -17,35 +19,87 @@
     "infraLabel": "Infra & Ops",
     "infraValue": "Kubernetes, Terraform, CI/CD, Observability",
     "aiLabel": "AI",
-    "aiValue": "AI integrations, OpenAI, Agents",
+    "aiValue": "Cursor, Co-pilot, OpenAI, Agents",
     "impactTitle": "Selected Impact",
+    "impactAnonymizeNote": "All items below and their details reflect real initiatives; specific figures, names, and timelines have been anonymized to comply with NDAs.",
     "impact": [
-      "Migrated legacy financial workflows to cloud-native infrastructure in regulated banking environment.",
-      "Designed and scaled event-driven systems serving multi-market products.",
-      "Implemented observability frameworks enabling data-driven operational decisions.",
-      "Built AI-integrated product architecture from concept to production."
+      {
+        "title": "AI-Driven Warranty Claim Automation Platform",
+        "description": "Built an AI-powered warranty automation system using a JSON rule engine + async workers. Integrated image models, added bounded retries and escalation, and replaced manual claim handling with reliable decisioning.",
+        "chips": [
+          "Complexity: High",
+          "Reliability Requirement: High",
+          "AI Dependency: High",
+          "Business Rule Volatility: High",
+          "Time Constraint: High"
+        ]
+      },
+      {
+        "title": "AI-Driven Personalized Content in Transactional Emails",
+        "description": "Implemented a real-time vector decision engine for transactional emails. Matched user embeddings to live campaigns in ~200ms @ ~100 RPS, injecting AI personalization into a revenue-critical flow.",
+        "chips": [
+          "Business Value: High",
+          "Complexity: High",
+          "Latency Constraint: Extreme",
+          "Reliability Requirement: Critical",
+          "AI Dependency: High"
+        ]
+      },
+      {
+        "title": "Mobile Overdraft Hiring - Distributed SAGA Orchestrator",
+        "description": "Designed a distributed SAGA orchestrator for mobile overdraft enrollment. Event-driven, high-concurrency workflow with bounded retries, DLQ handling, and zero-downtime rollout in a regulated system.",
+        "chips": [
+          "Complexity: Extreme",
+          "Concurrency: High",
+          "Time Constraint: Extreme",
+          "Reliability Requirement: Critical",
+          "Compliance Context: Yes"
+        ]
+      }
     ],
+    "impactDetails": [
+      {
+        "bodyPath": "impact/0"
+      },
+      {
+        "bodyPath": "impact/1"
+      },
+      {
+        "bodyPath": "impact/2"
+      }
+    ],
+    "impactDetailClose": "Close",
     "icon": "Summary"
   },
   "Experience": {
     "title": "Experience",
     "roles": [
       {
+        "company": "Confidential Client (Contract)",
+        "period": "Aug/2025 - Dec/2025",
+        "position": "Senior Software Engineer",
+        "desc": [
+          "Designed and delivered an AI-driven warranty claim automation platform, replacing manual support workflows with a scalable JSON-based decision engine integrated with image evaluation models.",
+          "Implemented asynchronous processing with bounded retries and escalation safeguards, integrated Salesforce case management updates and chatbot automations, and enabled dynamic business rule evolution without disrupting production."
+        ],
+        "tech": "TypeScript, Node.js, GraphQL, BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture"
+      },
+      {
         "company": "Personal Fitness Platform",
-        "period": "Aug/2025 – Present",
+        "period": "Aug/2025 - Present",
         "position": "Founder & Software Engineer",
         "desc": [
-          "Architecting and building an AI-driven mobile and backend platform focused on personalized fitness and wellbeing.",
-          "Leading end-to-end product development: market research, system design, backend architecture, AI integration, and DevOps automation.",
-          "Designed scalable backend using Clean Architecture and event-driven patterns.",
-          "Implemented CI/CD pipelines, infrastructure as code (Terraform), container orchestration (Kubernetes), and full observability stack (New Relic, Sentry).",
-          "Developing AI-driven coaching workflows using OpenAI and agent patterns."
+          "Founding and building an AI-native fitness platform delivering personalized training and wellbeing workflows across mobile and backend systems.",
+          "Leading end-to-end product execution: market validation, domain modeling, distributed backend architecture, and AI-driven coaching systems.",
+          "Architected a scalable, event-driven backend using Clean Architecture and modular service boundaries.",
+          "Implemented infrastructure automation, CI/CD, container orchestration, and full-stack observability to support production-grade reliability.",
+          "Designing agent-based AI coaching workflows integrating LLMs for adaptive, context-aware user guidance."
         ],
         "tech": "React Native (Expo), React, Node.js, TypeScript, GraphQL (Apollo Federation), BullMQ, Redis, Kafka, Kubernetes, Docker, Terraform, PostgreSQL, New Relic, Sentry, OpenAI"
       },
       {
         "company": "Ageras (Kontist)",
-        "period": "Jul/2024 – Jun/2025",
+        "period": "Jul/2024 - Jun/2025",
         "position": "Senior Software Engineer",
         "desc": [
           "Built and maintained core functionality for invoicing and banking products serving small businesses across Europe.",
@@ -56,7 +110,7 @@
       },
       {
         "company": "Klarna",
-        "period": "Mar/2022 – Jun/2024",
+        "period": "Mar/2022 - Jun/2024",
         "position": "Software Engineer",
         "desc": [
           "Developed and evolved Klarna's transactional email and marketing campaign platform, supporting high-volume, multi-market communication.",
@@ -66,7 +120,7 @@
       },
       {
         "company": "MercadoLivre",
-        "period": "Oct/2020 – Feb/2022",
+        "period": "Oct/2020 - Feb/2022",
         "position": "Senior Software Engineer",
         "desc": [
           "Designed and implemented microservices and micro-frontends to support tax compliance and user experience across Latin America.",
@@ -76,7 +130,7 @@
       },
       {
         "company": "Itaú Unibanco",
-        "period": "Jun/2020 – Oct/2020",
+        "period": "Jun/2020 - Oct/2020",
         "position": "Software Engineer",
         "desc": [
           "Migrated critical legacy mainframe functionality to modern cloud-based and containerized solutions.",
@@ -86,7 +140,7 @@
       },
       {
         "company": "PagSeguro PagBank",
-        "period": "Nov/2019 – Jun/2020",
+        "period": "Nov/2019 - Jun/2020",
         "position": "Systems Developer",
         "desc": [
           "Built internal tools to reduce incident response time and improve troubleshooting for application support teams.",
@@ -96,7 +150,7 @@
       },
       {
         "company": "Five Validation",
-        "period": "Mar/2017 – Nov/2019",
+        "period": "Mar/2017 - Nov/2019",
         "position": "Full Stack Systems Developer",
         "desc": [
           "Designed and delivered software solutions for computer systems validation, reducing operational overhead and manual effort.",

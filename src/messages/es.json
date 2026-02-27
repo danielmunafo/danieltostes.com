@@ -9,7 +9,9 @@
   },
   "Summary": {
     "title": "Resumen",
-    "description": "Ingeniero de Software Senior especializado en estabilizar y escalar plataformas cloud-native. Más de 9 años entregando sistemas de producción en entornos fintech y de alto tráfico. Fuerte dominio en arquitectura, infraestructura, observabilidad e integraciones con IA. Experiencia en mejorar confiabilidad, reducir riesgo operacional y acelerar entregas en equipos distribuidos.",
+    "experienceLabel": "Experiencia",
+    "experienceValue": "9+ años",
+    "description": "Ingeniero de Software Senior especializado en estabilizar y escalar plataformas cloud-native. Entrega de sistemas de producción en entornos fintech y de alto tráfico. Fuerte dominio en arquitectura, infraestructura, observabilidad e integraciones con IA. Experiencia en mejorar confiabilidad, reducir riesgo operacional y acelerar entregas en equipos distribuidos.",
     "coreLabel": "Principal",
     "coreValue": "TypeScript, Node.js, React, Java, AWS",
     "architectureLabel": "Arquitectura",
@@ -17,76 +19,122 @@
     "infraLabel": "Infra & Ops",
     "infraValue": "Kubernetes, Terraform, CI/CD, Observabilidad",
     "aiLabel": "IA",
-    "aiValue": "Integraciones con IA, OpenAI, Agentes",
+    "aiValue": "Cursor, Co-pilot, OpenAI, Agentes",
     "impactTitle": "Impacto Seleccionado",
+    "impactAnonymizeNote": "Todos los ítems siguientes y sus detalles reflejan iniciativas reales; cifras, nombres y cronogramas específicos han sido anonimizados para cumplir con los NDA.",
     "impact": [
-      "Migré workflows financieros legados a infraestructura cloud-native en entorno bancario regulado.",
-      "Diseñé y escalé sistemas event-driven sirviendo productos multi-mercado.",
-      "Implementé frameworks de observabilidad permitiendo decisiones operacionales basadas en datos.",
-      "Construí arquitectura de producto integrada con IA desde el concepto hasta producción."
+      {
+        "title": "Plataforma de Automatización de Garantías con IA",
+        "description": "Construí un sistema de automatización de garantías con IA usando motor de reglas JSON y workers asíncronos. Integré modelos de imagen, reintentos acotados y escalado, reemplazando el procesamiento manual por decisión automatizada fiable.",
+        "chips": [
+          "Complejidad: Alta",
+          "Requisito de Fiabilidad: Alto",
+          "Dependencia de IA: Alta",
+          "Volatilidad de Reglas de Negocio: Alta",
+          "Restricción de Tiempo: Alta"
+        ]
+      },
+      {
+        "title": "Contenido Personalizado con IA en Emails Transaccionales",
+        "description": "Implementé un motor de decisión vectorial en tiempo real para emails transaccionales. Emparejé embeddings de usuario con campañas en vivo en ~200ms @ ~100 RPS, inyectando personalización con IA en un flujo crítico de ingresos.",
+        "chips": [
+          "Valor de Negocio: Alto",
+          "Complejidad: Alta",
+          "Restricción de Latencia: Extrema",
+          "Requisito de Fiabilidad: Crítico",
+          "Dependencia de IA: Alta"
+        ]
+      },
+      {
+        "title": "Contratación de Descubierto Móvil - Orquestador SAGA Distribuido",
+        "description": "Diseñé un orquestador SAGA distribuido para la adhesión a descubierto vía móvil. Flujo event-driven y de alta concurrencia con reintentos acotados, DLQ y despliegue con cero downtime en un sistema regulado.",
+        "chips": [
+          "Complejidad: Extrema",
+          "Concurrencia: Alta",
+          "Restricción de Tiempo: Extrema",
+          "Requisito de Fiabilidad: Crítico",
+          "Contexto de Cumplimiento: Sí"
+        ]
+      }
     ],
+    "impactDetails": [
+      { "bodyPath": "impact/0" },
+      { "bodyPath": "impact/1" },
+      { "bodyPath": "impact/2" }
+    ],
+    "impactDetailClose": "Cerrar",
     "icon": "Resumen"
   },
   "Experience": {
     "title": "Experiencia",
     "roles": [
       {
+        "company": "Cliente Confidencial (Contrato)",
+        "period": "Ago/2025 - Dic/2025",
+        "position": "Ingeniero de Software Senior",
+        "desc": [
+          "Diseñé y entregué una plataforma de automatización de reclamaciones de garantía impulsada por IA, sustituyendo flujos manuales de soporte por un motor de decisión escalable basado en JSON integrado con modelos de evaluación por imagen.",
+          "Implementé procesamiento asíncrono con reintentos acotados y salvaguardas de escalado, integré actualizaciones de casos en Salesforce y automatizaciones de chatbot, y permití la evolución dinámica de reglas de negocio sin afectar producción."
+        ],
+        "tech": "TypeScript, Node.js, GraphQL, BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture"
+      },
+      {
         "company": "Plataforma de Fitness Personal",
-        "period": "Ago/2025 – Presente",
+        "period": "Ago/2025 - Presente",
         "position": "Fundador & Ingeniero de Software",
         "desc": [
-          "Arquitecturé y construí una plataforma mobile y backend impulsada por IA enfocada en fitness y bienestar personalizados.",
-          "Lideré desarrollo de producto de extremo a extremo: investigación de mercado, diseño de sistemas, arquitectura backend, integración con IA y automatización DevOps.",
-          "Diseñé backend escalable utilizando Clean Architecture y patrones event-driven.",
-          "Implementé pipelines CI/CD, infraestructura como código (Terraform), orquestación de contenedores (Kubernetes) y stack completo de observabilidad (New Relic, Sentry).",
-          "Desarrollé workflows de coaching impulsados por IA usando OpenAI y patrones de agentes."
+          "Fundando y construyendo una plataforma de fitness nativa en IA que ofrece entrenamientos y flujos de bienestar personalizados en sistemas móvil y backend.",
+          "Liderando la ejecución de producto de extremo a extremo: validación de mercado, modelado de dominio, arquitectura backend distribuida y sistemas de coaching impulsados por IA.",
+          "Arquitectura de backend escalable y orientado a eventos con Clean Architecture y fronteras modulares de servicio.",
+          "Implementé automatización de infraestructura, CI/CD, orquestación de contenedores y observabilidad full-stack para fiabilidad de nivel producción.",
+          "Diseñando flujos de coaching con IA basados en agentes que integran LLMs para guía adaptativa y contextual al usuario."
         ],
         "tech": "React Native (Expo), React, Node.js, TypeScript, GraphQL (Apollo Federation), BullMQ, Redis, Kafka, Kubernetes, Docker, Terraform, PostgreSQL, New Relic, Sentry, OpenAI"
       },
       {
         "company": "Ageras (Kontist)",
-        "period": "Jul/2024 – Jun/2025",
+        "period": "Jul/2024 - Jun/2025",
         "position": "Ingeniero de Software Senior",
         "desc": [
-          "Construí y mantuve funcionalidades core para productos de facturación y bancarios sirviendo pequeñas empresas en Europa.",
-          "Implementé decisiones técnicas a nivel empresarial, ayudando a estandarizar prácticas de ingeniería y mejorar la mantenibilidad a largo plazo.",
-          "Lideré iniciativas para mejorar observabilidad y monitoreo, permitiendo decisiones de producto y operacionales basadas en datos."
+          "Construí y mantuve funcionalidades core para productos de facturación y banca sirviendo a pequeñas empresas en Europa.",
+          "Implementé decisiones técnicas a nivel de empresa, estandarizando prácticas de ingeniería y mejorando mantenibilidad a largo plazo.",
+          "Lideré iniciativas de observabilidad y monitoreo, permitiendo decisiones de producto y operación basadas en datos."
         ],
         "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS, Terraform, Docker, PostgreSQL, Datadog, Sentry"
       },
       {
         "company": "Klarna",
-        "period": "Mar/2022 – Jun/2024",
+        "period": "Mar/2022 - Jun/2024",
         "position": "Ingeniero de Software",
         "desc": [
           "Desarrollé y evolucioné la plataforma de email transaccional y campañas de marketing de Klarna, soportando comunicación de alto volumen y multi-mercado.",
-          "Implementé un nuevo modelo de decision-engine de marketing permitiendo entrega de contenido personalizado usando machine-learning + búsqueda vectorial + recomendaciones IA."
+          "Implementé un nuevo modelo de decision-engine de marketing para entrega de contenido personalizado con machine learning, búsqueda vectorial y matching de recomendaciones con IA."
         ],
         "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Datadog, OpsGenie"
       },
       {
         "company": "MercadoLivre",
-        "period": "Oct/2020 – Feb/2022",
+        "period": "Oct/2020 - Feb/2022",
         "position": "Ingeniero de Software Senior",
         "desc": [
-          "Diseñé e implementé microservicios y micro-frontends para soportar cumplimiento fiscal y experiencia del usuario en América Latina.",
-          "Lideré desarrollo de sistemas back-office para gestión de exención fiscal y procesamiento de reembolsos."
+          "Diseñé e implementé microservicios y micro-frontends para cumplimiento fiscal y experiencia de usuario en América Latina.",
+          "Lideré el desarrollo de sistemas back-office para gestión de exención fiscal y procesamiento de reembolsos."
         ],
         "tech": "Java, React, Node.js, TypeScript, Express, Sass, Datadog, New Relic"
       },
       {
         "company": "Itaú Unibanco",
-        "period": "Jun/2020 – Oct/2020",
+        "period": "Jun/2020 - Oct/2020",
         "position": "Ingeniero de Software",
         "desc": [
-          "Migré funcionalidades críticas de mainframe legado a soluciones modernas basadas en la nube y containerizadas.",
-          "Desarrollé portales internos y máquinas de estado de workflow para operaciones de sobregiro y financieras."
+          "Migré funcionalidades críticas de mainframe legado a soluciones modernas en la nube y containerizadas.",
+          "Desarrollé portales internos y máquinas de estado de workflow para operaciones de descubierto y financieras."
         ],
         "tech": "Java, Spring State Machine, AngularJS, Kafka, Cassandra, AWS, OpenShift, Grafana"
       },
       {
         "company": "PagSeguro PagBank",
-        "period": "Nov/2019 – Jun/2020",
+        "period": "Nov/2019 - Jun/2020",
         "position": "Desarrollador de Sistemas",
         "desc": [
           "Construí herramientas internas para reducir tiempo de respuesta a incidentes y mejorar troubleshooting para equipos de soporte.",
@@ -96,10 +144,10 @@
       },
       {
         "company": "Five Validation",
-        "period": "Mar/2017 – Nov/2019",
+        "period": "Mar/2017 - Nov/2019",
         "position": "Desarrollador Full Stack de Sistemas",
         "desc": [
-          "Diseñé y entregué soluciones de software para validación de sistemas computacionales, reduciendo overhead operacional y esfuerzo manual.",
+          "Diseñé y entregué soluciones de software para validación de sistemas informáticos, reduciendo sobrecarga operacional y esfuerzo manual.",
           "Escalé prácticas técnicas asegurando calidad de código, estándares de documentación y procesos de release controlados."
         ],
         "tech": "Java, PostgreSQL, React, AWS CodeBuild, S3, CloudFront, RDS, Route53, Jenkins, SonarQube"

@@ -28,10 +28,4 @@ describe("SummarySection", () => {
     expect(screen.getByText("React")).toBeInTheDocument();
     expect(screen.getByText("AWS")).toBeInTheDocument();
   });
-
-  it("renders the selected impact title and items", () => {
-    renderWithProviders(<SummarySection />);
-    expect(screen.getByText("Selected Impact")).toBeInTheDocument();
-    expect(screen.getByText(/Migrated legacy financial/)).toBeInTheDocument();
-  });
 });

@@ -35,6 +35,7 @@ export function EducationSection() {
         side={getItemSide(SECTION_ID, 0)}
         iconSrc="/cps.png"
         iconAlt="CPS"
+        compact
       >
         {edu.map((item, i) => (
           <Box key={i} sx={{ mb: i < edu.length - 1 ? 2 : 0 }}>
@@ -56,6 +57,7 @@ export function EducationSection() {
         iconSrc="/aws.svg"
         iconAlt="AWS"
         iconScale={0.8}
+        compact
       >
         <Typography variant="h3" gutterBottom>
           {t("coursesTitle")}
@@ -69,7 +71,11 @@ export function EducationSection() {
 
       <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
 
-      <SectionItem sectionId={SECTION_ID} side={getItemSide(SECTION_ID, 2)}>
+      <SectionItem
+        sectionId={SECTION_ID}
+        side={getItemSide(SECTION_ID, 2)}
+        compact
+      >
         <Typography variant="h3" gutterBottom>
           {t("languagesTitle")}
         </Typography>
@@ -86,7 +92,11 @@ export function EducationSection() {
 
       <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
 
-      <SectionItem sectionId={SECTION_ID} side={getItemSide(SECTION_ID, 3)}>
+      <SectionItem
+        sectionId={SECTION_ID}
+        side={getItemSide(SECTION_ID, 3)}
+        compact
+      >
         <Typography variant="h3" gutterBottom>
           {t("workPermitsTitle")}
         </Typography>

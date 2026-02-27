@@ -13,34 +13,44 @@ import { useParallaxScroll } from "@/hooks/useParallaxScroll";
 
 interface SectionBackgroundProps {
   activeSection: SectionId;
+  previousSection: SectionId | null;
+  previousSectionOpacity: number;
 }
 
 /**
- * Fixed full-viewport layer showing the active section's background.
- * Applies a parallax transform on desktop and crossfades between section backgrounds.
- * Parallax is disabled on mobile to avoid scroll jank.
+ * Fixed full-viewport layer showing the active section's background, blending
+ * from the previous section over a scroll-linked zone, with parallax on desktop.
  */
-export function SectionBackground({ activeSection }: SectionBackgroundProps) {
+export function SectionBackground({
+  activeSection,
+  previousSection,
+  previousSectionOpacity,
+}: SectionBackgroundProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const gradients = SECTION_BG_GRADIENTS[theme.palette.mode];
   const parallaxOffset = useParallaxScroll(isMobile ? 0 : PARALLAX_FACTOR);
 
+  const activeGradient = gradients[activeSection];
+
   return (
     <Box
       sx={{
         position: "fixed",
-        top: 0,
-        left: 0,
+        inset: 0,
+        minHeight: "100vh",
         width: "100%",
-        height: "100vh",
+        height: "100%",
         zIndex: 0,
         overflow: "hidden",
         pointerEvents: "none",
+        background: activeGradient,
       }}
     >
       {SECTION_IDS.map((id) => {
         const isActive = activeSection === id;
+        const isPrevious = previousSection === id;
+        const opacity = isActive ? 1 : isPrevious ? previousSectionOpacity : 0;
         return (
           <Box
             key={id}
@@ -49,12 +59,12 @@ export function SectionBackground({ activeSection }: SectionBackgroundProps) {
               top: 0,
               left: 0,
               width: "100%",
-              height: isMobile ? "100%" : "150%",
+              height: isMobile ? "100%" : "500%",
               background: gradients[id],
               backgroundSize: "cover",
               backgroundPosition: "center",
-              opacity: isActive ? 1 : 0,
-              transition: "opacity 0.8s ease-in-out",
+              opacity,
+              transition: "opacity 0.5s ease-out",
               transform: isMobile ? "none" : `translateY(-${parallaxOffset}px)`,
               willChange: isMobile ? "opacity" : "transform, opacity",
             }}
