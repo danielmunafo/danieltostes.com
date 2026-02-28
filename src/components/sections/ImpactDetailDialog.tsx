@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
@@ -11,7 +11,6 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Link from "@mui/material/Link";
 import Typography from "@mui/material/Typography";
 import { useTheme } from "@mui/material/styles";
-import mermaid from "mermaid";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { BORDER_BY_MODE } from "@/constants/site";
@@ -88,86 +87,42 @@ const markdownComponents: Components = {
   ),
 };
 
-function mermaidSourceFromChildren(children: React.ReactNode): string {
-  if (typeof children === "string") return children;
-  if (Array.isArray(children))
-    return children.map((c) => (typeof c === "string" ? c : "")).join("");
-  return String(children ?? "");
-}
+const DIAGRAMS_PATH_PREFIX = "/content/diagrams/";
 
-/**
- * Renders a Mermaid diagram from markdown fenced code (```mermaid).
- * Clicking the diagram opens a fullscreen view.
- */
-function MermaidBlock({ children }: { children: React.ReactNode }) {
-  const id = useId().replace(/:/g, "");
-  const [svg, setSvg] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+/** Renders a pre-built diagram SVG with click-to-expand fullscreen. */
+function ExpandableDiagram({ src, alt }: { src: string; alt: string }) {
   const [expandOpen, setExpandOpen] = useState(false);
-  const source = mermaidSourceFromChildren(children);
-
-  useEffect(() => {
-    let cancelled = false;
-    mermaid.initialize({ startOnLoad: false });
-    const uniqueId = `mermaid-${id}`;
-    mermaid
-      .render(uniqueId, source)
-      .then(({ svg: s }) => {
-        if (!cancelled) setSvg(s);
-      })
-      .catch((e) => {
-        if (!cancelled)
-          setError(e instanceof Error ? e.message : "Diagram failed to render");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [id, source]);
-
-  if (error) {
-    return (
-      <Typography variant="body2" color="error" sx={{ my: 1 }}>
-        {error}
-      </Typography>
-    );
-  }
-  if (!svg) {
-    return (
-      <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>
-        Loading diagram…
-      </Typography>
-    );
-  }
-
-  const diagramBox = (
-    <Box
-      sx={{
-        overflow: "auto",
-        my: 2,
-        "& svg": { maxWidth: "100%" },
-        cursor: "pointer",
-        borderRadius: 1,
-        border: "1px solid",
-        borderColor: "divider",
-        "&:hover": { bgcolor: "action.hover" },
-      }}
-      onClick={() => setExpandOpen(true)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          setExpandOpen(true);
-        }
-      }}
-      aria-label="Expand diagram"
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
-  );
 
   return (
     <>
-      {diagramBox}
+      <Box
+        sx={{
+          overflow: "auto",
+          my: 2,
+          cursor: "pointer",
+          borderRadius: 1,
+          border: "1px solid",
+          borderColor: "divider",
+          "&:hover": { bgcolor: "action.hover" },
+        }}
+        onClick={() => setExpandOpen(true)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setExpandOpen(true);
+          }
+        }}
+        aria-label="Expand diagram"
+      >
+        <Box
+          component="img"
+          src={src}
+          alt={alt}
+          sx={{ maxWidth: "100%", display: "block" }}
+        />
+      </Box>
       <Dialog
         open={expandOpen}
         onClose={() => setExpandOpen(false)}
@@ -189,15 +144,12 @@ function MermaidBlock({ children }: { children: React.ReactNode }) {
         <Box
           sx={{
             width: "100%",
-            maxWidth: 1200,
             flex: 1,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             overflow: "auto",
-            "& svg": { maxWidth: "100%", height: "auto" },
           }}
-          dangerouslySetInnerHTML={{ __html: svg }}
           onClick={() => setExpandOpen(false)}
           role="button"
           tabIndex={0}
@@ -205,7 +157,14 @@ function MermaidBlock({ children }: { children: React.ReactNode }) {
             if (e.key === "Escape") setExpandOpen(false);
           }}
           aria-label="Close expanded diagram"
-        />
+        >
+          <Box
+            component="img"
+            src={src}
+            alt={alt}
+            sx={{ maxWidth: "100%", height: "auto" }}
+          />
+        </Box>
         <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
           Click or press Escape to close
         </Typography>
@@ -214,11 +173,25 @@ function MermaidBlock({ children }: { children: React.ReactNode }) {
   );
 }
 
-const markdownComponentsWithMermaid: Components = {
+const markdownComponentsWithDiagrams: Components = {
   ...markdownComponents,
-  code: ({ className, children, ...props }) => {
+  img: ({ src, alt }) => {
+    const srcStr = typeof src === "string" ? src : "";
+    const isDiagram = srcStr.includes(DIAGRAMS_PATH_PREFIX);
+    if (isDiagram) {
+      return <ExpandableDiagram src={srcStr} alt={alt ?? "diagram"} />;
+    }
+    return (
+      <Box
+        component="img"
+        src={srcStr}
+        alt={alt}
+        sx={{ maxWidth: "100%", my: 1 }}
+      />
+    );
+  },
+  code: ({ children, ...props }) => {
     const inline = "inline" in props && (props as { inline?: boolean }).inline;
-    const codeString = mermaidSourceFromChildren(children);
     if (inline) {
       return (
         <Typography
@@ -230,9 +203,6 @@ const markdownComponentsWithMermaid: Components = {
           {children}
         </Typography>
       );
-    }
-    if (className?.includes("language-mermaid")) {
-      return <MermaidBlock>{codeString}</MermaidBlock>;
     }
     return (
       <Box
@@ -414,7 +384,7 @@ export function ImpactDetailDialog({
             {markdown && (
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
-                components={markdownComponentsWithMermaid}
+                components={markdownComponentsWithDiagrams}
               >
                 {markdown}
               </ReactMarkdown>

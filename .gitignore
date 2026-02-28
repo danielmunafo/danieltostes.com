@@ -24,6 +24,9 @@
 # production / build
 /build
 
+# build-time generated Mermaid diagram SVGs
+public/content/diagrams/
+
 # env files (opt-in to commit if needed)
 .env*
 
