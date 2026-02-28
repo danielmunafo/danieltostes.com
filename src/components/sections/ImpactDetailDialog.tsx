@@ -162,7 +162,7 @@ function ExpandableDiagram({ src, alt }: { src: string; alt: string }) {
             component="img"
             src={src}
             alt={alt}
-            sx={{ maxWidth: "100%", height: "auto" }}
+            sx={{ maxWidth: 1200, width: "100%", height: "auto" }}
           />
         </Box>
         <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>

@@ -86,13 +86,13 @@ async function main() {
         console.log(`  generated ${name}`);
       }
     }
+
+    for (const { filePath, updated } of fileResults) {
+      writeFileSync(filePath, updated);
+      console.log(`  updated  ${relative(".", filePath)}`);
+    }
   } finally {
     await browser.close();
-  }
-
-  for (const { filePath, updated } of fileResults) {
-    writeFileSync(filePath, updated);
-    console.log(`  updated  ${relative(".", filePath)}`);
   }
 
   console.log(`render-mermaid: done (${totalDiagrams} SVGs).`);
