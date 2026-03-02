@@ -12,6 +12,9 @@ This file is a compact map for AI agents. Use it to discover the right rules and
 
 ### Code areas
 
+- **Code review (pre-completion)**
+  - `.cursor/rules/code-review/RULE.md`
+  - Run before finishing: review changes against AGENTS.md and relevant RULEs; enforce guidelines.
 - **Documentation (all docs)**
   - `.cursor/rules/documentation/RULE.md`
   - When to update docs; applies to `docs/` and `docs/plans/`.
