@@ -24,3 +24,10 @@ Personal blog/CV site. Next.js, static export (`output: 'export'`), S3 hosting. 
 ## Architecture
 
 SPA, client-side rendering, static export for S3. See `docs/architecture.md` and `docs/diagrams.md` for details.
+
+## AI usage
+
+- **Start here**: skim this `AGENTS.md` for stack, style, and architecture context.
+- **Find area-specific rules** via `.cursor/AI_INDEX.md` (global map of code areas and RULE files).
+- **Before large changes**, open the relevant `.cursor/rules/**/RULE.md` file (e.g. app, components, theme, hooks, i18n, testing, scripts) to understand local constraints.
+- **Use detailed docs** in `docs/architecture.md` and `docs/diagrams.md` only when architecture-level context is needed; prefer the small RULE files to minimize navigation.
