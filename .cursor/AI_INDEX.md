@@ -24,6 +24,8 @@ This file is a compact map for AI agents. Use it to discover the right rules and
   - `.cursor/rules/testing/RULE.md`
 - **Scripts & tooling**
   - `.cursor/rules/scripts/RULE.md`
+- **Dependencies (npm)**
+  - `.cursor/rules/dependencies/RULE.md`
 
 ### Skills
 
