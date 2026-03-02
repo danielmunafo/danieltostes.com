@@ -7,9 +7,9 @@ This repository uses automated semantic versioning based on [Conventional Commit
 Every merge to the `main` branch triggers an automated release workflow that:
 
 1. **Calculates the next version** based on commit messages since the last tag:
-   - `feat:` → Minor version bump (e.g., 1.2.0 → 1.3.0)
-   - `fix:` → Patch version bump (e.g., 1.2.0 → 1.2.1)
-   - `feat!:` or commits with `BREAKING CHANGE` → Major version bump (e.g., 1.2.0 → 2.0.0)
+   - `feat:` or `feat(scope):` → Minor version bump (e.g., 1.2.0 → 1.3.0)
+   - `fix:` or `fix(scope):` → Patch version bump (e.g., 1.2.0 → 1.2.1)
+   - `feat!:` or `feat(scope)!:` or commits with `BREAKING CHANGE:` footer → Major version bump (e.g., 1.2.0 → 2.0.0)
 
 2. **Updates version files**:
    - Updates `package.json` version
@@ -29,9 +29,10 @@ Every merge to the `main` branch triggers an automated release workflow that:
 
 Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
 
-- `feat: add new feature` - New feature (minor bump)
-- `fix: resolve bug` - Bug fix (patch bump)
-- `feat!: breaking change` - Breaking change (major bump)
+- `feat: add new feature` or `feat(ui): add button` - New feature (minor bump)
+- `fix: resolve bug` or `fix(auth): login issue` - Bug fix (patch bump)
+- `feat!: breaking change` or `feat(api)!: remove endpoint` - Breaking change in header (major bump)
+- `feat: add feature` with `BREAKING CHANGE:` in body - Breaking change in footer (major bump)
 - `chore: maintenance` - No version bump (unless it's the only commit type)
 
 ## Workflow Files

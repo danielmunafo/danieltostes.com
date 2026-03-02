@@ -37,13 +37,21 @@ const getCurrentVersion = () => {
 
 const getCommitsSinceTag = (tag) => {
   try {
-    const range = tag ? `${tag}..HEAD` : "HEAD";
-    const commits = execSync(`git log ${range} --pretty=format:"%s"`, {
+    // When no tag exists, get all commits (not just HEAD)
+    // Use %H%n%B format to get hash + full body, separated by newline
+    const command = tag
+      ? `git log ${tag}..HEAD --pretty=format:"%H%n%B%n---COMMIT-SEPARATOR---"`
+      : `git log --pretty=format:"%H%n%B%n---COMMIT-SEPARATOR---"`;
+    const output = execSync(command, {
       encoding: "utf-8",
-    })
-      .trim()
-      .split("\n")
+    }).trim();
+
+    // Split by our separator and filter out empty entries
+    const commits = output
+      .split("---COMMIT-SEPARATOR---")
+      .map((commit) => commit.trim())
       .filter(Boolean);
+
     return commits;
   } catch {
     return [];
@@ -74,23 +82,29 @@ const analyzeCommits = (commits) => {
   for (const commit of commits) {
     const lowerCommit = commit.toLowerCase();
 
+    // Extract subject line (first line) for header checks
+    const subject = commit.split("\n")[0].toLowerCase();
+
     // Check for breaking changes
-    if (
-      lowerCommit.includes("breaking change") ||
-      lowerCommit.includes("!") ||
-      /^[^:]+!:/.test(lowerCommit)
-    ) {
+    // 1. BREAKING CHANGE in body/footer
+    if (lowerCommit.includes("breaking change:")) {
       hasBreaking = true;
       break; // Major bump takes precedence
     }
 
-    // Check for features
-    if (lowerCommit.startsWith("feat:")) {
+    // 2. Breaking change indicator in header (feat!: or feat(scope)!:)
+    if (/^([a-z]+)(\([^)]*\))?!:/.test(subject)) {
+      hasBreaking = true;
+      break; // Major bump takes precedence
+    }
+
+    // Check for features (with optional scope)
+    if (/^feat(\([^)]*\))?:/.test(subject)) {
       hasFeature = true;
     }
 
-    // Check for fixes
-    if (lowerCommit.startsWith("fix:")) {
+    // Check for fixes (with optional scope)
+    if (/^fix(\([^)]*\))?:/.test(subject)) {
       hasFix = true;
     }
   }
@@ -112,12 +126,15 @@ const calculateNextVersion = () => {
   }
 
   // Filter out version bump commits and merge commits
-  const relevantCommits = commits.filter(
-    (commit) =>
-      !commit.toLowerCase().startsWith("chore: bump version") &&
-      !commit.toLowerCase().startsWith("chore(release):") &&
-      !commit.toLowerCase().startsWith("merge")
-  );
+  // Extract subject line for filtering
+  const relevantCommits = commits.filter((commit) => {
+    const subject = commit.split("\n")[0].toLowerCase();
+    return (
+      !subject.startsWith("chore: bump version") &&
+      !subject.startsWith("chore(release):") &&
+      !subject.startsWith("merge")
+    );
+  });
 
   // If only version bump commits, no new version needed
   if (relevantCommits.length === 0 && lastTag) {
@@ -150,9 +167,11 @@ const main = () => {
       process.exit(1);
     }
     console.log(nextVersion);
+    process.exit(0);
   } catch (error) {
     console.error("Error calculating next version:", error.message);
-    process.exit(1);
+    // Exit with code 2 to indicate actual error (distinct from no-bump)
+    process.exit(2);
   }
 };
 

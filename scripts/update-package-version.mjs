@@ -4,9 +4,18 @@
  */
 
 import { readFileSync, writeFileSync } from "fs";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 const updateVersion = (version) => {
+  // Validate version format (SemVer)
+  const semverRegex =
+    /^\d+\.\d+\.\d+(-[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*)?(\+[a-zA-Z0-9-]+)?$/;
+  if (!semverRegex.test(version)) {
+    throw new Error(
+      `Invalid version format: ${version}. Expected SemVer format (e.g., 1.2.3)`
+    );
+  }
+
   try {
     // Update package.json
     const packageJsonPath = "package.json";
@@ -14,9 +23,10 @@ const updateVersion = (version) => {
     packageJson.version = version;
     writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + "\n");
 
-    // Update package-lock.json using npm
-    execSync(
-      "npm version --no-git-tag-version --allow-same-version " + version,
+    // Update package-lock.json using npm (use execFileSync to avoid shell injection)
+    execFileSync(
+      "npm",
+      ["version", "--no-git-tag-version", "--allow-same-version", version],
       {
         stdio: "inherit",
       }
