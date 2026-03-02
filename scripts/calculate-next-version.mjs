@@ -47,6 +47,7 @@ const getCommitsSinceTag = (tag) => {
     }).trim();
 
     // Split by our separator and filter out empty entries
+    // Each commit has format: SHA\nBODY
     const commits = output
       .split("---COMMIT-SEPARATOR---")
       .map((commit) => commit.trim())
@@ -82,12 +83,29 @@ const analyzeCommits = (commits) => {
   for (const commit of commits) {
     const lowerCommit = commit.toLowerCase();
 
-    // Extract subject line (first line) for header checks
+    // Extract subject line from commit body
+    // Format is: SHA\nBODY, so we need the first line of the body (second line overall)
+    // For merge commits, skip "Merge pull request" or "Merge branch" lines
+    const lines = commit.split("\n");
+    let subjectLine = "";
+
+    // Find the first non-empty line after the SHA (first line)
+    // Skip merge commit headers like "Merge pull request #16 from..."
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line && !line.toLowerCase().startsWith("merge ")) {
+        subjectLine = line;
+        break;
+      }
+    }
+
+    // If no subject found, use first non-empty line of body
+    if (!subjectLine) {
+      subjectLine = lines.slice(1).find((line) => line.trim()) || "";
+    }
+
     // Remove PR number suffix like "(#16)" that GitHub adds to merge commits
-    const subject = commit
-      .split("\n")[0]
-      .toLowerCase()
-      .replace(/\s*\(#\d+\)\s*$/, "");
+    const subject = subjectLine.toLowerCase().replace(/\s*\(#\d+\)\s*$/, "");
 
     // Check for breaking changes
     // 1. BREAKING CHANGE in body/footer

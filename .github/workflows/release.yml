@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: read
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
@@ -93,10 +94,10 @@ jobs:
           if [ -n "$PR_NUMBER" ]; then
             PR_URL="https://github.com/${{ github.repository }}/pull/$PR_NUMBER"
             # Fetch PR title using GitHub CLI
-            PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq -r '.title' 2>/dev/null || echo "")
+            PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title' 2>/dev/null || echo "")
             if [ -z "$PR_TITLE" ]; then
               # Fallback: use merge commit subject without PR number
-              PR_TITLE=$(echo "$MERGE_COMMIT" | sed 's/\s*(#[0-9]*)\s*$//')
+              PR_TITLE=$(echo "$MERGE_COMMIT" | sed 's/[[:space:]]*(#[0-9][0-9]*)[[:space:]]*$//')
             fi
             
             echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
