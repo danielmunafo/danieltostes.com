@@ -7,7 +7,7 @@ This RULE file governs **testing**, including:
 
 ## Key constraints
 
-- Follow the testing strategy described in `docs/scaffolding-implementation-plan.md` (when present) and related docs.
+- Follow the testing strategy described in `docs/plans/scaffolding-implementation-plan.md` (when present) and related docs.
 - Use Vitest for unit and component-level tests; use Playwright for end-to-end flows against the built `out/` directory.
 - Keep tests focused and fast; avoid brittle implementation-detail assertions.
 - **Before committing or pushing**: Update and run tests so they pass; ensure linters pass (`npm run lint`, `npm run format:check`). The pre-push hook runs format check, lint, and unit tests—fix any failures before pushing.

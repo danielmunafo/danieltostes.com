@@ -5,8 +5,10 @@ This file is a compact map for AI agents. Use it to discover the right rules and
 ### Global
 
 - `AGENTS.md` — high-level stack, code style, CSS and architecture pointers.
+- `docs/README.md` — documentation index (architecture, design principles, development, deployment).
 - `docs/architecture.md` — system goals, constraints, and key decisions.
 - `docs/diagrams.md` — CI/CD and AWS infra diagrams.
+- `docs/development.md` — local scripts, git hooks, CI summary.
 
 ### Code areas
 
@@ -26,6 +28,9 @@ This file is a compact map for AI agents. Use it to discover the right rules and
   - `.cursor/rules/scripts/RULE.md`
 - **Dependencies (npm)**
   - `.cursor/rules/dependencies/RULE.md`
+- **Plans (implementation / execution)**
+  - `.cursor/rules/plans/RULE.md`
+  - Plans live in `docs/plans/`; see `docs/plans/README.md`.
 
 ### Skills
 
