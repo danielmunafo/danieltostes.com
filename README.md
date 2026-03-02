@@ -54,6 +54,8 @@ Setup and secrets: [docs/deployment-setup.md](docs/deployment-setup.md).
 
 See [docs/README.md](docs/README.md) for the full documentation index.
 
+**AI / Cursor:** [AGENTS.md](AGENTS.md) has stack and style rules plus **how to use skills** (where they live, when to use them, example prompts). Skill list and invocation examples: [.cursor/AI_INDEX.md](.cursor/AI_INDEX.md) → Skills.
+
 ---
 
 ## License
