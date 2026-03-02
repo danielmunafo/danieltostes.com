@@ -77,7 +77,7 @@ jobs:
           # Get the merge commit message to extract PR number
           MERGE_COMMIT=$(git log -1 --pretty=format:"%s")
           PR_NUMBER=$(echo "$MERGE_COMMIT" | grep -oP '#\K\d+' || echo "")
-          
+
           if [ -n "$PR_NUMBER" ]; then
             PR_URL="https://github.com/${{ github.repository }}/pull/$PR_NUMBER"
             echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
@@ -88,7 +88,7 @@ jobs:
             echo "pr_url=" >> $GITHUB_OUTPUT
             echo "has_pr=false" >> $GITHUB_OUTPUT
           fi
-          
+
           # Get commit messages since last tag
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -z "$LAST_TAG" ]; then
@@ -99,7 +99,7 @@ jobs:
           echo "commits<<EOF" >> $GITHUB_OUTPUT
           echo "$COMMITS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-          
+
           # Build release body
           RELEASE_BODY="## Changes"$'\n\n'"$COMMITS"$'\n\n'
           if [ "$PR_NUMBER" != "" ]; then
