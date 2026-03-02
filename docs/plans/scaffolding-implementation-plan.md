@@ -1,13 +1,13 @@
 # Implementation Plan (Scaffolding PR)
 
-This document describes the execution plan and technology choices for the initial scaffolding of the personal portfolio site. It is intended for **pull request reviewers** and aligns with the architectural decisions in [docs/architecture.md](./architecture.md) and the system view in [docs/diagrams.md](./diagrams.md).
+This document describes the execution plan and technology choices for the initial scaffolding of the personal portfolio site. It is intended for **pull request reviewers** and aligns with the architectural decisions in [docs/architecture.md](../architecture.md) and the system view in [docs/diagrams.md](../diagrams.md).
 
 ---
 
 ## Alignment with Architecture and Diagrams
 
-- **Architecture:** The implementation follows [docs/architecture.md](./architecture.md): static-first export, S3/CloudFront deployment target, no runtime server, Lighthouse target ≥ 95, MUI + theme tokens, i18n with per-locale loading.
-- **Diagrams:** CI/CD and deployment flow match [docs/diagrams.md](./diagrams.md) (GitHub Actions → build → S3 sync → CloudFront invalidation; Route 53 → CloudFront → S3).
+- **Architecture:** The implementation follows [docs/architecture.md](../architecture.md): static-first export, S3/CloudFront deployment target, no runtime server, Lighthouse target ≥ 95, MUI + theme tokens, i18n with per-locale loading.
+- **Diagrams:** CI/CD and deployment flow match [docs/diagrams.md](../diagrams.md) (GitHub Actions → build → S3 sync → CloudFront invalidation; Route 53 → CloudFront → S3).
 - Referencing these docs gives reviewers a single source of truth for _why_ choices were made, not only _what_ was built.
 
 ---
@@ -36,7 +36,7 @@ This document describes the execution plan and technology choices for the initia
 | Familiar to many reviewers and interviewers.          | Framework overhead vs. a minimal Vite setup.                                      |
 | Fits architecture: static-first, S3 deploy.           |                                                                                   |
 
-**Decision:** Use Next.js for structure and conventions; accept the constraint of static export for S3. See [architecture.md – Why Next.js](./architecture.md#why-next-js-static-export-over-pure-vite).
+**Decision:** Use Next.js for structure and conventions; accept the constraint of static export for S3. See [architecture.md – Why Next.js](../architecture.md#why-nextjs-static-export-over-pure-vite).
 
 ---
 
@@ -44,12 +44,12 @@ This document describes the execution plan and technology choices for the initia
 
 | Pros                                                                                                                                                                                                                                                                                            | Cons                                                                                                                           |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Static and performant:** Each locale is pre-rendered at build time; no runtime locale detection.                                                                                                                                                                                              | More URLs to manage; redirect or link strategy for “default” locale (e.g. `/` → `/en`).                                        |
+| **Static and performant:** Each locale is pre-rendered at build time; no runtime locale detection.                                                                                                                                                                                              | More URLs to manage; redirect or link strategy for "default" locale (e.g. `/` → `/en`).                                        |
 | **On-demand loading:** Dynamic `import(\`@/messages/${locale}.json\`)`in`getRequestConfig`makes the bundler emit one chunk per locale. Visiting`/en`only loads the English chunk; navigating to`/pt-BR` loads the Portuguese chunk when the user switches. No single bundle with all languages. | Switching language in-app is in-place (no URL change); locale routes remain the source of truth for direct access and sharing. |
 | **SEO and shareability:** Each locale has a stable URL (e.g. `/pt-BR`), which is better for indexing and sharing.                                                                                                                                                                               |                                                                                                                                |
 | **Aligns with static export:** No `headers()` or cookies at runtime; `setRequestLocale` + `getMessages({ locale })` keep build static.                                                                                                                                                          |                                                                                                                                |
 
-**Decision:** Use a route per locale so the app stays static, fast, and cacheable at the edge, with language-specific URLs and on-demand message loading. This is documented in [architecture.md – i18n Strategy](./architecture.md#i18n-strategy).
+**Decision:** Use a route per locale so the app stays static, fast, and cacheable at the edge, with language-specific URLs and on-demand message loading. This is documented in [architecture.md – i18n Strategy](../architecture.md#i18n-strategy).
 
 ---
 
@@ -61,7 +61,7 @@ This document describes the execution plan and technology choices for the initia
 | `sx` and `styled()` keep styling in one system; design tokens live in `src/theme/`. | Extra dependency surface (MUI + Emotion).                |
 | Fast UI iteration without building a design system from scratch.                    |                                                          |
 
-**Decision:** MUI + theme tokens + CssBaseline; prefer `sx` for most styling and `styled()` for reusable blocks. See [architecture.md – Why MUI](./architecture.md#why-mui-over-tailwind) and [AGENTS.md – CSS / Styling](../AGENTS.md#css--styling).
+**Decision:** MUI + theme tokens + CssBaseline; prefer `sx` for most styling and `styled()` for reusable blocks. See [architecture.md – Why MUI](../architecture.md#why-mui-over-tailwind) and [AGENTS.md – CSS / Styling](../../AGENTS.md#css-mui-only-no-extra-styling-lib).
 
 ---
 
@@ -92,7 +92,7 @@ This document describes the execution plan and technology choices for the initia
 
 ### 6. `npm start` serves `out/` (no `next start`)
 
-With `output: 'export'`, there is no Next.js server. **Decision:** `start` script runs `serve out -p 3000` so “start” means “serve the static export.” Build once with `npm run build`, then `npm start` to preview.
+With `output: 'export'`, there is no Next.js server. **Decision:** `start` script runs `serve out -p 3000` so "start" means "serve the static export." Build once with `npm run build`, then `npm start` to preview.
 
 ---
 
@@ -123,9 +123,9 @@ With `output: 'export'`, there is no Next.js server. **Decision:** `start` scrip
 
 ## References
 
-- [docs/architecture.md](./architecture.md) — Goals, constraints, static export, Next.js vs Vite, MUI, i18n, bundle budget.
-- [docs/diagrams.md](./diagrams.md) — CI/CD sequence, S3 + CloudFront + Route 53.
-- [docs/lighthouse-and-performance.md](./lighthouse-and-performance.md) — How we address Lighthouse insights (cache, legacy JS, MUI tree-shaking) and what is deploy/environment.
-- [AGENTS.md](../AGENTS.md) — Coding practices, CSS/styling rules, constants and condition variables.
+- [docs/architecture.md](../architecture.md) — Goals, constraints, static export, Next.js vs Vite, MUI, i18n, bundle budget.
+- [docs/diagrams.md](../diagrams.md) — CI/CD sequence, S3 + CloudFront + Route 53.
+- [docs/architecture.md](../architecture.md) — Bundle size and performance budgets (see "Bundle Size and Performance Budgets").
+- [AGENTS.md](../../AGENTS.md) — Coding practices, CSS/styling rules, constants and condition variables.
 
 This plan and the implementation were developed to satisfy the scaffolding requirements while staying consistent with the above architecture and diagrams.
