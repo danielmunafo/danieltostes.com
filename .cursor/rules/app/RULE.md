@@ -25,6 +25,29 @@ This RULE file governs the **Next.js app shell and routing**, including:
   - Edit layout components in `src/app/(...)/layout.tsx`.
   - Keep cross-cutting UI primitives in shared components rather than inlining complex logic in layouts.
 
+## Examples
+
+**Static-export friendly — locale from segment, no server APIs:**
+
+```ts
+// getRequestConfig receives locale from the [locale] segment (build-time).
+const locale = await getLocale(); // from params or config, not headers()
+const messages = (await import(`@/messages/${locale}.json`)).default;
+return { messages, locale };
+```
+
+**Breaks static export — server-only or runtime detection:**
+
+```ts
+// BAD: headers() is undefined at build time; static export fails or skips.
+const locale = headers().get("x-next-intl-locale") ?? "en";
+
+// BAD: API route or server action — not available with output: 'export'.
+export async function GET() { return Response.json({ ... }); }
+```
+
+Use explicit `[locale]` in the path and `generateStaticParams` (or equivalent) so every locale is pre-rendered; do not depend on `headers()`, `cookies()`, or server-only APIs in app router code that runs during the export.
+
 ## Gotchas
 
 - Do **not** rely on Node-only or server-only APIs in app router code that participates in static export.

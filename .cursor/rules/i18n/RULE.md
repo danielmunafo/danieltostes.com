@@ -28,6 +28,23 @@ This RULE file governs **i18n and messages**, including:
   - Wire it into the i18n configuration in `src/i18n/**` so routes and loaders know about it.
   - Ensure the new locale works with static export (pre-rendered paths, no runtime-only fallbacks).
 
+## Examples
+
+**Good — add a message key in all locales (same key, different values):**
+
+```json
+// In src/messages/en.json:     "hero.subtitle": "Senior Software Engineer"
+// In src/messages/pt-BR.json:  "hero.subtitle": "Engenheiro de Software Sênior"
+// In src/messages/es.json:     "hero.subtitle": "Ingeniero de Software Senior"
+// In src/messages/it.json:     "hero.subtitle": "Ingegnere del software senior"
+```
+
+**Bad — only updating one locale:** Adding `"hero.subtitle": "..."` to `en.json` only. Result: missing key in pt-BR, es, it; broken or fallback UI for other locales.
+
+**Good — add locale-specific content:** Adding `public/content/impact/3/en.md` means you also add `impact/3/pt-BR.md`, `impact/3/es.md`, `impact/3/it.md` in the same change.
+
+**Bad — only one locale file:** Creating only `public/content/impact/3/en.md`. Result: 404 or wrong content when users switch to pt-BR, es, or it.
+
 ## Gotchas
 
 - **Never update only one locale**: If you touch `src/messages/en.json` or any `public/content/.../en.md`, you must touch the corresponding pt-BR, es, and it files in the same change.
