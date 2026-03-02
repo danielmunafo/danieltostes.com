@@ -39,6 +39,8 @@ npm start        # serve out/ (preview)
 Other: `npm run lint`, `npm run format:check`, `npm run test`, `npm run test:e2e`.  
 Pre-push runs format check, lint, and unit tests. Full workflow: [docs/development.md](docs/development.md).
 
+**When starting a change:** 1) Read [AGENTS.md](AGENTS.md). 2) Find the relevant RULE in [.cursor/AI_INDEX.md](.cursor/AI_INDEX.md). 3) Make your change. 4) Run checks (pre-push runs format check, lint, test). 5) Do the pre-completion review (see [AGENTS.md](AGENTS.md) and [.cursor/rules/code-review/RULE.md](.cursor/rules/code-review/RULE.md)).
+
 ---
 
 ## CI/CD

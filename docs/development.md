@@ -4,6 +4,18 @@ Local workflow, scripts, and quality checks. For CI/CD and deployment, see [depl
 
 ---
 
+## When starting a change
+
+Single flow for humans and agents (north star):
+
+1. **Read [AGENTS.md](../AGENTS.md)** — stack, code style, CSS, and AI usage.
+2. **Find the relevant RULE** in [.cursor/AI_INDEX.md](../.cursor/AI_INDEX.md) — app, components, theme, i18n, testing, dependencies, etc.
+3. **Make your change** — follow the RULE’s constraints and examples.
+4. **Run checks** — pre-commit (format + lint on staged files) and pre-push (format check, lint, unit tests). Fix any failures before pushing.
+5. **Do the pre-completion review** — re-read AGENTS.md and the RULEs you touched; ensure no violations. See [.cursor/rules/code-review/RULE.md](../.cursor/rules/code-review/RULE.md).
+
+---
+
 ## Setup and run
 
 ```bash
