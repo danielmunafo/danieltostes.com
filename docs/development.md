@@ -47,6 +47,6 @@ npm start        # Serves out/ locally (preview production build)
 ## CI/CD summary
 
 - **Pull requests**: Lint, format check, unit tests, build, E2E tests, then deploy to **dev** for preview.
-- **Main branch**: Same checks, then deploy to **production** (S3 + CloudFront invalidation).
+- **Main branch**: Same checks, then deploy to **production** (S3 + CloudFront invalidation), then create a semantic version tag and GitHub Release.
 
-Environments and secrets are described in [deployment-setup.md](./deployment-setup.md).
+Environments and secrets are described in [deployment-setup.md](./deployment-setup.md). For details on the automated release process, see [release-process.md](./release-process.md).
