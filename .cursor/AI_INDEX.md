@@ -12,6 +12,9 @@ This file is a compact map for AI agents. Use it to discover the right rules and
 
 ### Code areas
 
+- **Documentation (all docs)**
+  - `.cursor/rules/documentation/RULE.md`
+  - When to update docs; applies to `docs/` and `docs/plans/`.
 - **App shell & routing**
   - `.cursor/rules/app/RULE.md`
 - **Components & sections**

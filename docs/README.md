@@ -8,3 +8,5 @@
 | [development.md](./development.md)             | Local scripts, git hooks, CI/CD summary                                      |
 | [deployment-setup.md](./deployment-setup.md)   | GitHub Actions, environments, AWS (S3, CloudFront), secrets                  |
 | [plans/README.md](./plans/README.md)           | Implementation and execution plans (scaffolding, parallax, etc.)             |
+
+When code, config, or behavior changes in a way that affects a doc, update that doc. See `.cursor/rules/documentation/RULE.md` for conventions.

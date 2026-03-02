@@ -7,4 +7,4 @@ This directory holds **implementation plans** and **execution plans** for featur
 | [scaffolding-implementation-plan.md](./scaffolding-implementation-plan.md) | Initial scaffolding: stack, i18n, testing, CI, verification steps |
 | [parallax-sections-plan.md](./parallax-sections-plan.md)                   | Parallax two-plane scrolling, glassmorphism, section layout       |
 
-When creating or documenting new plans, place them here and follow the structure of existing plans. See `.cursor/rules/plans/RULE.md` for conventions.
+**Conventions:** See `.cursor/rules/plans/RULE.md` (plan location and structure) and `.cursor/rules/documentation/RULE.md` (updating and versioning all docs, including plans).
