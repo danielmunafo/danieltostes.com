@@ -37,6 +37,9 @@ This file is a compact map for AI agents. Use it to discover the right rules and
 - **Plans (implementation / execution)**
   - `.cursor/rules/plans/RULE.md`
   - Plans live in `docs/plans/`; see `docs/plans/README.md`.
+- **Commits (structure & organization)**
+  - `.cursor/rules/commits/RULE.md`
+  - Commit structure, grouping changes, conventional commits format.
 
 ### Skills
 
