@@ -25,7 +25,8 @@ This file is a compact map for AI agents. Use it to discover the right rules and
 - **Scripts & tooling**
   - `.cursor/rules/scripts/RULE.md`
 
-### Skills (future)
+### Skills
 
-- No dedicated skills yet.
-- When skills are added (e.g. `.cursor/skills/.../SKILL.md`), list them here so agents can find reusable workflows quickly.
+- **Portfolio career reviewer**
+  - `.cursor/skills/portfolio-career-reviewer/SKILL.md`
+  - Use for reviewing or writing `.md` entries about Daniel's jobs, projects, and experience with a senior/staff engineer advocate voice.
