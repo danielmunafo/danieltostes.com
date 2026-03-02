@@ -83,6 +83,8 @@ jobs:
       - name: Get PR information
         if: steps.version.outputs.skip == 'false' && steps.check-tag.outputs.exists == 'false'
         id: pr-info
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Get the merge commit message to extract PR number
           MERGE_COMMIT=$(git log -1 --pretty=format:"%s")
@@ -90,12 +92,21 @@ jobs:
 
           if [ -n "$PR_NUMBER" ]; then
             PR_URL="https://github.com/${{ github.repository }}/pull/$PR_NUMBER"
+            # Fetch PR title using GitHub CLI
+            PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq -r '.title' 2>/dev/null || echo "")
+            if [ -z "$PR_TITLE" ]; then
+              # Fallback: use merge commit subject without PR number
+              PR_TITLE=$(echo "$MERGE_COMMIT" | sed 's/\s*(#[0-9]*)\s*$//')
+            fi
+            
             echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
             echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+            echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
             echo "has_pr=true" >> $GITHUB_OUTPUT
           else
             echo "pr_number=" >> $GITHUB_OUTPUT
             echo "pr_url=" >> $GITHUB_OUTPUT
+            echo "pr_title=" >> $GITHUB_OUTPUT
             echo "has_pr=false" >> $GITHUB_OUTPUT
           fi
 
@@ -113,7 +124,11 @@ jobs:
           # Build release body
           RELEASE_BODY="## Changes"$'\n\n'"$COMMITS"$'\n\n'
           if [ "$PR_NUMBER" != "" ]; then
-            RELEASE_BODY+="## Related PR"$'\n\n'"- PR #$PR_NUMBER: $PR_URL"$'\n\n'
+            if [ -n "$PR_TITLE" ]; then
+              RELEASE_BODY+="## Related PR"$'\n\n'"- PR #$PR_NUMBER: [$PR_TITLE]($PR_URL)"$'\n\n'
+            else
+              RELEASE_BODY+="## Related PR"$'\n\n'"- PR #$PR_NUMBER: $PR_URL"$'\n\n'
+            fi
           fi
           RELEASE_BODY+="---"$'\n\n'"This release was automatically created from merge to main."
           echo "release_body<<EOF" >> $GITHUB_OUTPUT

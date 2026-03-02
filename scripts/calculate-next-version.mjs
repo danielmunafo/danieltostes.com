@@ -83,7 +83,11 @@ const analyzeCommits = (commits) => {
     const lowerCommit = commit.toLowerCase();
 
     // Extract subject line (first line) for header checks
-    const subject = commit.split("\n")[0].toLowerCase();
+    // Remove PR number suffix like "(#16)" that GitHub adds to merge commits
+    const subject = commit
+      .split("\n")[0]
+      .toLowerCase()
+      .replace(/\s*\(#\d+\)\s*$/, "");
 
     // Check for breaking changes
     // 1. BREAKING CHANGE in body/footer
@@ -99,13 +103,16 @@ const analyzeCommits = (commits) => {
     }
 
     // Check for features (with optional scope)
+    // Match feat: or feat(scope): at the start of the subject
     if (/^feat(\([^)]*\))?:/.test(subject)) {
       hasFeature = true;
+      // Don't break here - continue checking for breaking changes
     }
 
     // Check for fixes (with optional scope)
     if (/^fix(\([^)]*\))?:/.test(subject)) {
       hasFix = true;
+      // Don't break here - continue checking for breaking/feat
     }
   }
 
