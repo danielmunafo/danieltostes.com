@@ -10,7 +10,7 @@ Run this review **after** you have made all edits and **before** you send your f
 
 1. **Re-read AGENTS.md** (stack, code style, CSS, AI usage). Ensure your changes comply (constants, descriptive condition variables, MUI-only styling, theme-first, etc.).
 
-2. **Re-read the RULE.md for each area you touched** (from `.cursor/AI_INDEX.md`): app, components, theme, hooks, i18n, testing, scripts, dependencies, documentation, plans. Confirm constraints and gotchas are satisfied.
+2. **Re-read the RULE.md for each area you touched** (from `.cursor/AI_INDEX.md`): app, components, theme, hooks, i18n, testing, scripts, dependencies, documentation, plans, commits. Confirm constraints and gotchas are satisfied.
 
 3. **If you changed or added dependencies:** Follow `.cursor/rules/dependencies/RULE.md` (remove `node_modules` and `package-lock.json`, run `npm install`). If you only edited code, skip.
 
@@ -18,7 +18,11 @@ Run this review **after** you have made all edits and **before** you send your f
 
 5. **If you changed docs or plans:** Follow `.cursor/rules/documentation/RULE.md` — update the doc that describes the changed behavior; keep `docs/README.md` or `docs/plans/README.md` in sync if scope changed.
 
-6. **Lint and tests:** Remind the user to run `npm run format:check`, `npm run lint`, `npm run test` (or note that pre-push will run them). If you introduced a lint or test failure, fix it before finishing.
+6. **Formatting:** **MANDATORY** - Run `npm run format:check` before committing. If formatting issues are found, run `npm run format` to fix them. Do not commit with formatting failures. This must be checked before the final reply.
+
+7. **Commit structure:** Review `.cursor/rules/commits/RULE.md` - ensure changes are properly grouped into logical commits. Different concerns (CI/CD, scripts, docs, code) should be in separate commits when possible.
+
+8. **Lint and tests:** Remind the user to run `npm run lint`, `npm run test` (or note that pre-push will run them). If you introduced a lint or test failure, fix it before finishing.
 
 ## Output
 

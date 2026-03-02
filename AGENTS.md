@@ -44,7 +44,9 @@ SPA, client-side rendering, static export for S3. See `docs/architecture.md` and
 **Before you consider your response finished**, run a code-review step against the project’s guidelines:
 
 1. Re-read this `AGENTS.md` and the **RULE.md for each area you changed** (see `.cursor/AI_INDEX.md`). Ensure your edits comply with constraints and gotchas.
-2. If you added or changed dependencies, i18n messages, or locale-specific content, or docs/plans, follow the corresponding rule (dependencies, i18n, documentation, plans).
-3. Do not leave lint or test failures; fix them or note that the user should run format check, lint, and tests (pre-push will run them).
+2. **MANDATORY**: Run `npm run format:check` and fix any formatting issues before committing. Do not skip this step.
+3. **Commit structure**: Review `.cursor/rules/commits/RULE.md` - group changes logically (CI/CD, scripts, docs, code should be separate commits when possible).
+4. If you added or changed dependencies, i18n messages, or locale-specific content, or docs/plans, follow the corresponding rule (dependencies, i18n, documentation, plans).
+5. Do not leave lint or test failures; fix them or note that the user should run format check, lint, and tests (pre-push will run them).
 
 Detail and checklist: `.cursor/rules/code-review/RULE.md`. In your final reply, state briefly that you ran the review and whether you found or fixed any violations.
