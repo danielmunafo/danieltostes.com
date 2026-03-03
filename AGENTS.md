@@ -50,3 +50,15 @@ SPA, client-side rendering, static export for S3. See `docs/architecture.md` and
 5. Do not leave lint or test failures; fix them or note that the user should run format check, lint, and tests (pre-push will run them).
 
 Detail and checklist: `.cursor/rules/code-review/RULE.md`. In your final reply, state briefly that you ran the review and whether you found or fixed any violations.
+
+## Cursor Cloud specific instructions
+
+This is a purely static Next.js site with no backend, database, or external services. The update script handles `npm install` only.
+
+- **Node version:** 20 (managed via nvm; `nvm use 20` is set as default).
+- **Dev server:** `npm run dev` → http://localhost:3000 (redirects to `/en` by default).
+- **Lint/format/test commands:** See `package.json` scripts — `npm run lint`, `npm run format:check`, `npm run test` (Vitest), `npm run test:e2e` (Playwright, builds first then serves `out/`).
+- **Playwright:** Requires `npx playwright install --with-deps chromium` before first E2E run. Chromium-only.
+- **Build:** `npm run build` renders Mermaid diagrams into SVGs, runs `next build`, then restores `public/content/` via `git checkout`. The `out/` directory is the static export.
+- **Port 3000:** Both the dev server and the E2E static server (`serve`) use port 3000. Kill the dev server before running E2E tests.
+- **Git hooks:** Pre-commit runs lint-staged (format + lint on staged files). Pre-push runs `format:check`, `lint`, and `test`. Ensure these pass before pushing.
