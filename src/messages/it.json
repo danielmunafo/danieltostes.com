@@ -185,7 +185,29 @@
   },
   "Me": {
     "title": "Su di Me",
-    "placeholder": "Contattami tramite i link qui sotto.",
+    "paragraphs": [
+      {
+        "title": "Il Momento in cui Ho Scoperto di Poter Costruire il Mio Mondo",
+        "body": "Il mio percorso nella tecnologia è iniziato a 15 anni, quando mi sono iscritto a una scuola tecnica e ho avuto le mie prime lezioni di informatica. Ho sempre amato costruire cose, ma quello è stato il momento in cui ho capito che potevo trasformare questo istinto in una professione. Con solo un computer, potevo creare sistemi, risolvere problemi e costruire strumenti che contano. Quella scoperta ha definito la direzione della mia vita."
+      },
+      {
+        "title": "Scegliere il Lungo Termine Rispetto al Comfort Immediato",
+        "body": "Ispirato da storie di professionisti che lavoravano all'estero e costruivano carriere internazionali nella tecnologia, mi sono iscritto all'università a 18 anni lavorando a tempo pieno come commesso. Alla fine, ho fatto il mio primo passo nell'IT — anche se pagava meno del lavoro precedente. Poco dopo, mi sono rotto una gamba e ho dovuto seguire l'università con compiti aggiuntivi e lavoro remoto, guadagnando meno e adattandomi a un nuovo percorso professionale. È stato un periodo difficile, e ho considerato di arrendermi. Invece, ho scelto di impegnarmi completamente nella visione a lungo termine che avevo per me stesso."
+      },
+      {
+        "title": "Costruire Fondamenta che Scalano",
+        "body": "Durante l'università, ho sviluppato una forte passione per Strutture Dati, Algoritmi e Ingegneria del Software. Li ho studiati profondamente e intenzionalmente, sapendo che sarebbero diventati la base di tutto ciò che avrei costruito dopo. Mentre lavoravo come tirocinante di migrazione ERP in un ambiente industriale, ho completato il mio progetto di laurea: una piattaforma educativa progettata per aiutare le istituzioni a creare e gestire corsi. Quel progetto è diventato la porta d'ingresso al mio primo ruolo ufficiale come ingegnere del software."
+      },
+      {
+        "title": "Da Versatilità Full-Stack a Impatto Internazionale",
+        "body": "Da lì, la mia carriera è progredita attraverso aziende di diverse dimensioni e complessità. Ho lavorato su tutto lo stack — backend, frontend, infrastruttura — assumendo sfide indipendentemente dall'ambito. Apprezzo la versatilità, il pensiero sistemico e la costruzione di soluzioni end-to-end. Nel tempo, ho avuto l'opportunità di contribuire in grandi aziende come Mercado Libre e successivamente Klarna, dove mi sono trasferito in Europa. Quel trasferimento ha rappresentato una pietra miliare personale: lavorare internazionalmente, essere apprezzato per il mio mestiere e raggiungere la crescita professionale che avevo immaginato anni prima."
+      },
+      {
+        "title": "Oltre il Codice: Disciplina, Creatività e Crescita Continua",
+        "body": "Oltre all'ingegneria, sono guidato dalla curiosità e dalla disciplina. Mi piace suonare musica, allenarmi e praticare fitness, e immergermi nei videogiochi. Questi interessi riflettono come affronto la vita: con struttura, creatività e miglioramento continuo. Che si tratti di architettura software, una routine di allenamento o imparare una nuova canzone, credo nel costruire le cose con intenzione e portarle a uno standard più alto."
+      }
+    ],
+    "connectNote": "Se vuoi connetterti su tecnologia, musica, fitness o giochi, sono sempre aperto a conversazioni significative.",
     "linkedinLabel": "LinkedIn",
     "githubLabel": "GitHub",
     "emailLabel": "Email",

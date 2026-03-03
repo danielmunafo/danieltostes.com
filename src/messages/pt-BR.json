@@ -185,7 +185,29 @@
   },
   "Me": {
     "title": "Sobre Mim",
-    "placeholder": "Entre em contato pelos links abaixo.",
+    "paragraphs": [
+      {
+        "title": "O Momento em que Descobri que Poderia Construir Meu Próprio Mundo",
+        "body": "Minha jornada na tecnologia começou aos 15 anos, quando ingressei em uma escola técnica e tive minhas primeiras aulas de informática. Sempre gostei de construir coisas, mas aquele foi o momento em que percebi que poderia transformar esse instinto em profissão. Com apenas um computador, eu poderia criar sistemas, resolver problemas e construir ferramentas que fazem diferença. Essa descoberta definiu a direção da minha vida."
+      },
+      {
+        "title": "Escolhendo o Longo Prazo em Vez do Conforto Imediato",
+        "body": "Inspirado por histórias de profissionais trabalhando no exterior e construindo carreiras internacionais em tecnologia, ingressei na faculdade aos 18 anos enquanto trabalhava em tempo integral como vendedor em um shopping. Eventualmente, dei meu primeiro passo em TI — mesmo ganhando menos que no emprego anterior. Pouco depois, quebrei a perna e precisei acompanhar a faculdade com trabalhos extras e trabalho remoto, ganhando menos e me adaptando a um novo caminho profissional. Foi um período difícil, e considerei desistir. Em vez disso, escolhi me comprometer totalmente com a visão de longo prazo que tinha para mim."
+      },
+      {
+        "title": "Construindo Fundações que Escalam",
+        "body": "Durante a faculdade, desenvolvi uma forte paixão por Estruturas de Dados, Algoritmos e Engenharia de Software. Estudei-os profundamente e intencionalmente, sabendo que se tornariam a base de tudo que eu construiria depois. Enquanto trabalhava como estagiário de migração de ERP em um ambiente industrial, concluí meu projeto de graduação: uma plataforma educacional projetada para ajudar instituições a criar e gerenciar cursos. Esse projeto se tornou a porta de entrada para minha primeira função oficial como engenheiro de software."
+      },
+      {
+        "title": "De Versatilidade Full-Stack a Impacto Internacional",
+        "body": "A partir daí, minha carreira progrediu por empresas de diferentes tamanhos e complexidades. Trabalhei em todo o stack — backend, frontend, infraestrutura — assumindo desafios independentemente do escopo. Valorizo versatilidade, pensamento sistêmico e construção de soluções de ponta a ponta. Com o tempo, tive a oportunidade de contribuir em grandes empresas como Mercado Livre e posteriormente Klarna, onde me mudei para a Europa. Essa mudança representou um marco pessoal: trabalhar internacionalmente, ser valorizado pelo meu trabalho e alcançar o crescimento profissional que havia imaginado anos antes."
+      },
+      {
+        "title": "Além do Código: Disciplina, Criatividade e Crescimento Contínuo",
+        "body": "Além da engenharia, sou movido por curiosidade e disciplina. Gosto de tocar música, treinar e praticar atividades físicas, e mergulhar em videogames. Esses interesses refletem como encaro a vida: com estrutura, criatividade e melhoria contínua. Seja arquitetura de software, uma rotina de treino ou aprender uma nova música, acredito em construir as coisas com intenção e elevá-las a um padrão mais alto."
+      }
+    ],
+    "connectNote": "Se quiser conversar sobre tecnologia, música, fitness ou games, estou sempre aberto a conversas significativas.",
     "linkedinLabel": "LinkedIn",
     "githubLabel": "GitHub",
     "emailLabel": "Email",

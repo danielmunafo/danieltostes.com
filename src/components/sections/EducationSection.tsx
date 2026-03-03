@@ -56,7 +56,6 @@ export function EducationSection() {
         side={getItemSide(SECTION_ID, 1)}
         iconSrc="/aws.svg"
         iconAlt="AWS"
-        iconScale={0.8}
         compact
       >
         <Typography variant="h3" gutterBottom>
