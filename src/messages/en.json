@@ -191,7 +191,29 @@
   },
   "Me": {
     "title": "About Me",
-    "placeholder": "Get in touch via the links below.",
+    "paragraphs": [
+      {
+        "title": "The Moment I Discovered I Could Build My Own World",
+        "body": "I started my journey in technology at 15, when I enrolled in a technical school and had my first informatics classes. I had always loved building things, but that was the moment I realized I could turn this instinct into a profession. With just a computer, I could create systems, solve problems, and build tools that mattered. That discovery shaped the direction of my life."
+      },
+      {
+        "title": "Choosing the Long Game Over Short-Term Comfort",
+        "body": "Inspired by stories of professionals working abroad and building international careers in technology, I enrolled in university at 18 while working full-time as a sales clerk. Eventually, I stepped into my first IT role — even though it paid less than my previous job. Shortly after, I broke my leg and had to keep up with university through additional assignments and remote work, all while earning less and adjusting to a new professional path. It was a difficult period, and I considered giving up. Instead, I chose to commit fully to the long-term vision I had for myself."
+      },
+      {
+        "title": "Building Foundations That Scale",
+        "body": "During university, I developed a strong passion for Data Structures, Algorithms, and Software Engineering. I studied them deeply and intentionally, knowing they would become the foundation of everything I built afterward. While working as an ERP migration trainee in an industrial environment, I completed my graduation project: an educational platform designed to help institutions build and manage courses. That project became the gateway to my first official software engineering role."
+      },
+      {
+        "title": "From Full-Stack Versatility to International Impact",
+        "body": "From there, my career progressed across companies of different sizes and complexities. I worked across the full stack — backend, frontend, infrastructure — taking ownership of challenges regardless of scope. I value versatility, system thinking, and building solutions end to end. Over time, I had the opportunity to contribute to major companies such as Mercado Libre and later Klarna, where I relocated to Europe. That move represented a personal milestone: working internationally, being valued for my craft, and achieving the professional growth I had envisioned years earlier."
+      },
+      {
+        "title": "Beyond Code: Discipline, Creativity, and Continuous Growth",
+        "body": "Beyond engineering, I am driven by curiosity and discipline. I enjoy playing music, training and practicing fitness, and diving into video games. These interests reflect how I approach life: with structure, creativity, and continuous improvement. Whether it's software architecture, a workout routine, or learning a new song, I believe in building things deliberately and pushing them to a higher standard."
+      }
+    ],
+    "connectNote": "If you'd like to connect about technology, music, fitness, or games, I'm always open to meaningful conversations.",
     "linkedinLabel": "LinkedIn",
     "githubLabel": "GitHub",
     "emailLabel": "Email",
