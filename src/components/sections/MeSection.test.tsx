@@ -9,13 +9,33 @@ describe("MeSection", () => {
     expect(screen.getByText("About Me")).toBeInTheDocument();
   });
 
-  it("renders the placeholder text", () => {
+  it("renders all paragraph titles", () => {
     renderWithProviders(<MeSection />);
-    expect(screen.getByText(/Get in touch/)).toBeInTheDocument();
+    expect(
+      screen.getByText("The Moment I Discovered I Could Build My Own World")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Building Foundations That Scale")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Beyond Code: Discipline, Creativity, and Continuous Growth"
+      )
+    ).toBeInTheDocument();
   });
 
-  it("renders contact links", () => {
+  it("renders paragraph body text", () => {
     renderWithProviders(<MeSection />);
+    expect(
+      screen.getByText(/I started my journey in technology at 15/)
+    ).toBeInTheDocument();
+  });
+
+  it("renders the connect note and contact links", () => {
+    renderWithProviders(<MeSection />);
+    expect(
+      screen.getByText(/always open to meaningful conversations/)
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "LinkedIn" })).toHaveAttribute(
       "href",
       "https://www.linkedin.com/in/dantostes/"
