@@ -12,6 +12,7 @@ import {
 } from "@/constants/site";
 import { GLASS_BLUR } from "@/constants/sections";
 import { LocaleSwitcher } from "./LocaleSwitcher";
+import { SearchBar } from "./SearchBar";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function TopBar() {
@@ -30,21 +31,31 @@ export function TopBar() {
         };
       }}
     >
-      <Toolbar>
-        <Typography
-          variant="h6"
-          component="span"
-          color="inherit"
-          sx={{ flexGrow: 1 }}
-        >
-          {SITE_AUTHOR_DISPLAY_NAME}
-        </Typography>
+      <Toolbar sx={{ gap: 1 }}>
         <Box
           component="div"
           sx={{
+            flex: 1,
             display: "flex",
             alignItems: "center",
+            justifyContent: "flex-start",
+            minWidth: 0,
+          }}
+        >
+          <Typography variant="h6" component="span" color="inherit">
+            {SITE_AUTHOR_DISPLAY_NAME}
+          </Typography>
+        </Box>
+        <SearchBar />
+        <Box
+          component="div"
+          sx={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
             gap: 1,
+            minWidth: 0,
           }}
         >
           <LocaleSwitcher />

@@ -3,29 +3,38 @@
     "title": "Bem-vindo",
     "subtitle": "Página inicial — mais conteúdo nos próximos PRs."
   },
+  "Search": {
+    "placeholder": "Buscar…",
+    "noResults": "Nenhum resultado",
+    "loading": "Carregando…",
+    "ariaLabel": "Buscar conteúdo do site"
+  },
   "ThemeToggle": {
     "light": "Mudar para modo escuro",
     "dark": "Mudar para modo claro"
   },
   "Summary": {
-    "title": "Resumo",
-    "experienceLabel": "Experiência",
-    "experienceValue": "9+ anos",
-    "description": "Engenheiro de Software Sênior especializado em estabilizar e escalar plataformas cloud-native. Entrega de sistemas de produção em ambientes de fintech e alto tráfego. Forte domínio em arquitetura, infraestrutura, observabilidade e integrações com IA. Experiência em melhorar confiabilidade, reduzir risco operacional e acelerar entregas em times distribuídos.",
-    "coreLabel": "Principal",
-    "coreValue": "TypeScript, Node.js, React, Java, AWS",
-    "architectureLabel": "Arquitetura",
-    "architectureValue": "Microsserviços/Monolitos Modulares, DDD, Clean Code, Clean Arch, Sistemas Event-Driven, REST/GraphQL/Federation, Kafka",
-    "infraLabel": "Infra & Ops",
-    "infraValue": "Kubernetes, Terraform, CI/CD, Observabilidade",
-    "aiLabel": "IA",
-    "aiValue": "Cursor, Co-pilot, OpenAI, Agentes",
+    "hero": {
+      "title": "Resumo",
+      "description": "Engenheiro de Software Sênior especializado em estabilizar e escalar plataformas cloud-native. Entrega de sistemas de produção em ambientes de fintech e alto tráfego. Forte domínio em arquitetura, infraestrutura, observabilidade e integrações com IA. Experiência em melhorar confiabilidade, reduzir risco operacional e acelerar entregas em times distribuídos.",
+      "experienceLabel": "Experiência",
+      "experienceValue": "9+ anos",
+      "coreLabel": "Principal",
+      "coreValue": "TypeScript, Node.js, React, Java, AWS",
+      "architectureLabel": "Arquitetura",
+      "architectureValue": "Microsserviços/Monolitos Modulares, DDD, Clean Code, Clean Arch, Sistemas Event-Driven, REST/GraphQL/Federation, Kafka",
+      "infraLabel": "Infra & Ops",
+      "infraValue": "Kubernetes, Terraform, CI/CD, Observabilidade",
+      "aiLabel": "IA",
+      "aiValue": "Cursor, Co-pilot, OpenAI, Agentes"
+    },
     "impactTitle": "Impacto Selecionado",
     "impactAnonymizeNote": "Todos os itens abaixo e seus detalhes refletem iniciativas reais; figuras, nomes e cronogramas específicos foram anonimizados para cumprir NDAs.",
     "impact": [
       {
         "title": "Plataforma de Automação de Garantias com IA",
         "description": "Construí um sistema de automação de garantias com IA usando motor de regras em JSON e workers assíncronos. Integrei modelos de imagem, retentativas limitadas e escalonamento, substituindo o processamento manual por decisão automatizada confiável.",
+        "searchContext": "Impacto Selecionado. Todos os itens abaixo e seus detalhes refletem iniciativas reais; figuras, nomes e cronogramas específicos foram anonimizados para cumprir NDAs. Fechar.",
         "chips": [
           "Complexidade: Alta",
           "Requisito de Confiabilidade: Alto",
@@ -72,6 +81,7 @@
         "company": "Cliente Confidencial (Contrato)",
         "period": "Ago/2025 - Dez/2025",
         "position": "Engenheiro de Software Sênior",
+        "sectionTitle": "Experiência",
         "desc": [
           "Projetei e entreguei uma plataforma de automação de garantias orientada a IA, substituindo fluxos manuais de suporte por um motor de decisão escalável baseado em JSON integrado a modelos de avaliação por imagem.",
           "Implementei processamento assíncrono com retries limitados e salvaguardas de escalonamento, integrei atualizações de casos no Salesforce e automações de chatbot e permiti evolução dinâmica de regras de negócio sem impactar produção."
@@ -157,35 +167,53 @@
   },
   "Education": {
     "title": "Educação & Cursos",
-    "edu": [
-      {
-        "degree": "Tecnólogo em Análise e Desenvolvimento de Sistemas",
-        "institution": "FATEC José Crespo Gonzales"
-      },
-      {
-        "degree": "Técnico em Informática",
-        "institution": "ETEC Fernando Prestes"
-      }
+    "blockOrder": [
+      "eduBlock",
+      "coursesBlock",
+      "languagesBlock",
+      "permitsBlock"
     ],
-    "coursesTitle": "Cursos",
-    "courses": [
-      { "name": "Architecting on AWS", "provider": "Amazon Web Services" },
-      { "name": "Systems Operations on AWS", "provider": "Amazon Web Services" }
-    ],
-    "languagesTitle": "Idiomas",
-    "languages": [
-      { "name": "🇧🇷 Português", "level": "Nativo" },
-      { "name": "🇬🇧 Inglês", "level": "Fluente" },
-      { "name": "🇪🇸 Espanhol", "level": "Proficiência Profissional" },
-      { "name": "🇮🇹 Italiano", "level": "Elementar" }
-    ],
-    "workPermitsTitle": "Permissões de Trabalho",
-    "permits": ["🇪🇺 UE", "Brasil"],
+    "eduBlock": {
+      "title": "Educação & Cursos",
+      "edu": [
+        {
+          "degree": "Tecnólogo em Análise e Desenvolvimento de Sistemas",
+          "institution": "FATEC José Crespo Gonzales"
+        },
+        {
+          "degree": "Técnico em Informática",
+          "institution": "ETEC Fernando Prestes"
+        }
+      ]
+    },
+    "coursesBlock": {
+      "title": "Cursos",
+      "courses": [
+        { "name": "Architecting on AWS", "provider": "Amazon Web Services" },
+        {
+          "name": "Systems Operations on AWS",
+          "provider": "Amazon Web Services"
+        }
+      ]
+    },
+    "languagesBlock": {
+      "title": "Idiomas",
+      "languages": [
+        { "name": "🇧🇷 Português", "level": "Nativo" },
+        { "name": "🇬🇧 Inglês", "level": "Fluente" },
+        { "name": "🇪🇸 Espanhol", "level": "Proficiência Profissional" },
+        { "name": "🇮🇹 Italiano", "level": "Elementar" }
+      ]
+    },
+    "permitsBlock": {
+      "title": "Permissões de Trabalho",
+      "permits": ["🇪🇺 UE", "Brasil"]
+    },
     "icon": "Educação"
   },
   "Me": {
     "title": "Sobre Mim",
-    "paragraphs": [
+    "blocks": [
       {
         "title": "O Momento em que Descobri que Poderia Construir Meu Próprio Mundo",
         "body": "Minha jornada na tecnologia começou aos 15 anos, quando ingressei em uma escola técnica e tive minhas primeiras aulas de informática. Sempre gostei de construir coisas, mas aquele foi o momento em que percebi que poderia transformar esse instinto em profissão. Com apenas um computador, eu poderia criar sistemas, resolver problemas e construir ferramentas que fazem diferença. Essa descoberta definiu a direção da minha vida."
@@ -205,12 +233,15 @@
       {
         "title": "Além do Código: Disciplina, Criatividade e Crescimento Contínuo",
         "body": "Além da engenharia, sou movido por curiosidade e disciplina. Gosto de tocar música, treinar e praticar atividades físicas, e mergulhar em videogames. Esses interesses refletem como encaro a vida: com estrutura, criatividade e melhoria contínua. Seja arquitetura de software, uma rotina de treino ou aprender uma nova música, acredito em construir as coisas com intenção e elevá-las a um padrão mais alto."
+      },
+      {
+        "title": "Connect",
+        "connectNote": "Se quiser conversar sobre tecnologia, música, fitness ou games, estou sempre aberto a conversas significativas.",
+        "linkedinLabel": "LinkedIn",
+        "githubLabel": "GitHub",
+        "emailLabel": "Email"
       }
     ],
-    "connectNote": "Se quiser conversar sobre tecnologia, música, fitness ou games, estou sempre aberto a conversas significativas.",
-    "linkedinLabel": "LinkedIn",
-    "githubLabel": "GitHub",
-    "emailLabel": "Email",
     "icon": "Sobre Mim"
   }
 }

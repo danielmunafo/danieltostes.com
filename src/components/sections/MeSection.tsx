@@ -52,16 +52,31 @@ const ME_SECTION_IMAGES: { src: string; alt: string; scale?: number }[] = [
   { src: "/hobbies.svg", alt: "Hobbies" },
 ];
 
-type AboutParagraph = {
+type MeBlock =
+  | { title: string; body: string }
+  | {
+      title: string;
+      connectNote: string;
+      linkedinLabel: string;
+      githubLabel: string;
+      emailLabel: string;
+    };
+
+function isConnectBlock(block: MeBlock): block is {
   title: string;
-  body: string;
-};
+  connectNote: string;
+  linkedinLabel: string;
+  githubLabel: string;
+  emailLabel: string;
+} {
+  return "connectNote" in block;
+}
 
 export function MeSection() {
   const t = useTranslations("Me");
   const theme = useTheme();
   const chipBg = CHIP_BG[theme.palette.mode];
-  const paragraphs = t.raw("paragraphs") as AboutParagraph[];
+  const blocks = t.raw("blocks") as MeBlock[];
 
   return (
     <Box>
@@ -69,25 +84,75 @@ export function MeSection() {
         {t("title")}
       </Typography>
 
-      {paragraphs.map((paragraph, idx) => {
-        const isLast = idx === paragraphs.length - 1;
+      {blocks.map((block, idx) => {
+        const isLast = idx === blocks.length - 1;
 
         return (
-          <Box key={idx}>
+          <Box key={idx} id={`section-me-item-${idx}`}>
             <SectionItem
               compact
               sectionId={SECTION_ID}
               side={getItemSide(SECTION_ID, idx)}
-              iconSrc={ME_SECTION_IMAGES[idx]?.src}
-              iconAlt={ME_SECTION_IMAGES[idx]?.alt}
+              iconSrc={
+                isConnectBlock(block)
+                  ? "/links.svg"
+                  : ME_SECTION_IMAGES[idx]?.src
+              }
+              iconAlt={
+                isConnectBlock(block) ? "Links" : ME_SECTION_IMAGES[idx]?.alt
+              }
               iconScale={ME_SECTION_IMAGES[idx]?.scale}
             >
-              <Typography variant="h3" component="h3" sx={{ fontWeight: 600 }}>
-                {paragraph.title}
-              </Typography>
-              <Typography variant="body1" sx={{ mt: 1 }}>
-                {paragraph.body}
-              </Typography>
+              {isConnectBlock(block) ? (
+                <>
+                  <Typography variant="body1" sx={{ opacity: 0.85 }}>
+                    {block.connectNote}
+                  </Typography>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{ mt: 1.5 }}
+                    flexWrap="wrap"
+                    useFlexGap
+                  >
+                    {CONNECT_LINKS.map((link) => (
+                      <Chip
+                        key={link.labelKey}
+                        component="a"
+                        href={link.href}
+                        {...(link.external && {
+                          target: "_blank",
+                          rel: "noopener noreferrer",
+                        })}
+                        icon={
+                          <Box
+                            component="img"
+                            src={link.iconSrc}
+                            alt=""
+                            sx={{ width: 20, height: 20, objectFit: "contain" }}
+                          />
+                        }
+                        label={block[link.labelKey]}
+                        clickable
+                        sx={{ backgroundColor: chipBg, color: "inherit" }}
+                      />
+                    ))}
+                  </Stack>
+                </>
+              ) : (
+                <>
+                  <Typography
+                    variant="h3"
+                    component="h3"
+                    sx={{ fontWeight: 600 }}
+                  >
+                    {block.title}
+                  </Typography>
+                  <Typography variant="body1" sx={{ mt: 1 }}>
+                    {block.body}
+                  </Typography>
+                </>
+              )}
             </SectionItem>
 
             {!isLast && (
@@ -96,50 +161,6 @@ export function MeSection() {
           </Box>
         );
       })}
-
-      <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
-
-      <SectionItem
-        sectionId={SECTION_ID}
-        side={getItemSide(SECTION_ID, paragraphs.length)}
-        iconSrc={"/links.svg"}
-        iconAlt="Links"
-        compact
-      >
-        <Typography variant="body1" sx={{ opacity: 0.85 }}>
-          {t("connectNote")}
-        </Typography>
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{ mt: 1.5 }}
-          flexWrap="wrap"
-          useFlexGap
-        >
-          {CONNECT_LINKS.map((link) => (
-            <Chip
-              key={link.labelKey}
-              component="a"
-              href={link.href}
-              {...(link.external && {
-                target: "_blank",
-                rel: "noopener noreferrer",
-              })}
-              icon={
-                <Box
-                  component="img"
-                  src={link.iconSrc}
-                  alt=""
-                  sx={{ width: 20, height: 20, objectFit: "contain" }}
-                />
-              }
-              label={t(link.labelKey)}
-              clickable
-              sx={{ backgroundColor: chipBg, color: "inherit" }}
-            />
-          ))}
-        </Stack>
-      </SectionItem>
     </Box>
   );
 }

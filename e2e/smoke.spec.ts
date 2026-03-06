@@ -46,3 +46,19 @@ test("experience section shows company names", async ({ page }) => {
   await expect(page.getByText("Personal Fitness Platform")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Klarna" })).toBeVisible();
 });
+
+test("search navigates to matched item on select", async ({ page }) => {
+  await page.goto(defaultLocalePath);
+  const searchInput = page.getByLabel("Search site content");
+  await searchInput.click();
+  await searchInput.fill("Klarna");
+  await expect(
+    page.getByRole("listbox").getByRole("option").first()
+  ).toBeVisible();
+  await page
+    .getByRole("option", { name: /Klarna/ })
+    .first()
+    .click();
+  const target = page.locator("#section-experience-item-3");
+  await expect(target).toBeInViewport();
+});

@@ -19,10 +19,19 @@ export function EducationSection() {
   const t = useTranslations("Education");
   const { palette } = useTheme();
   const chipBg = CHIP_BG[palette.mode];
-  const edu = t.raw("edu") as EduItem[];
-  const courses = t.raw("courses") as CourseItem[];
-  const languages = t.raw("languages") as LanguageItem[];
-  const permits = t.raw("permits") as string[];
+  const eduBlock = t.raw("eduBlock") as { title: string; edu: EduItem[] };
+  const coursesBlock = t.raw("coursesBlock") as {
+    title: string;
+    courses: CourseItem[];
+  };
+  const languagesBlock = t.raw("languagesBlock") as {
+    title: string;
+    languages: LanguageItem[];
+  };
+  const permitsBlock = t.raw("permitsBlock") as {
+    title: string;
+    permits: string[];
+  };
 
   return (
     <Box>
@@ -30,85 +39,97 @@ export function EducationSection() {
         {t("title")}
       </Typography>
 
-      <SectionItem
-        sectionId={SECTION_ID}
-        side={getItemSide(SECTION_ID, 0)}
-        iconSrc="/cps.png"
-        iconAlt="CPS"
-        compact
-      >
-        {edu.map((item, i) => (
-          <Box key={i} sx={{ mb: i < edu.length - 1 ? 2 : 0 }}>
-            <Typography variant="h3" component="h3" sx={{ fontWeight: 600 }}>
-              {item.degree}
-            </Typography>
-            <Typography component="p" variant="subtitle1" sx={{ opacity: 0.8 }}>
-              {item.institution}
-            </Typography>
-          </Box>
-        ))}
-      </SectionItem>
+      <Box id="section-education-item-0">
+        <SectionItem
+          sectionId={SECTION_ID}
+          side={getItemSide(SECTION_ID, 0)}
+          iconSrc="/cps.png"
+          iconAlt="CPS"
+          compact
+        >
+          {eduBlock.edu.map((item, i) => (
+            <Box key={i} sx={{ mb: i < eduBlock.edu.length - 1 ? 2 : 0 }}>
+              <Typography variant="h3" component="h3" sx={{ fontWeight: 600 }}>
+                {item.degree}
+              </Typography>
+              <Typography
+                component="p"
+                variant="subtitle1"
+                sx={{ opacity: 0.8 }}
+              >
+                {item.institution}
+              </Typography>
+            </Box>
+          ))}
+        </SectionItem>
+      </Box>
 
       <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
 
-      <SectionItem
-        sectionId={SECTION_ID}
-        side={getItemSide(SECTION_ID, 1)}
-        iconSrc="/aws.svg"
-        iconAlt="AWS"
-        compact
-      >
-        <Typography variant="h3" gutterBottom>
-          {t("coursesTitle")}
-        </Typography>
-        {courses.map((item, i) => (
-          <Typography key={i} variant="body1" sx={{ mb: 1 }}>
-            {item.name} &mdash; {item.provider}
+      <Box id="section-education-item-1">
+        <SectionItem
+          sectionId={SECTION_ID}
+          side={getItemSide(SECTION_ID, 1)}
+          iconSrc="/aws.svg"
+          iconAlt="AWS"
+          compact
+        >
+          <Typography variant="h3" gutterBottom>
+            {coursesBlock.title}
           </Typography>
-        ))}
-      </SectionItem>
+          {coursesBlock.courses.map((item, i) => (
+            <Typography key={i} variant="body1" sx={{ mb: 1 }}>
+              {item.name} &mdash; {item.provider}
+            </Typography>
+          ))}
+        </SectionItem>
+      </Box>
 
       <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
 
-      <SectionItem
-        sectionId={SECTION_ID}
-        side={getItemSide(SECTION_ID, 2)}
-        compact
-      >
-        <Typography variant="h3" gutterBottom>
-          {t("languagesTitle")}
-        </Typography>
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-          {languages.map((lang, i) => (
-            <Chip
-              key={i}
-              label={`${lang.name} — ${lang.level}`}
-              sx={{ backgroundColor: chipBg, color: "inherit" }}
-            />
-          ))}
-        </Box>
-      </SectionItem>
+      <Box id="section-education-item-2">
+        <SectionItem
+          sectionId={SECTION_ID}
+          side={getItemSide(SECTION_ID, 2)}
+          compact
+        >
+          <Typography variant="h3" gutterBottom>
+            {languagesBlock.title}
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+            {languagesBlock.languages.map((lang, i) => (
+              <Chip
+                key={i}
+                label={`${lang.name} — ${lang.level}`}
+                sx={{ backgroundColor: chipBg, color: "inherit" }}
+              />
+            ))}
+          </Box>
+        </SectionItem>
+      </Box>
 
       <Divider sx={{ borderColor: "divider", my: { xs: 2, md: 4 } }} />
 
-      <SectionItem
-        sectionId={SECTION_ID}
-        side={getItemSide(SECTION_ID, 3)}
-        compact
-      >
-        <Typography variant="h3" gutterBottom>
-          {t("workPermitsTitle")}
-        </Typography>
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-          {permits.map((label, i) => (
-            <Chip
-              key={i}
-              label={label}
-              sx={{ backgroundColor: chipBg, color: "inherit" }}
-            />
-          ))}
-        </Box>
-      </SectionItem>
+      <Box id="section-education-item-3">
+        <SectionItem
+          sectionId={SECTION_ID}
+          side={getItemSide(SECTION_ID, 3)}
+          compact
+        >
+          <Typography variant="h3" gutterBottom>
+            {permitsBlock.title}
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+            {permitsBlock.permits.map((label, i) => (
+              <Chip
+                key={i}
+                label={label}
+                sx={{ backgroundColor: chipBg, color: "inherit" }}
+              />
+            ))}
+          </Box>
+        </SectionItem>
+      </Box>
     </Box>
   );
 }
