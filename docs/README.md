@@ -8,6 +8,7 @@
 | [development.md](./development.md)             | Local scripts, git hooks, CI/CD summary                                      |
 | [deployment-setup.md](./deployment-setup.md)   | GitHub Actions, environments, AWS (S3, CloudFront), secrets                  |
 | [release-process.md](./release-process.md)     | Semantic versioning, automated releases, git tags, GitHub Releases           |
+| [search-index.md](./search-index.md)           | How the search index is built; section/content requirements for search       |
 | [plans/README.md](./plans/README.md)           | Implementation and execution plans (scaffolding, parallax, etc.)             |
 
 When code, config, or behavior changes in a way that affects a doc, update that doc. See `.cursor/rules/documentation/RULE.md` for conventions.

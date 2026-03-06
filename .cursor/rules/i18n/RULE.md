@@ -6,6 +6,8 @@ This RULE file governs **i18n and messages**, including:
 - `src/messages/*.json`
 - Locale-specific content: `public/content/**/<locale>.md` (e.g. `public/content/impact/0/en.md`)
 
+For **search**: sections and content must comply with the search index spec so the build-time index stays correct. See **`docs/search-index.md`** for message paths, section types, scroll target IDs, and impact (messages + markdown) requirements.
+
 ## Key constraints
 
 - Support **4 locales**: `en`, `pt-BR`, `es`, `it`.
