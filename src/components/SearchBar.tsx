@@ -16,7 +16,7 @@ import {
   GLASS_BG_BY_MODE,
   TEXT_ON_GLASS_BY_MODE,
 } from "@/constants/site";
-import { GLASS_BLUR } from "@/constants/sections";
+import { GLASS_BLUR, SECTION_IDS } from "@/constants/sections";
 import type { SearchIndexEntry } from "@/hooks/useSearchIndex";
 import { useSearchIndex } from "@/hooks/useSearchIndex";
 
@@ -66,14 +66,25 @@ export function SearchBar() {
     if (!q) return [];
     const qLower = q.toLowerCase();
     const raw = fuse.search(q);
-    return raw
-      .filter(
-        (r) =>
-          (r.item.title && r.item.title.toLowerCase().includes(qLower)) ||
-          (r.item.text && r.item.text.toLowerCase().includes(qLower))
-      )
+    const filtered = raw.filter(
+      (r) =>
+        (r.item.title && r.item.title.toLowerCase().includes(qLower)) ||
+        (r.item.text && r.item.text.toLowerCase().includes(qLower))
+    );
+    const sectionOrder = (sectionId: string) => {
+      const i = SECTION_IDS.indexOf(sectionId as (typeof SECTION_IDS)[number]);
+      return i === -1 ? SECTION_IDS.length : i;
+    };
+    const byRelevance = [...filtered]
+      .sort((a, b) => {
+        const orderA = sectionOrder(a.item.sectionId);
+        const orderB = sectionOrder(b.item.sectionId);
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.item.itemIndex ?? 0) - (b.item.itemIndex ?? 0);
+      })
       .slice(0, MAX_RESULTS)
       .map((r) => r.item);
+    return byRelevance;
   }, [fuse, query]);
 
   const showDropdown =
