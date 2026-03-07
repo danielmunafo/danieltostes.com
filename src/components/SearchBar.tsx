@@ -15,6 +15,7 @@ import {
   TEXT_ON_GLASS_BY_MODE,
 } from "@/constants/site";
 import { GLASS_BLUR, SECTION_IDS } from "@/constants/sections";
+import type { Locale } from "@/i18n/request";
 import type { SearchIndexEntry } from "@/hooks/useSearchIndex";
 import { useSearchIndex } from "@/hooks/useSearchIndex";
 
@@ -33,7 +34,7 @@ function scrollToTarget(scrollTargetId: string): void {
 }
 
 export function SearchBar() {
-  const locale = useLocale() as "en" | "pt-BR" | "es" | "it";
+  const locale = useLocale() as Locale;
   const t = useTranslations("Search");
   const { entries, loading, available } = useSearchIndex(locale);
   const [query, setQuery] = useState("");
@@ -41,6 +42,7 @@ export function SearchBar() {
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fuse = useMemo(() => new Fuse(entries, FUSE_OPTIONS), [entries]);
 
@@ -94,6 +96,13 @@ export function SearchBar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  useEffect(
+    () => () => {
+      if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+    },
+    []
+  );
+
   const highlightedIndexClamped = Math.min(
     highlightedIndex,
     Math.max(0, results.length - 1)
@@ -103,11 +112,11 @@ export function SearchBar() {
 
   useEffect(() => {
     if (!showDropdown || !listRef.current) return;
-    const item = listRef.current.children[highlightedIndex] as
+    const item = listRef.current.children[effectiveHighlightedIndex] as
       | HTMLElement
       | undefined;
     item?.scrollIntoView({ block: "nearest" });
-  }, [highlightedIndex, showDropdown]);
+  }, [effectiveHighlightedIndex, showDropdown]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showDropdown) {
@@ -182,9 +191,18 @@ export function SearchBar() {
             setQuery(e.target.value);
             setHighlightedIndex(0);
           }}
-          onFocus={() => setOpen(true)}
+          onFocus={() => {
+            if (blurTimeoutRef.current) {
+              clearTimeout(blurTimeoutRef.current);
+              blurTimeoutRef.current = null;
+            }
+            setOpen(true);
+          }}
           onBlur={() => {
-            setTimeout(() => setOpen(false), 200);
+            blurTimeoutRef.current = setTimeout(() => {
+              setOpen(false);
+              blurTimeoutRef.current = null;
+            }, 200);
           }}
           onKeyDown={handleKeyDown}
           slotProps={{
