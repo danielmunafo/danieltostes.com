@@ -1,6 +1,11 @@
 /* Minimal global styles: CssBaseline handles most resets. */
 :root {
-  --top-bar-height: 64px;
+  --top-bar-height: 56px;
+}
+@media (min-width: 600px) {
+  :root {
+    --top-bar-height: 64px;
+  }
 }
 
 body {
