@@ -60,12 +60,7 @@ const SECTION_SPEC = [
     titleKey: "title",
     type: "single",
   },
-  {
-    sectionId: "impact",
-    path: "Summary.impact",
-    titleKey: "title",
-    type: "array",
-  },
+  // Impact: indexed only via buildEntriesFromImpactMd (message title + markdown body) so each scroll target has one entry.
   {
     sectionId: "experience",
     path: "Experience.roles",

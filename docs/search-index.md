@@ -15,11 +15,11 @@ Scroll target IDs follow: `section-<sectionId>-item-<itemIndex>` (e.g. `section-
 
 The spec in `scripts/build-search-index.mjs` defines how each section is indexed:
 
-| Type             | Meaning                                                            | Message path example                              | Title key            | Notes                                                                                              |
-| ---------------- | ------------------------------------------------------------------ | ------------------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------- |
-| **single**       | One block per section; path points to a single object              | `Summary.hero`                                    | `title`              | One entry, `itemIndex` 0.                                                                          |
-| **array**        | One entry per array element; path points to an array               | `Summary.impact`, `Experience.roles`, `Me.blocks` | `title` or `company` | Order in JSON = order in index; scroll ID = `section-<id>-item-<i>`.                               |
-| **objectBlocks** | Object whose “block” keys (suffix e.g. `Block`) are each one entry | `Education`                                       | `title`              | Uses `blockOrder` array if present, else keys ending with `blockKeySuffix` (e.g. `Block`), sorted. |
+| Type             | Meaning                                                            | Message path example            | Title key            | Notes                                                                                                                 |
+| ---------------- | ------------------------------------------------------------------ | ------------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **single**       | One block per section; path points to a single object              | `Summary.hero`                  | `title`              | One entry, `itemIndex` 0.                                                                                             |
+| **array**        | One entry per array element; path points to an array               | `Experience.roles`, `Me.blocks` | `title` or `company` | Order in JSON = order in index; scroll ID = `section-<id>-item-<i>`. Impact is indexed only via markdown (see below). |
+| **objectBlocks** | Object whose “block” keys (suffix e.g. `Block`) are each one entry | `Education`                     | `title`              | Uses `blockOrder` array if present, else keys ending with `blockKeySuffix` (e.g. `Block`), sorted.                    |
 
 When **adding or changing a section** that should be searchable:
 
@@ -27,11 +27,11 @@ When **adding or changing a section** that should be searchable:
 - If you introduce a new **section id**, add a corresponding entry to **SECTION_SPEC** in `scripts/build-search-index.mjs` (sectionId, path, titleKey, type, and if needed blockKeySuffix / blockOrder).
 - Ensure the **scroll target IDs** in the section component match the convention `section-<sectionId>-item-<itemIndex>` so search results can scroll to the right place.
 
-## Impact section (messages + markdown)
+## Impact section (markdown only)
 
-Impact has two sources:
+Impact is **not** in SECTION_SPEC; it is indexed only by `buildEntriesFromImpactMd` so each scroll target has a single index entry (no duplicate results).
 
-- **Titles and list metadata** come from `Summary.impact` in messages (array of objects with at least `title`).
+- **Titles** come from `Summary.impact[i]` in messages.
 - **Detail text** (full body) comes from markdown files: `public/content/impact/<i>/<locale>.md`.
 
 Requirements:
