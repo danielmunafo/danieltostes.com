@@ -15,7 +15,7 @@ export const SITE_AUTHOR_DISPLAY_NAME = "Daniel Tostes";
 export const SITE_DESCRIPTION = "Personal blog and CV";
 
 /** Default page title for metadata and Open Graph. */
-export const META_TITLE = "Daniel Munafó Tostes - Senior Software Engineer";
+export const META_TITLE = "Daniel Tostes - Senior Software Engineer";
 /** Default meta description (search and general). */
 export const META_DESCRIPTION =
   "Senior Software Engineer building scalable product platforms, distributed systems, and cloud-native architectures.";
