@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import {
-  GLASS_BG_BY_MODE,
+  TOP_BAR_GLASS_BG_BY_MODE,
   GLASS_SHADOW_BY_MODE,
   SITE_AUTHOR_DISPLAY_NAME,
   TEXT_ON_GLASS_BY_MODE,
@@ -23,7 +23,7 @@ export function TopBar() {
       sx={(theme) => {
         const mode = theme.palette.mode;
         return {
-          backgroundColor: GLASS_BG_BY_MODE[mode],
+          backgroundColor: TOP_BAR_GLASS_BG_BY_MODE[mode],
           backdropFilter: `blur(${GLASS_BLUR}px)`,
           WebkitBackdropFilter: `blur(${GLASS_BLUR}px)`,
           color: TEXT_ON_GLASS_BY_MODE[mode],
