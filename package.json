@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run render-mermaid && next build; ec=$?; git checkout -- public/content/ 2>/dev/null; exit $ec",
+    "build": "npm run build-search-index && npm run render-mermaid && next build; ec=$?; git checkout -- public/content/ 2>/dev/null; exit $ec",
+    "build-search-index": "node scripts/build-search-index.mjs",
     "render-mermaid": "node scripts/render-mermaid.mjs",
     "start": "serve out -p 3000",
     "lint": "eslint",
@@ -27,6 +28,7 @@
     "next-intl": "^4.8.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "fuse.js": "^7.0.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1"
   },

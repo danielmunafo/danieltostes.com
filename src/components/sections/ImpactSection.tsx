@@ -95,7 +95,7 @@ export function ImpactSection() {
         const chips =
           Array.isArray(itemChips) && itemChips.length > 0 ? itemChips : [];
         return (
-          <Box key={i}>
+          <Box key={i} id={`section-impact-item-${i}`}>
             <SectionItem
               sectionId={SECTION_ID}
               side={getItemSide(SECTION_ID, i)}

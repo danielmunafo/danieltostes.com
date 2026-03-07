@@ -27,6 +27,9 @@
 # build-time generated Mermaid diagram SVGs
 public/content/diagrams/
 
+# build-time generated search index
+public/search-index.json
+
 # env files (opt-in to commit if needed)
 .env*
 

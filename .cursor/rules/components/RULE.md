@@ -19,6 +19,7 @@ This RULE file governs **components and sections**, including:
   - Create it under `src/components/sections/` (or the relevant subdirectory).
   - Use MUI components with `sx` for layout and spacing, and rely on theme tokens for colors and typography.
   - Surface user-visible text via the i18n/message layer instead of hardcoded strings when it should be localized.
+  - If the section should be searchable, use scroll target IDs `section-<sectionId>-item-<itemIndex>` and ensure message structure matches the search index spec — see **`docs/search-index.md`**.
 
 - **Update an existing dialog or complex component**
   - Keep state management minimal and co-located; extract reusable behaviors into hooks in `src/hooks/` when the logic grows.

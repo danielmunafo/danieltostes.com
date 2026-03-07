@@ -28,6 +28,8 @@ This file is a compact map for AI agents. Use it to discover the right rules and
   - `.cursor/rules/hooks/RULE.md`
 - **i18n & messages**
   - `.cursor/rules/i18n/RULE.md`
+- **Search index (sections & content)**
+  - `docs/search-index.md` — When adding or updating sections or locale content, ensure they comply with search index requirements (message paths, scroll target IDs, impact messages + markdown, all locales).
 - **Testing (Vitest, Playwright)**
   - `.cursor/rules/testing/RULE.md`
 - **Scripts & tooling**

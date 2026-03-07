@@ -47,9 +47,14 @@ export const BORDER_BY_MODE = {
 } as const satisfies Record<ThemeMode, string>;
 
 /** Background color for frosted-glass overlays (e.g. TopBar, dropdowns), keyed by theme mode. */
-export const GLASS_BG_BY_MODE = {
+export const TOP_BAR_GLASS_BG_BY_MODE = {
   light: "rgba(255,255,255,0.75)",
   dark: "rgba(0,0,0,0.75)",
+} as const satisfies Record<ThemeMode, string>;
+
+export const GLASS_BG_BY_MODE = {
+  light: "rgba(255,255,255,0.98)",
+  dark: "rgba(0,0,0,0.98)",
 } as const satisfies Record<ThemeMode, string>;
 
 /** Text/icon color on glass overlays (e.g. TopBar), keyed by theme mode. */

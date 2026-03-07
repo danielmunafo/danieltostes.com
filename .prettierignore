@@ -1,5 +1,7 @@
 .next
 out
+.cursor
 node_modules
 *.lock
 package-lock.json
+public/search-index.json

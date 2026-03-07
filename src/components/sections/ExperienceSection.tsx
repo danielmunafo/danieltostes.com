@@ -38,7 +38,7 @@ export function ExperienceSection() {
       {roles.map((role, roleIdx) => {
         const isLast = roleIdx === roles.length - 1;
         return (
-          <Box key={roleIdx}>
+          <Box key={roleIdx} id={`section-experience-item-${roleIdx}`}>
             <SectionItem
               sectionId={SECTION_ID}
               side={getItemSide(SECTION_ID, roleIdx)}

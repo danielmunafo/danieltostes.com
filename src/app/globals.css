@@ -1,5 +1,19 @@
 /* Minimal global styles: CssBaseline handles most resets. */
+:root {
+  --top-bar-height: 56px;
+}
+@media (min-width: 600px) {
+  :root {
+    --top-bar-height: 64px;
+  }
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+}
+
+/* Scroll targets (search, anchor links): leave space for the sticky top bar. */
+[id^="section-"] {
+  scroll-margin-top: var(--top-bar-height);
 }

@@ -3,29 +3,38 @@
     "title": "Welcome",
     "subtitle": "Root page — more content in following PRs."
   },
+  "Search": {
+    "placeholder": "Search…",
+    "noResults": "No results",
+    "loading": "Loading…",
+    "ariaLabel": "Search site content"
+  },
   "ThemeToggle": {
     "light": "Switch to dark mode",
     "dark": "Switch to light mode"
   },
   "Summary": {
-    "title": "Summary",
-    "experienceLabel": "Experience",
-    "experienceValue": "9+ years",
-    "description": "Senior Software Engineer specializing in stabilizing and scaling cloud-native platforms. Delivering production-grade systems in fintech and high-traffic consumer environments. Strong ownership across architecture, infrastructure, observability, and AI integrations. Experienced in improving reliability, reducing operational risk, and accelerating delivery in distributed teams.",
-    "coreLabel": "Core",
-    "coreValue": "TypeScript, Node.js, React, Java, AWS",
-    "architectureLabel": "Architecture",
-    "architectureValue": "Microservices/Modular Monoliths, DDD, Clean Code, Clean Arch, Event-Driven Systems, REST/GraphQL/Federation, Kafka",
-    "infraLabel": "Infra & Ops",
-    "infraValue": "Kubernetes, Terraform, CI/CD, Observability",
-    "aiLabel": "AI",
-    "aiValue": "Cursor, Co-pilot, OpenAI, Agents",
+    "hero": {
+      "title": "Summary",
+      "description": "Senior Software Engineer specializing in stabilizing and scaling cloud-native platforms. Delivering production-grade systems in fintech and high-traffic consumer environments. Strong ownership across architecture, infrastructure, observability, and AI integrations. Experienced in improving reliability, reducing operational risk, and accelerating delivery in distributed teams.",
+      "experienceLabel": "Experience",
+      "experienceValue": "9+ years",
+      "coreLabel": "Core",
+      "coreValue": "TypeScript, Node.js, React, Java, AWS",
+      "architectureLabel": "Architecture",
+      "architectureValue": "Microservices/Modular Monoliths, DDD, Clean Code, Clean Arch, Event-Driven Systems, REST/GraphQL/Federation, Kafka",
+      "infraLabel": "Infra & Ops",
+      "infraValue": "Kubernetes, Terraform, CI/CD, Observability",
+      "aiLabel": "AI",
+      "aiValue": "Cursor, Co-pilot, OpenAI, Agents"
+    },
     "impactTitle": "Selected Impact",
     "impactAnonymizeNote": "All items below and their details reflect real initiatives; specific figures, names, and timelines have been anonymized to comply with NDAs.",
     "impact": [
       {
         "title": "AI-Driven Warranty Claim Automation Platform",
         "description": "Built an AI-powered warranty automation system using a JSON rule engine + async workers. Integrated image models, added bounded retries and escalation, and replaced manual claim handling with reliable decisioning.",
+        "searchContext": "Selected Impact. All items below and their details reflect real initiatives; specific figures, names, and timelines have been anonymized to comply with NDAs. Close.",
         "chips": [
           "Complexity: High",
           "Reliability Requirement: High",
@@ -78,6 +87,7 @@
         "company": "Confidential Client (Contract)",
         "period": "Aug/2025 - Dec/2025",
         "position": "Senior Software Engineer",
+        "sectionTitle": "Experience",
         "desc": [
           "Designed and delivered an AI-driven warranty claim automation platform, replacing manual support workflows with a scalable JSON-based decision engine integrated with image evaluation models.",
           "Implemented asynchronous processing with bounded retries and escalation safeguards, integrated Salesforce case management updates and chatbot automations, and enabled dynamic business rule evolution without disrupting production."
@@ -163,35 +173,53 @@
   },
   "Education": {
     "title": "Education & Courses",
-    "edu": [
-      {
-        "degree": "Technologist in Systems Analysis and Development",
-        "institution": "FATEC José Crespo Gonzales"
-      },
-      {
-        "degree": "Technician in Informatics",
-        "institution": "ETEC Fernando Prestes"
-      }
+    "blockOrder": [
+      "eduBlock",
+      "coursesBlock",
+      "languagesBlock",
+      "permitsBlock"
     ],
-    "coursesTitle": "Courses",
-    "courses": [
-      { "name": "Architecting on AWS", "provider": "Amazon Web Services" },
-      { "name": "Systems Operations on AWS", "provider": "Amazon Web Services" }
-    ],
-    "languagesTitle": "Languages",
-    "languages": [
-      { "name": "🇧🇷 Portuguese", "level": "Native" },
-      { "name": "🇬🇧 English", "level": "Fluent" },
-      { "name": "🇪🇸 Spanish", "level": "Professional Proficiency" },
-      { "name": "🇮🇹 Italian", "level": "Elementary" }
-    ],
-    "workPermitsTitle": "Work Permits",
-    "permits": ["🇪🇺 EU", "Brazil"],
+    "eduBlock": {
+      "title": "Education & Courses",
+      "edu": [
+        {
+          "degree": "Technologist in Systems Analysis and Development",
+          "institution": "FATEC José Crespo Gonzales"
+        },
+        {
+          "degree": "Technician in Informatics",
+          "institution": "ETEC Fernando Prestes"
+        }
+      ]
+    },
+    "coursesBlock": {
+      "title": "Courses",
+      "courses": [
+        { "name": "Architecting on AWS", "provider": "Amazon Web Services" },
+        {
+          "name": "Systems Operations on AWS",
+          "provider": "Amazon Web Services"
+        }
+      ]
+    },
+    "languagesBlock": {
+      "title": "Languages",
+      "languages": [
+        { "name": "🇧🇷 Portuguese", "level": "Native" },
+        { "name": "🇬🇧 English", "level": "Fluent" },
+        { "name": "🇪🇸 Spanish", "level": "Professional Proficiency" },
+        { "name": "🇮🇹 Italian", "level": "Elementary" }
+      ]
+    },
+    "permitsBlock": {
+      "title": "Work Permits",
+      "permits": ["🇪🇺 EU", "Brazil"]
+    },
     "icon": "Education"
   },
   "Me": {
     "title": "About Me",
-    "paragraphs": [
+    "blocks": [
       {
         "title": "The Moment I Discovered I Could Build My Own World",
         "body": "I started my journey in technology at 15, when I enrolled in a technical school and had my first informatics classes. I had always loved building things, but that was the moment I realized I could turn this instinct into a profession. With just a computer, I could create systems, solve problems, and build tools that mattered. That discovery shaped the direction of my life."
@@ -211,12 +239,15 @@
       {
         "title": "Beyond Code: Discipline, Creativity, and Continuous Growth",
         "body": "Beyond engineering, I am driven by curiosity and discipline. I enjoy playing music, training and practicing fitness, and diving into video games. These interests reflect how I approach life: with structure, creativity, and continuous improvement. Whether it's software architecture, a workout routine, or learning a new song, I believe in building things deliberately and pushing them to a higher standard."
+      },
+      {
+        "title": "Connect",
+        "connectNote": "If you'd like to connect about technology, music, fitness, or games, I'm always open to meaningful conversations.",
+        "linkedinLabel": "LinkedIn",
+        "githubLabel": "GitHub",
+        "emailLabel": "Email"
       }
     ],
-    "connectNote": "If you'd like to connect about technology, music, fitness, or games, I'm always open to meaningful conversations.",
-    "linkedinLabel": "LinkedIn",
-    "githubLabel": "GitHub",
-    "emailLabel": "Email",
     "icon": "About Me"
   }
 }
