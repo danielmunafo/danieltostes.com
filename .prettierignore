@@ -1,5 +1,6 @@
 .next
 out
+.cursor
 node_modules
 *.lock
 package-lock.json
