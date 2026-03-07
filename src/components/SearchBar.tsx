@@ -166,67 +166,83 @@ export function SearchBar() {
         display: { xs: "none", sm: "block" },
       }}
     >
-      <TextField
-        inputRef={inputRef}
-        size="small"
-        fullWidth
-        placeholder={t("placeholder")}
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setHighlightedIndex(0);
-        }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => {
-          setTimeout(() => setOpen(false), 200);
-        }}
-        onKeyDown={handleKeyDown}
-        slotProps={{
-          htmlInput: {
-            autoComplete: "off",
-            "aria-label": t("ariaLabel"),
-            "aria-expanded": showDropdown,
-            "aria-autocomplete": "list" as const,
-            "aria-controls": "search-results-list",
-            "aria-activedescendant":
-              showDropdown && results[effectiveHighlightedIndex]
-                ? `search-result-${effectiveHighlightedIndex}`
-                : undefined,
-          },
-          input: {
-            startAdornment: (
-              <InputAdornment
-                position="start"
-                sx={{ color: "inherit", opacity: 0.8 }}
-              >
-                <Typography
-                  component="span"
-                  sx={{ fontSize: "1rem" }}
-                  aria-hidden
-                >
-                  {shortcutLabel}
-                </Typography>
-              </InputAdornment>
-            ),
-          },
-        }}
+      <Box
         sx={(theme) => {
           const mode = theme.palette.mode;
+          const borderColor = BORDER_BY_MODE[mode];
           return {
+            width: "100%",
             "& .MuiOutlinedInput-root": {
               backgroundColor: GLASS_BG_BY_MODE[mode],
               color: TEXT_ON_GLASS_BY_MODE[mode],
               borderRadius: 2,
               "& fieldset": {
-                borderColor: BORDER_BY_MODE[mode],
+                borderColor,
               },
-              "&:hover fieldset": {
-                borderColor: BORDER_BY_MODE[mode],
+              "&.Mui-focused fieldset": {
+                borderColor,
               },
+            },
+            "&:hover .MuiOutlinedInput-root fieldset": {
+              borderColor,
             },
           };
         }}
-      />
+      >
+        <TextField
+          inputRef={inputRef}
+          size="small"
+          fullWidth
+          placeholder={t("placeholder")}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setHighlightedIndex(0);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => {
+            setTimeout(() => setOpen(false), 200);
+          }}
+          onKeyDown={handleKeyDown}
+          slotProps={{
+            htmlInput: {
+              autoComplete: "off",
+              "aria-label": t("ariaLabel"),
+              "aria-expanded": showDropdown,
+              "aria-autocomplete": "list" as const,
+              "aria-controls": "search-results-list",
+              "aria-activedescendant":
+                showDropdown && results[effectiveHighlightedIndex]
+                  ? `search-result-${effectiveHighlightedIndex}`
+                  : undefined,
+            },
+            input: {
+              startAdornment: (
+                <InputAdornment
+                  position="start"
+                  sx={{ color: "inherit", opacity: 0.8 }}
+                >
+                  <Typography
+                    component="span"
+                    sx={{ fontSize: "1rem" }}
+                    aria-hidden
+                  >
+                    {shortcutLabel}
+                  </Typography>
+                </InputAdornment>
+              ),
+            },
+          }}
+          sx={(theme) => {
+            const mode = theme.palette.mode;
+            return {
+              "& .MuiOutlinedInput-root:hover fieldset": {
+                borderColor: BORDER_BY_MODE[mode],
+              },
+            };
+          }}
+        />
+      </Box>
       {showDropdown && (
         <List
           id="search-results-list"
