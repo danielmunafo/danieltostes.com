@@ -2,12 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Box from "@mui/material/Box";
-import InputAdornment from "@mui/material/InputAdornment";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
 import Fuse from "fuse.js";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
@@ -29,20 +27,6 @@ const FUSE_OPTIONS = {
 
 const MAX_RESULTS = 8;
 
-/** Search shortcut label: ⌘F on Mac, Ctrl+F on Windows/Linux. */
-function useSearchShortcutLabel(): string {
-  const [label, setLabel] = useState("Ctrl+F");
-  useEffect(() => {
-    const isMac =
-      typeof navigator !== "undefined" &&
-      /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-    const next = isMac ? "⌘F" : "Ctrl+F";
-    const id = requestAnimationFrame(() => setLabel(next));
-    return () => cancelAnimationFrame(id);
-  }, []);
-  return label;
-}
-
 function scrollToTarget(scrollTargetId: string): void {
   const el = document.getElementById(scrollTargetId);
   el?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -57,7 +41,6 @@ export function SearchBar() {
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const shortcutLabel = useSearchShortcutLabel();
 
   const fuse = useMemo(() => new Fuse(entries, FUSE_OPTIONS), [entries]);
 
@@ -215,22 +198,6 @@ export function SearchBar() {
                 showDropdown && results[effectiveHighlightedIndex]
                   ? `search-result-${effectiveHighlightedIndex}`
                   : undefined,
-            },
-            input: {
-              startAdornment: (
-                <InputAdornment
-                  position="start"
-                  sx={{ color: "inherit", opacity: 0.8 }}
-                >
-                  <Typography
-                    component="span"
-                    sx={{ fontSize: "1rem" }}
-                    aria-hidden
-                  >
-                    {shortcutLabel}
-                  </Typography>
-                </InputAdornment>
-              ),
             },
           }}
           sx={(theme) => {
