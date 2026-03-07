@@ -21,7 +21,7 @@ import { useSearchIndex } from "@/hooks/useSearchIndex";
 
 const FUSE_OPTIONS = {
   keys: ["title", "text"],
-  threshold: 0.4,
+  threshold: 0.15,
   isCaseSensitive: false,
   ignoreLocation: true,
 };
@@ -49,18 +49,12 @@ export function SearchBar() {
   const results = useMemo(() => {
     const q = query.trim();
     if (!q) return [];
-    const qLower = q.toLowerCase();
     const raw = fuse.search(q);
-    const filtered = raw.filter(
-      (r) =>
-        (r.item.title && r.item.title.toLowerCase().includes(qLower)) ||
-        (r.item.text && r.item.text.toLowerCase().includes(qLower))
-    );
     const sectionOrder = (sectionId: string) => {
       const i = SECTION_IDS.indexOf(sectionId as (typeof SECTION_IDS)[number]);
       return i === -1 ? SECTION_IDS.length : i;
     };
-    const byRelevance = [...filtered]
+    const byRelevance = [...raw]
       .sort((a, b) => {
         const orderA = sectionOrder(a.item.sectionId);
         const orderB = sectionOrder(b.item.sectionId);
