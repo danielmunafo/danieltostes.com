@@ -72,12 +72,20 @@ describe("evidence evaluation scaffolding (fixtures)", () => {
     const evalUser = buildEvidenceEvaluatorUserPrompt("en", jd, fakeExcerpts);
     expect(evalUser).toContain("Golang");
     expect(evalUser).toContain("German");
+    const evalSystem = buildEvidenceEvaluatorSystemPrompt("en");
+    expect(evalSystem).toContain("Two or more role-defining hard gates");
+    expect(evalSystem).toContain("Practical hard gate + another missing gate");
     const pitch = buildRecruiterPitchSystemPrompt(
-      `# Requirement Coverage\n| German fluent | Must-have | Not evidenced | JD requires German |\n|---|---|---|---|\n# Match Score Guidance\nRecommended match strength: 6/10\nEvidence confidence: Medium\nEvidence confidence reason: Go-heavy role; excerpts show TypeScript systems.\nReason: adjacent fit\nScore caps applied: None`,
+      `# Requirement Coverage\n| German fluent | Must-have | Not evidenced | JD requires German |\n| Production Golang | Must-have | Not evidenced | No Go excerpts |\n|---|---|---|---|\n# Match Score Guidance\nRecommended match strength: 5/10\nEvidence confidence: Medium\nEvidence confidence reason: Go-heavy role; excerpts show TypeScript systems.\nReason: adjacent fit\nScore caps applied: Two or more role-defining hard gates`,
       fakeExcerpts
     );
-    expect(pitch).toContain("Maybe / validate first");
+    expect(pitch).toContain("HARD MUST-HAVE OVERRIDE");
+    expect(pitch).toContain("Weak fit");
     expect(pitch).toContain("German fluent");
+    expect(pitch).toContain("German + Golang");
+    expect(pitch).toContain(
+      "Do **not** output **Strong pursue** or **Pursue** when **multiple**"
+    );
   });
 
   it("staff full-stack pitch prompt lists strong recommendation label", () => {

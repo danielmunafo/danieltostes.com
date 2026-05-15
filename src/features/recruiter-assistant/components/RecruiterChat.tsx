@@ -24,6 +24,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -38,22 +39,44 @@ import {
   RECRUITER_COMPOSER_INNER_PADDING_PX,
   RECRUITER_COMPOSER_INPUT_MAX_HEIGHT_PX,
   RECRUITER_COMPOSER_MAX_WIDTH_PX,
+  RECRUITER_MAX_CHAT_HISTORY_JSON_CHARS,
+  RECRUITER_PAYLOAD_TOO_LARGE_ERROR,
   RECRUITER_TERMS_ACCEPTANCE_STORAGE_KEY,
 } from "../constants/recruiter-assistant";
+import { wouldExceedRecruiterChatHistoryLimit } from "../lib/chat-payload-size";
 import { useRecruiterAssistantUi } from "../context/RecruiterAssistantUiContext";
 import { recordBadIntentRejection } from "../lib/bad-prompt-strikes";
 import { getRecruiterApiBaseUrl } from "../lib/api-url";
-import { splitThinkingFromBody } from "../lib/split-thinking-from-body";
+import {
+  CHART_DATA_CLOSE_MARKER,
+  CHART_DATA_OPEN_MARKER,
+  splitThinkingFromBody,
+} from "../lib/split-thinking-from-body";
+import { logMatchProfileClientDebug } from "../lib/match-profile-debug";
 import { AssistantBriefingBody } from "./AssistantBriefingBody";
+import { AssistantBriefingProgress } from "./AssistantBriefingProgress";
+import { AssistantBriefingStreamingLine } from "./AssistantBriefingStreamingLine";
 import { AssistantEvidenceReview } from "./AssistantEvidenceReview";
 import { AssistantThinkingIndicator } from "./AssistantThinkingIndicator";
+
+function parseRecruiterApiErrorCode(res: Response, body: unknown): string {
+  if (
+    typeof body === "object" &&
+    body !== null &&
+    "error" in body &&
+    typeof (body as { error: unknown }).error === "string"
+  ) {
+    return (body as { error: string }).error;
+  }
+  return "";
+}
 
 async function recruiterAssistantFetch(
   input: RequestInfo | URL,
   init?: RequestInit
 ): Promise<Response> {
   const res = await fetch(input, init);
-  if (res.status !== 400) {
+  if (res.status !== 400 && res.status !== 413) {
     return res;
   }
   let body: unknown;
@@ -62,16 +85,13 @@ async function recruiterAssistantFetch(
   } catch {
     return res;
   }
-  const errorCode =
-    typeof body === "object" &&
-    body !== null &&
-    "error" in body &&
-    typeof (body as { error: unknown }).error === "string"
-      ? (body as { error: string }).error
-      : "";
+  const errorCode = parseRecruiterApiErrorCode(res, body);
   if (errorCode === "off_topic" || errorCode === "intent_unclear") {
     recordBadIntentRejection();
     throw new Error(errorCode);
+  }
+  if (errorCode === RECRUITER_PAYLOAD_TOO_LARGE_ERROR) {
+    throw new Error(RECRUITER_PAYLOAD_TOO_LARGE_ERROR);
   }
   return res;
 }
@@ -164,6 +184,8 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   const [termsFromStorage, setTermsFromStorage] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [payloadTooLargeFromServer, setPayloadTooLargeFromServer] =
+    useState(false);
 
   const { messages, input, handleInputChange, handleSubmit, status } = useChat({
     api: apiBaseUrl,
@@ -171,15 +193,63 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     fetch: recruiterAssistantFetch,
     body: { locale },
     experimental_throttle: 50,
+    onError: (err) => {
+      if (err.message === RECRUITER_PAYLOAD_TOO_LARGE_ERROR) {
+        setPayloadTooLargeFromServer(true);
+      }
+    },
   });
 
   const isBusy = status === "submitted" || status === "streaming";
   const isCompactComposer = messages.length > 0;
+  const isPayloadTooLarge = useMemo(
+    () =>
+      isCompactComposer &&
+      wouldExceedRecruiterChatHistoryLimit(
+        messages,
+        input,
+        RECRUITER_MAX_CHAT_HISTORY_JSON_CHARS
+      ),
+    [input, isCompactComposer, messages]
+  );
+
+  if (!isPayloadTooLarge && payloadTooLargeFromServer) {
+    setPayloadTooLargeFromServer(false);
+  }
+  const payloadTooLargeWarning = isPayloadTooLarge || payloadTooLargeFromServer;
   const termsHref = `/${locale}/recruiter-assistant/terms`;
 
   useEffect(() => {
     setHasConversation(messages.length > 0);
   }, [messages.length, setHasConversation]);
+
+  useEffect(() => {
+    if (isBusy) return;
+    const lastAssistant = [...messages]
+      .reverse()
+      .find((m) => m.role === "assistant");
+    if (!lastAssistant) return;
+    const rawBody = getMessagePlainText(lastAssistant);
+    const split = splitThinkingFromBody(rawBody);
+    const hasOpenMarker = rawBody.includes(CHART_DATA_OPEN_MARKER);
+    const hasCloseMarker = rawBody.includes(CHART_DATA_CLOSE_MARKER);
+    logMatchProfileClientDebug("assistant message parsed", {
+      hasThinking: split.hasThinking,
+      isThinkingStreaming: split.isThinkingStreaming,
+      hasChartMarkerOpen: split.hasChartMarkerOpen,
+      hasOpenMarker,
+      hasCloseMarker,
+      chartDataPresent: split.chartData !== null,
+      dimensionCount: split.chartData?.capabilityDimensions.length ?? 0,
+      bodyChars: split.body.length,
+      rawChars: rawBody.length,
+    });
+    if (hasOpenMarker && hasCloseMarker && split.chartData === null) {
+      logMatchProfileClientDebug(
+        "chart markers present but chartData null (parse/validation failed on client)"
+      );
+    }
+  }, [messages, isBusy]);
 
   useLayoutEffect(() => {
     void Promise.resolve().then(() => {
@@ -214,6 +284,20 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     setTermsFromStorage(true);
   }, []);
 
+  const rejectPayloadTooLargeSubmit = useCallback(() => {
+    if (
+      !isCompactComposer ||
+      !wouldExceedRecruiterChatHistoryLimit(
+        messages,
+        input,
+        RECRUITER_MAX_CHAT_HISTORY_JSON_CHARS
+      )
+    ) {
+      return false;
+    }
+    return true;
+  }, [input, isCompactComposer, messages]);
+
   const onFormSubmit = (e: FormEvent<HTMLFormElement>) => {
     if (!termsHydrated) {
       e.preventDefault();
@@ -222,6 +306,10 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     if (!termsFromStorage) {
       e.preventDefault();
       openTermsModal();
+      return;
+    }
+    if (rejectPayloadTooLargeSubmit()) {
+      e.preventDefault();
       return;
     }
     void handleSubmit(e);
@@ -280,6 +368,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
         openTermsModal();
         return;
       }
+      if (rejectPayloadTooLargeSubmit()) return;
       handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
     },
     [
@@ -287,6 +376,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
       input,
       isBusy,
       openTermsModal,
+      rejectPayloadTooLargeSubmit,
       termsFromStorage,
       termsHydrated,
     ]
@@ -353,11 +443,35 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
             const split = isUser ? null : splitThinkingFromBody(rawBody);
             const mainBody = split?.body ?? rawBody;
             const showEvidenceReview = split?.hasThinking ?? false;
+            const isEvidenceReviewStreaming =
+              split?.isThinkingStreaming ?? false;
+            const isPostEvidenceBriefingPhase =
+              !isUser &&
+              isStreamingThisMessage &&
+              showEvidenceReview &&
+              !isEvidenceReviewStreaming &&
+              mainBody.trim() === "" &&
+              !split?.hasChartMarkerOpen &&
+              split?.chartData == null;
+            const isBuildingMatchProfile =
+              !isUser &&
+              isStreamingThisMessage &&
+              (split?.hasChartMarkerOpen ?? false);
+            const isDraftingBriefing =
+              !isUser &&
+              isStreamingThisMessage &&
+              split?.chartData != null &&
+              mainBody.trim() === "";
             const showBodySkeleton =
               !isUser &&
               isStreamingThisMessage &&
               mainBody.trim() === "" &&
               !showEvidenceReview;
+            const earlyBriefingProgressMessage = isBuildingMatchProfile
+              ? t("briefingMatchProfileLabel")
+              : null;
+            const showStreamedPrepThinking =
+              isPostEvidenceBriefingPhase && !isBuildingMatchProfile;
             const hasBriefingToCopy =
               !isUser &&
               mainBody.trim() !== "" &&
@@ -423,16 +537,36 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                         lineHeight: 1.72,
                       }}
                     >
+                      {showStreamedPrepThinking ? (
+                        <AssistantBriefingStreamingLine
+                          text={split?.briefingPrep ?? ""}
+                          isStreaming={
+                            (split?.isBriefingPrepStreaming ?? false) ||
+                            (split?.briefingPrep?.length ?? 0) === 0
+                          }
+                        />
+                      ) : null}
+                      {earlyBriefingProgressMessage ? (
+                        <AssistantBriefingProgress
+                          message={earlyBriefingProgressMessage}
+                        />
+                      ) : null}
                       {showBodySkeleton ? (
                         <AssistantThinkingIndicator />
-                      ) : mainBody.trim() === "" ? null : (
+                      ) : mainBody.trim() === "" && !split?.chartData ? null : (
                         <AssistantBriefingBody
                           markdown={mainBody}
                           contentSx={markdownSx}
                           locale={locale}
                           referencesPanelTitle={t("evidenceReferencesLabel")}
+                          chartData={split?.chartData ?? null}
                         />
                       )}
+                      {isDraftingBriefing ? (
+                        <AssistantBriefingProgress
+                          message={t("briefingDraftingLabel")}
+                        />
+                      ) : null}
                     </Box>
                     {hasBriefingToCopy ? (
                       <Box
@@ -521,6 +655,11 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
           px: 0,
         }}
       >
+        {payloadTooLargeWarning ? (
+          <Alert severity="warning" sx={{ mb: 1 }}>
+            {t("payloadTooLargeWarning")}
+          </Alert>
+        ) : null}
         {badPromptStrikeCount > 0 ? (
           <Typography
             variant="caption"
@@ -645,7 +784,9 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                 <Box component="span" sx={{ display: "inline-flex" }}>
                   <IconButton
                     type="submit"
-                    disabled={!input.trim() || !termsHydrated}
+                    disabled={
+                      !input.trim() || !termsHydrated || isPayloadTooLarge
+                    }
                     aria-label={t("send")}
                     sx={{
                       width: 36,

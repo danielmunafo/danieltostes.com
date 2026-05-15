@@ -159,6 +159,29 @@ export const RATE_LIMIT_MAX_ENTRIES = 500;
 export const THINKING_OPEN_MARKER = "[[THINKING_START]]";
 export const THINKING_CLOSE_MARKER = "[[THINKING_END]]";
 
+/**
+ * Wraps compact chart JSON between thinking close and pitch stream so the client
+ * can render the match profile without exposing raw markers in markdown.
+ */
+export const CHART_DATA_OPEN_MARKER = "[[CHART_DATA_START]]";
+export const CHART_DATA_CLOSE_MARKER = "[[CHART_DATA_END]]";
+
+/**
+ * Ephemeral one-line status streamed after evidence review closes and before
+ * chart JSON / pitch. Stripped on the client; not shown in final briefing body.
+ */
+export const BRIEFING_PREP_OPEN_MARKER = "[[BRIEFING_PREP_START]]";
+export const BRIEFING_PREP_CLOSE_MARKER = "[[BRIEFING_PREP_END]]";
+
+/** Max tokens for streamed pre-briefing thinking (`streamText`, parallel to chart). */
+export const BRIEFING_PREP_STATUS_MAX_TOKENS = 220;
+
+/** Max tokens for post-analyst chart projection (`generateObject`). */
+export const DIMENSION_SCORING_MAX_TOKENS = 1536;
+
+/** Tighter cap for chart projection retry after truncation (`finishReason: length`). */
+export const DIMENSION_SCORING_COMPACT_MAX_TOKENS = 1024;
+
 /** Stable S3 object key CI overwrites; Lambda `EMBEDDINGS_S3_URI` should point here. */
 export const EMBEDDINGS_S3_PUBLISH_KEY = "embeddings.json";
 

@@ -284,7 +284,7 @@ function buildEntriesFromImpactMd(locale, impactItems) {
  * Takes the portion before an em-dash or en-dash separator.
  */
 function deriveCategoryFromTitle(title) {
-  const beforeDash = title.split(/\s*[—-]\s*/)[0] || title;
+  const beforeDash = title.split(/\s*[—\-]\s*/)[0] || title;
   return beforeDash
     .toLowerCase()
     .replace(/&/g, "-and-")
