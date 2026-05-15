@@ -12,7 +12,7 @@
 | RAG retrieve | `services/recruiter-assistant-api/src/rag/retrieve.ts` |
 | Prompts (evaluator + analyst + pitch) | `services/recruiter-assistant-api/src/rag/evaluatorPrompt.ts`, `services/recruiter-assistant-api/src/rag/prompt.ts` |
 | References builder | `services/recruiter-assistant-api/src/rag/references.ts` |
-| Tunables | `services/recruiter-assistant-api/src/constants.ts` |
+| Tunables | `services/recruiter-assistant-api/src/constants.ts` (`CHAT_MODEL` defaults to **`gpt-5.4-mini`**; override with env `RECRUITER_CHAT_MODEL`) |
 | Input guard / intent / rate limit | `services/recruiter-assistant-api/src/security/` |
 | Embeddings load | `services/recruiter-assistant-api/src/embeddings/loadEmbeddings.ts` |
 | Build script | `services/recruiter-assistant-api/scripts/build-embeddings.mjs` |
