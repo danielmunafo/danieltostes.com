@@ -32,6 +32,8 @@ jobs:
         run: npm run test
 
       - name: Build
+        env:
+          NEXT_PUBLIC_RECRUITER_API_URL: ${{ vars.RECRUITER_API_URL }}
         run: npm run build
 
       - name: Install Playwright browsers

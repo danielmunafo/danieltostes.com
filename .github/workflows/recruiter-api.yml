@@ -1,0 +1,118 @@
+name: Recruiter API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/recruiter-assistant-api/**"
+  pull_request:
+    paths:
+      - "services/recruiter-assistant-api/**"
+  workflow_dispatch:
+
+env:
+  LAMBDA_FUNCTION_NAME: recruiter-assistant-api
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/recruiter-assistant-api
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: services/recruiter-assistant-api/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Bundle Lambda
+        run: npm run build
+
+      - name: Zip artifact
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: cd dist && zip -r "$GITHUB_WORKSPACE/function.zip" index.cjs
+
+      - name: Upload zip
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: recruiter-lambda-zip
+          path: function.zip
+
+  deploy:
+    needs: test-and-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: recruiter-lambda-zip
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_RECRUITER_API_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Update Lambda code
+        run: |
+          aws lambda update-function-code \
+            --function-name "${LAMBDA_FUNCTION_NAME}" \
+            --zip-file fileb://function.zip \
+            --publish
+
+  embeddings:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/recruiter-assistant-api
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: services/recruiter-assistant-api/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build embeddings
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/build-embeddings.mjs
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_RECRUITER_API_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Upload embeddings to S3
+        env:
+          EMBEDDINGS_BUCKET: ${{ secrets.RECRUITER_EMBEDDINGS_BUCKET }}
+        run: |
+          if [ -z "$EMBEDDINGS_BUCKET" ]; then
+            echo "Set RECRUITER_EMBEDDINGS_BUCKET secret to the embeddings bucket name"
+            exit 1
+          fi
+          for f in embeddings/embeddings.v*.json; do
+            aws s3 cp "$f" "s3://${EMBEDDINGS_BUCKET}/$(basename "$f")"
+          done
