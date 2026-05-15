@@ -13,6 +13,8 @@ import {
   buildChartProjectionSystemPrompt,
   buildChartProjectionUserPrompt,
 } from "../src/rag/chartProjectionPrompt.js";
+import { computeHardGateAssessment } from "../src/rag/hardGates/computeHardGateAssessment.js";
+import type { HardGateRequirementRow } from "../src/rag/hardGates/schema.js";
 
 const validEvaluatorEn = `# Requirement Coverage
 
@@ -287,6 +289,53 @@ Score caps applied: None`;
     expect(parseAndValidateChartData(chart, validEvaluatorEn, "en")).toBeNull();
   });
 
+  it("rejects chart Pursue at 6/10 when hard gates cap at 4", () => {
+    const evaluatorSix = validEvaluatorEn.replace(
+      "**Recommended match strength:** 8/10",
+      "**Recommended match strength:** 6/10"
+    );
+    const chart = makeValidChart({
+      technicalFit: 6,
+      recommendation: "Pursue",
+    });
+    chart.assessmentSummary.evidenceConfidence = "Medium";
+    const hardGateAssessment = computeHardGateAssessment([
+      {
+        requirement: "German fluency",
+        category: "spoken_language",
+        evidenceLevel: "not_evidenced",
+        requirementImportance: "must_have",
+        isHardGate: true,
+        severity: "major",
+        jdSuggestsFlexibility: false,
+        rationale: "test",
+      } satisfies HardGateRequirementRow,
+      {
+        requirement: "Production Golang",
+        category: "primary_stack",
+        evidenceLevel: "not_evidenced",
+        requirementImportance: "must_have",
+        isHardGate: true,
+        severity: "major",
+        jdSuggestsFlexibility: false,
+        rationale: "test",
+      } satisfies HardGateRequirementRow,
+    ]);
+    const outcome = validateChartData(
+      chart,
+      evaluatorSix,
+      "en",
+      hardGateAssessment
+    );
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) {
+      expect([
+        "technical_fit_exceeds_ceiling",
+        "recommendation_not_in_fit_band",
+      ]).toContain(outcome.reason);
+    }
+  });
+
   it("rejects confidence mismatch", () => {
     const chart = makeValidChart();
     chart.assessmentSummary.evidenceConfidence = "Low";
@@ -502,5 +551,13 @@ describe("chartProjectionPrompt", () => {
     expect(user).toContain(validEvaluatorEn);
     expect(user).toContain("target 6-8");
     expect(user).toContain("Vary scores across dimensions");
+    const withHardGates = buildChartProjectionUserPrompt(
+      "JD",
+      validEvaluatorEn,
+      "analyst",
+      "Deterministic hard gate assessment\n- Effective max technical fit: 4/10"
+    );
+    expect(withHardGates).toContain("Backend-enforced hard gate assessment");
+    expect(withHardGates).toContain("Effective max technical fit: 4/10");
   });
 });

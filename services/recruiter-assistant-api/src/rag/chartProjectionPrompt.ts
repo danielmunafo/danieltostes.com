@@ -62,10 +62,10 @@ Capability score mapping (per dimension, from mapped rows):
 | adjacent | 4-6 |
 | not_evidenced | 0-3 (0-1 if irrelevant; 2-3 if role-critical gap) |
 
-assessmentSummary must mirror evaluator match score guidance:
-- technicalFit: same integer as evaluator recommended match strength (X in X/10)
+assessmentSummary must mirror evaluator match score guidance AND any backend hard gate block in the user prompt:
+- technicalFit: integer ≤ effective max technical fit from hard gate block when present; otherwise same as evaluator recommended match strength (X in X/10)
 - evidenceConfidence: one of ${CHART_EVIDENCE_CONFIDENCE.map((v) => `"${v}"`).join(", ")}
-- recommendation: one of ${CHART_RECOMMENDATION.map((v) => `"${v}"`).join(", ")} — choose the label that matches evaluator fit and gaps (do not be more optimistic than the evaluator ceiling)
+- recommendation: one of ${CHART_RECOMMENDATION.map((v) => `"${v}"`).join(", ")} — must be from Allowed recommendations in the hard gate block when present; never use Blocked recommendations
 
 Output only structured data matching the schema.${compact ? CHART_PROJECTION_COMPACT_APPENDIX : ""}`;
 }
@@ -73,8 +73,17 @@ Output only structured data matching the schema.${compact ? CHART_PROJECTION_COM
 export function buildChartProjectionUserPrompt(
   jobDescriptionText: string,
   evaluatorMarkdown: string,
-  analystMarkdown: string
+  analystMarkdown: string,
+  hardGateBlock = ""
 ): string {
+  const hardGateSection = hardGateBlock.trim()
+    ? `---
+Backend-enforced hard gate assessment (do not exceed; summary cards must comply):
+${hardGateBlock.trim()}
+
+`
+    : "";
+
   return `Job description / recruiter message:
 ${jobDescriptionText}
 
@@ -86,7 +95,8 @@ ${evaluatorMarkdown}
 Analyst synthesis (context only; do not upgrade evidence):
 ${analystMarkdown}
 
-Produce chart data: assessmentSummary + capabilityDimensions (canonical keys, target 6-8).
+${hardGateSection}Produce chart data: assessmentSummary + capabilityDimensions (canonical keys, target 6-8).
 For each dimension: map requirement rows → evidenceLevel → score in band → rationale.
-Vary scores across dimensions when the requirement table shows different evidence levels.`;
+Vary scores across dimensions when the requirement table shows different evidence levels.
+Assessment summary cards will be overwritten from the final pitch Scores section when the pitch is ready — stay consistent with hard gate caps now.`;
 }
