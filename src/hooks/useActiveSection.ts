@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { SECTION_IDS, type SectionId } from "@/constants/sections";
 
-/** Fraction of the section height over which we blend from previous to current (0–1). */
+/** Fraction of the section height over which we blend from previous to current (0-1). */
 const BLEND_ZONE_FRACTION = 0.6;
 
 export interface ActiveSectionState {

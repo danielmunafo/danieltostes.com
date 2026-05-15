@@ -13,7 +13,7 @@ import {
   SECTION_ICON_SIZE,
   SECTION_ITEM_MIN_HEIGHT,
   SECTION_ITEM_PADDING_Y,
-  type SectionId,
+  type ParallaxContentSectionId,
 } from "@/constants/sections";
 
 const MOBILE_PADDING_X = CONTENT_COLUMN_PADDING_X / 2;
@@ -22,7 +22,7 @@ const MOBILE_PADDING_Y = SECTION_ITEM_PADDING_Y / 2;
 const ICON_HOVER_SCALE = 1.05;
 
 interface SectionItemProps {
-  sectionId: SectionId;
+  sectionId: ParallaxContentSectionId;
   side: "left" | "right";
   /** Optional image path for the icon; falls back to a colored placeholder. */
   iconSrc?: string;

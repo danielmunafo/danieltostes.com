@@ -9,6 +9,35 @@
     "loading": "Cargando…",
     "ariaLabel": "Buscar contenido del sitio"
   },
+  "RecruiterAssistant": {
+    "title": "Asistente de IA para reclutadores",
+    "subtitle": "Evaluación técnica desde evidencias del portfolio — cobertura de requisitos, puntuación con techos y foco de entrevista.",
+    "briefingLabel": "Briefing de encaje del candidato",
+    "copyBriefing": "Copiar",
+    "copyBriefingCopied": "Copiado",
+    "evidenceReviewLabel": "Revisión de evidencias",
+    "evidenceReviewStreamingLabel": "Evaluando encaje del rol frente a evidencias del portfolio…",
+    "evidenceReferencesLabel": "Referencias de evidencias",
+    "jobContextLabel": "Contexto del rol",
+    "placeholder": "Pega aquí la descripción del puesto…",
+    "send": "Enviar",
+    "sending": "Pensando…",
+    "unavailable": "Asistente no configurado (falta la URL de la API).",
+    "badPromptStrikesCounter": "Mensajes fuera de contexto: {count} / {max} — el asistente solo acepta texto de empleo o recruiting.",
+    "disclaimer": "Generado por IA a partir del contenido público del portafolio; verifica los hechos antes de decidir.",
+    "scrollDownCue": "Hay más contenido abajo — desplázate hacia abajo",
+    "termsModalTitle": "Términos y condiciones",
+    "termsModalDescription": "Tienes que aceptar antes de enviar estos datos. Los <terms>términos completos y uso razonable</terms> explican qué ocurre al enviar.",
+    "termsModalAccept": "Aceptar y enviar",
+    "termsModalCancel": "Cancelar"
+  },
+  "RecruiterAssistantTerms": {
+    "metaTitle": "Términos del Asistente de IA para reclutadores",
+    "metaDescription": "Uso razonable, tratamiento de datos y condiciones del Asistente de IA para reclutadores en este portafolio.",
+    "backToHome": "Volver al portafolio",
+    "loadError": "No se pudieron cargar los términos. Actualiza la página o inténtalo más tarde.",
+    "loading": "Cargando términos"
+  },
   "ThemeToggle": {
     "light": "Cambiar a modo oscuro",
     "dark": "Cambiar a modo claro"
@@ -16,7 +45,7 @@
   "Summary": {
     "hero": {
       "title": "Resumen",
-      "description": "Ingeniero de Software Senior especializado en estabilizar y escalar plataformas cloud-native. Entrega de sistemas de producción en entornos fintech y de alto tráfico. Fuerte dominio en arquitectura, infraestructura, observabilidad e integraciones con IA. Experiencia en mejorar confiabilidad, reducir riesgo operacional y acelerar entregas en equipos distribuidos.",
+      "description": "Ingeniero de Software Senior especializado en estabilizar y escalar plataformas cloud-native. Entrega sistemas de producción en entornos fintech y de alto tráfico. Fuerte dominio en arquitectura, infraestructura, observabilidad e integraciones con IA — incluidos caminos de inferencia sensibles a la latencia y flujos de producto con recuperación de contexto y generación fundamentada. Experiencia en mejorar confiabilidad, reducir riesgo operacional y acelerar entregas en equipos distribuidos.",
       "experienceLabel": "Experiencia",
       "experienceValue": "9+ años",
       "coreLabel": "Principal",
@@ -26,7 +55,7 @@
       "infraLabel": "Infra & Ops",
       "infraValue": "Kubernetes, Terraform, CI/CD, Observabilidad",
       "aiLabel": "IA",
-      "aiValue": "Cursor, Co-pilot, OpenAI, Agentes"
+      "aiValue": "Flujos LLM con recuperación de contexto, prompting por etapas (evaluador + analista + pitch), Cursor, Copilot, APIs OpenAI"
     },
     "impactTitle": "Impacto Seleccionado",
     "impactAnonymizeNote": "Todos los ítems siguientes y sus detalles reflejan iniciativas reales; cifras, nombres y cronogramas específicos han sido anonimizados para cumplir con los NDA.",
@@ -76,41 +105,73 @@
   },
   "Experience": {
     "title": "Experiencia",
+    "detailClose": "Cerrar",
+    "contextLabels": {
+      "teamSize": "Equipo",
+      "companySize": "Tamaño de Empresa",
+      "sector": "Sector",
+      "domain": "Dominio",
+      "compliance": "Cumplimiento"
+    },
     "roles": [
       {
         "company": "Cliente Confidencial (Contrato)",
-        "period": "Ago/2025 - Dic/2025",
+        "period": "Ago/2025 - Actual",
         "position": "Ingeniero de Software Senior",
         "sectionTitle": "Experiencia",
         "desc": [
           "Diseñé y entregué una plataforma de automatización de reclamaciones de garantía impulsada por IA, sustituyendo flujos manuales de soporte por un motor de decisión escalable basado en JSON integrado con modelos de evaluación por imagen.",
-          "Implementé procesamiento asíncrono con reintentos acotados y salvaguardas de escalado, integré actualizaciones de casos en Salesforce y automatizaciones de chatbot, y permití la evolución dinámica de reglas de negocio sin afectar producción."
+          "Implementé procesamiento asíncrono con reintentos acotados y salvaguardas de escalado, integré actualizaciones de casos en Salesforce y automatizaciones de chatbot, y permití la evolución dinámica de reglas de negocio sin afectar producción — coordinando dependencias entre responsables de integración multifuncionales y calendarios de proveedores.",
+          "Orquesté escenarios complejos en una máquina de estados multifase — coordinación resiliente y tolerante a fallos entre workers asíncronos, sistemas externos y rutas de escalado, para que flujos de larga duración se recuperen de forma limpia.",
+          "Lideré entrega cross-funcional de extremo a extremo 100% remota: fui el enlace de ingeniería entre negocio, cliente, infraestructura, seguridad, soporte y equipos internos de producto e ingeniería — con planificación conjunta, revisiones compartidas de riesgo y puntos de control de integración — para que grupos de stakeholders con perfiles diversos siguieran alineados desde el descubrimiento hasta el lanzamiento con handoffs ajustados.",
+          "Asumí la capa E2E de extremo a extremo: definí cobertura de journeys críticos del negocio, construí y mantuve suites automatizadas y las integré en CI para proteger releases.",
+          "Conduje rituales cross-funcionales que mantuvieron el alcance visible para todas las disciplinas: trazabilidad en tickets, talleres multidisciplinares con producto, soporte, ingeniería y pares de cumplimiento, diseño colaborativo de soluciones, además de especificaciones y registro de decisiones — a menudo borradores asistidos por IA, luego revisados por humanos — manteniendo trade-offs explícitos y auditables."
         ],
-        "tech": "TypeScript, Node.js, GraphQL (Apollo Federation), BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture"
+        "tech": "TypeScript, Node.js, GraphQL (Apollo Federation), BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture, E2E Testing",
+        "context": {
+          "teamSize": "5",
+          "companySize": "500+",
+          "sector": "E-commerce",
+          "domain": "Soporte al Cliente",
+          "compliance": "PII, GDPR"
+        }
       },
       {
-        "company": "Plataforma de Fitness Personal",
-        "period": "Jul/2025 - Presente",
-        "position": "Fundador & Ingeniero de Software",
-        "desc": [
-          "Fundando y construyendo una plataforma de fitness nativa en IA que ofrece entrenamientos y flujos de bienestar personalizados en sistemas móvil y backend.",
-          "Liderando la ejecución de producto de extremo a extremo: validación de mercado, modelado de dominio, arquitectura backend distribuida y sistemas de coaching impulsados por IA.",
-          "Arquitectura de backend escalable y orientado a eventos con Clean Architecture y fronteras modulares de servicio.",
-          "Implementé automatización de infraestructura, CI/CD, orquestación de contenedores y observabilidad full-stack para fiabilidad de nivel producción.",
-          "Diseñando flujos de coaching con IA basados en agentes que integran LLMs para guía adaptativa y contextual al usuario."
+        "company": "danieltostes.com",
+        "period": "2026 - Presente",
+        "position": "Ingeniero de Software (Proyecto Personal)",
+        "detailBodyPath": "experience/danieltostes-com",
+        "cardDescription": "El portafolio en producción y el asistente para reclutadores se entregan con código de aplicación 100% generado por IA—en Cursor con Copilot en el circuito de revisión—mientras mantengo la propiedad de arquitectura, modelado de amenazas, prompts, pruebas, CI/CD y operaciones en AWS de extremo a extremo.\n\nHaz clic en esta tarjeta para ver el plan de construcción, el alcance y lo que está en producción hoy.",
+        "chips": [
+          "Código: 100% generado por IA (Cursor)",
+          "Revisión: Humano en el circuito (Copilot)",
+          "Asistente: RAG + evaluador → analista → pitch en stream (Lambda)",
+          "Sitio: Export estático (S3 / CloudFront)"
         ],
-        "tech": "React Native (Expo), React, Node.js, TypeScript, New Relic, Sentry, OpenAI"
+        "tech": "Next.js, React, TypeScript, MUI, OpenAI, AWS (S3, CloudFront, Lambda), Vitest, Playwright, GitHub Actions",
+        "context": {
+          "teamSize": "Solo",
+          "sector": "Proyecto Personal",
+          "domain": "Portafolio de Carrera & Reclutamiento Asistido por IA"
+        }
       },
       {
         "company": "Ageras (Kontist)",
         "period": "Jul/2024 - Jun/2025",
         "position": "Ingeniero de Software Senior",
         "desc": [
-          "Construí y mantuve funcionalidades core para productos de facturación y banca sirviendo a pequeñas empresas en Europa.",
-          "Implementé decisiones técnicas a nivel de empresa, estandarizando prácticas de ingeniería y mejorando mantenibilidad a largo plazo.",
-          "Lideré iniciativas de observabilidad y monitoreo, permitiendo decisiones de producto y operación basadas en datos."
+          "Construí y mantuve funcionalidades core para productos de facturación y banca sirviendo a pequeñas empresas en Europa, aclarando alcance y trade-offs con producto e ingeniería mediante tickets, briefs escritos y discusiones de diseño.",
+          "Implementé decisiones técnicas a nivel de empresa, estandarizando prácticas de ingeniería y mejorando mantenibilidad a largo plazo con guías documentadas y racional estilo ADR compartido entre equipos.",
+          "Lideré iniciativas de observabilidad y monitoreo, permitiendo decisiones de producto y operación basadas en datos, comunicadas con dashboards, playbooks escritos y actualizaciones a stakeholders."
         ],
-        "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS, Terraform, Docker, PostgreSQL, Datadog, Sentry"
+        "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS, Terraform, Docker, PostgreSQL, Datadog, Sentry",
+        "context": {
+          "teamSize": "8",
+          "companySize": "Hasta 100",
+          "sector": "Banca & Fintech",
+          "domain": "Banca & Facturación",
+          "compliance": "PII, GDPR"
+        }
       },
       {
         "company": "Klarna",
@@ -118,49 +179,85 @@
         "position": "Ingeniero de Software",
         "desc": [
           "Desarrollé y evolucioné la plataforma de email transaccional y campañas de marketing de Klarna, soportando comunicación de alto volumen y multi-mercado.",
-          "Implementé un nuevo modelo de decision-engine de marketing para entrega de contenido personalizado con machine learning, búsqueda vectorial y matching de recomendaciones con IA."
+          "Implementé un nuevo modelo de decision-engine de marketing para entrega de contenido personalizado con machine learning, búsqueda vectorial y matching de recomendaciones con IA.",
+          "Trabajé en iniciativas cross-funcionales con plataforma de datos, incentivos, contenido, marketing, analítica e ingeniería de plataforma — negociando prioridades entre equipos con objetivos y cadencias distintas — usando documentación compartida, RFCs asíncronos y sesiones de planificación en vivo; mentoré a nuevas incorporaciones en el código y el flujo de releases y resolví desacuerdos con discusión basada en evidencias."
         ],
-        "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Datadog, OpsGenie"
+        "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Datadog, OpsGenie",
+        "context": {
+          "teamSize": "6",
+          "companySize": "5.000+",
+          "sector": "Banca/Fintech & E-commerce",
+          "domain": "Marketing",
+          "compliance": "PII, PCI, GDPR"
+        }
       },
       {
         "company": "MercadoLivre",
         "period": "Oct/2020 - Feb/2022",
         "position": "Ingeniero de Software Senior",
         "desc": [
-          "Diseñé e implementé microservicios y micro-frontends para cumplimiento fiscal y experiencia de usuario en América Latina.",
-          "Lideré el desarrollo de sistemas back-office para gestión de exención fiscal y procesamiento de reembolsos."
+          "Conduje un programa cross-funcional de migración del modelo previo de la experiencia fiscal a una nueva experiencia — alineando producto, política fiscal, UX, backend y equipos regionales de mercado con filosofías distintas — y unifiqué patrones asíncronos que toda la coalición multifuncional pudo adoptar para mantener releases desbloqueados.",
+          "Fundé y lideré una organización de ingeniería multifuncional desde cero — contratando en varias disciplinas, emparejando ingeniería con socios de producto y operaciones y con ownership de sistemas back-office para exenciones fiscales y reembolsos — mientras integraba ingenieros, daba feedback directo y resolvía conflictos de prioridad con socios fuera de ingeniería."
         ],
-        "tech": "Java, React, Node.js, TypeScript, Express, Sass, Datadog, New Relic"
+        "tech": "Java, React, Node.js, TypeScript, Express, Sass, Datadog, New Relic",
+        "context": {
+          "teamSize": "10",
+          "companySize": "5.000+",
+          "sector": "Impuestos & E-commerce",
+          "domain": "Experiencia de Usuario"
+        }
       },
       {
         "company": "Itaú Unibanco",
         "period": "Jun/2020 - Oct/2020",
         "position": "Ingeniero de Software",
         "desc": [
-          "Migré funcionalidades críticas de mainframe legado a soluciones modernas en la nube y containerizadas.",
-          "Desarrollé portales internos y máquinas de estado de workflow para operaciones de descubierto y financieras."
+          "Migré funcionalidades críticas de mainframe legado a soluciones modernas en la nube y containerizadas, coordinando dependencias con planes de cutover escritos y walkthroughs técnicos con arquitectura y operaciones.",
+          "Desarrollé portales internos y máquinas de estado de workflow para operaciones de descubierto y financieras, traduciendo reglas de negocio en especificaciones escritas revisadas con analistas y documentando el comportamiento para revisores de cumplimiento."
         ],
-        "tech": "Java, Spring State Machine, AngularJS, Kafka, Cassandra, AWS, OpenShift, Grafana"
+        "tech": "Java, Spring State Machine, AngularJS, Kafka, Cassandra, AWS, OpenShift, Grafana",
+        "context": {
+          "teamSize": "15",
+          "companySize": "5.000+",
+          "sector": "Banca",
+          "domain": "Descubierto",
+          "compliance": "PII, PCI"
+        }
       },
       {
         "company": "PagSeguro PagBank",
         "period": "Nov/2019 - Jun/2020",
         "position": "Desarrollador de Sistemas",
         "desc": [
-          "Construí herramientas internas para reducir tiempo de respuesta a incidentes y mejorar troubleshooting para equipos de soporte.",
-          "Implementé pipelines CI/CD y servicios containerizados cumpliendo requisitos estrictos de seguridad y conformidad."
+          "Construí herramientas internas para reducir tiempo de respuesta a incidentes y mejorar troubleshooting para equipos de soporte, con flujos claros en tickets, notas de handoff y guías escritas de troubleshooting.",
+          "Implementé pipelines CI/CD y servicios containerizados cumpliendo requisitos estrictos de seguridad y conformidad, documentando cambios de pipeline y el racional de despliegue para operaciones y seguridad."
         ],
-        "tech": "Node.js, Java, Docker, Jenkins, Mesos/Marathon, Splunk, New Relic"
+        "tech": "Node.js, Java, Docker, Jenkins, Mesos/Marathon, Splunk, New Relic",
+        "context": {
+          "teamSize": "4",
+          "companySize": "1.000+",
+          "sector": "Banca & Fintech",
+          "domain": "Soporte al Cliente",
+          "compliance": "PII, PCI"
+        }
       },
       {
         "company": "Five Validation",
         "period": "Mar/2017 - Nov/2019",
         "position": "Desarrollador Full Stack de Sistemas",
         "desc": [
-          "Diseñé y entregué soluciones de software para validación de sistemas informáticos, reduciendo sobrecarga operacional y esfuerzo manual.",
-          "Escalé prácticas técnicas asegurando calidad de código, estándares de documentación y procesos de release controlados."
+          "Diseñé y entregué software de validación en un contexto multifuncional liderado por fundadores — trabajando directamente con el CEO y líderes de ventas, QA y campo en elicitación de requisitos, planificación y análisis — reduciendo sobrecarga operacional y esfuerzo manual.",
+          "Escalé prácticas técnicas asegurando calidad de código, estándares de documentación escrita y procesos de release controlados — con paquetes de evidencia y notas de revisión adecuados a auditorías reguladas.",
+          "Coordiné entrega cross-funcional con especialistas en validación, QA, operaciones de ventas y stakeholders de negocio — traduciendo requisitos en documentación lista para auditoría y manteniendo socios técnicos y no técnicos alineados en cada release."
         ],
-        "tech": "Java, PostgreSQL, React, AWS CodeBuild, S3, CloudFront, RDS, Route53, Jenkins, SonarQube"
+        "tech": "Java, PostgreSQL, React, AWS CodeBuild, S3, CloudFront, RDS, Route53, Jenkins, SonarQube",
+        "context": {
+          "teamSize": "5",
+          "companySize": "Hasta 30",
+          "sector": "Industria Farmacéutica",
+          "domain": "Ventas",
+          "compliance": "Regulaciones GAMP & FDA"
+        }
       }
     ],
     "icon": "Experiencia"

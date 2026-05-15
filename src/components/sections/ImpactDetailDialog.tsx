@@ -19,10 +19,11 @@ import {
   GLASS_BLUR,
   hexToRgba,
   SECTION_COLORS,
+  type ParallaxContentSectionId,
 } from "@/constants/sections";
 
 const CONTENT_BASE = "/content";
-const SECTION_ID = "impact" as const;
+const DEFAULT_GLASS_SECTION_ID: ParallaxContentSectionId = "impact";
 
 const markdownComponents: Components = {
   p: ({ children }) => (
@@ -197,7 +198,11 @@ const markdownComponentsWithDiagrams: Components = {
         <Typography
           component="code"
           variant="body1"
-          sx={{ fontFamily: "monospace" }}
+          sx={{
+            fontFamily: "monospace",
+            display: "inline",
+            fontSize: "0.9em",
+          }}
           {...props}
         >
           {children}
@@ -273,6 +278,8 @@ export interface ImpactDetailDialogProps {
   /** Prefetched markdown when available (e.g. from hover); avoids fetch when dialog opens. */
   prefetchedBody?: string | null;
   closeLabel: string;
+  /** Section palette used for the frosted dialog shell (defaults to impact). */
+  glassSectionId?: ParallaxContentSectionId;
 }
 
 export function ImpactDetailDialog({
@@ -284,10 +291,11 @@ export function ImpactDetailDialog({
   locale,
   prefetchedBody,
   closeLabel,
+  glassSectionId = DEFAULT_GLASS_SECTION_ID,
 }: ImpactDetailDialogProps) {
   const theme = useTheme();
   const mode = theme.palette.mode;
-  const solidColor = SECTION_COLORS[mode][SECTION_ID];
+  const solidColor = SECTION_COLORS[mode][glassSectionId];
   const glassColor = hexToRgba(solidColor, GLASS_ALPHA);
 
   const [fetchedBody, setFetchedBody] = useState<string | null>(null);

@@ -9,6 +9,35 @@
     "loading": "Loading…",
     "ariaLabel": "Search site content"
   },
+  "RecruiterAssistant": {
+    "title": "AI Recruiter Assistant",
+    "subtitle": "Technical evaluation from portfolio evidence — requirement coverage, capped match score, and interview signals.",
+    "briefingLabel": "Candidate fit briefing",
+    "copyBriefing": "Copy",
+    "copyBriefingCopied": "Copied",
+    "evidenceReviewLabel": "Evidence review",
+    "evidenceReviewStreamingLabel": "Evaluating role fit against portfolio evidence…",
+    "evidenceReferencesLabel": "Evidence references",
+    "jobContextLabel": "Role context",
+    "placeholder": "Paste the job description here…",
+    "send": "Send",
+    "sending": "Thinking…",
+    "unavailable": "Assistant is not configured (missing API URL).",
+    "badPromptStrikesCounter": "Off-topic prompts: {count} / {max} — the assistant only accepts job or recruiting text.",
+    "disclaimer": "AI-generated from public portfolio content; verify facts before decisions.",
+    "scrollDownCue": "More content below — scroll down",
+    "termsModalTitle": "Terms and conditions",
+    "termsModalDescription": "You must agree before this text is submitted. The <terms>full terms and fair use</terms> explain what happens when you send it.",
+    "termsModalAccept": "Agree and send",
+    "termsModalCancel": "Cancel"
+  },
+  "RecruiterAssistantTerms": {
+    "metaTitle": "Recruiter Assistant terms",
+    "metaDescription": "Fair use, data processing, and conditions for the AI Recruiter Assistant on this portfolio site.",
+    "backToHome": "Back to portfolio",
+    "loadError": "Terms could not be loaded. Refresh the page or try again later.",
+    "loading": "Loading terms"
+  },
   "ThemeToggle": {
     "light": "Switch to dark mode",
     "dark": "Switch to light mode"
@@ -16,7 +45,7 @@
   "Summary": {
     "hero": {
       "title": "Summary",
-      "description": "Senior Software Engineer specializing in stabilizing and scaling cloud-native platforms. Delivering production-grade systems in fintech and high-traffic consumer environments. Strong ownership across architecture, infrastructure, observability, and AI integrations. Experienced in improving reliability, reducing operational risk, and accelerating delivery in distributed teams.",
+      "description": "Senior Software Engineer specializing in stabilizing and scaling cloud-native platforms. Delivers production-grade systems in fintech and high-traffic consumer environments. Strong ownership across architecture, infrastructure, observability, and AI integrations—including latency-sensitive inference paths and retrieval-grounded product workflows. Experienced in improving reliability, reducing operational risk, and accelerating delivery in distributed teams.",
       "experienceLabel": "Experience",
       "experienceValue": "9+ years",
       "coreLabel": "Core",
@@ -26,7 +55,7 @@
       "infraLabel": "Infra & Ops",
       "infraValue": "Kubernetes, Terraform, CI/CD, Observability",
       "aiLabel": "AI",
-      "aiValue": "Cursor, Co-pilot, OpenAI, Agents"
+      "aiValue": "Retrieval-grounded LLM workflows, staged evaluator + analyst + pitch, Cursor, Copilot, OpenAI APIs"
     },
     "impactTitle": "Selected Impact",
     "impactAnonymizeNote": "All items below and their details reflect real initiatives; specific figures, names, and timelines have been anonymized to comply with NDAs.",
@@ -82,41 +111,73 @@
   },
   "Experience": {
     "title": "Experience",
+    "detailClose": "Close",
+    "contextLabels": {
+      "teamSize": "Team",
+      "companySize": "Company Size",
+      "sector": "Sector",
+      "domain": "Domain",
+      "compliance": "Compliance"
+    },
     "roles": [
       {
         "company": "Confidential Client (Contract)",
-        "period": "Aug/2025 - Dec/2025",
+        "period": "Aug/2025 - Current",
         "position": "Senior Software Engineer",
         "sectionTitle": "Experience",
         "desc": [
           "Designed and delivered an AI-driven warranty claim automation platform, replacing manual support workflows with a scalable JSON-based decision engine integrated with image evaluation models.",
-          "Implemented asynchronous processing with bounded retries and escalation safeguards, integrated Salesforce case management updates and chatbot automations, and enabled dynamic business rule evolution without disrupting production."
+          "Implemented asynchronous processing with bounded retries and escalation safeguards, integrated Salesforce case management updates and chatbot automations, and enabled dynamic business rule evolution without disrupting production—coordinating dependencies across cross-functional integration owners and vendor timelines.",
+          "Orchestrated complex scenarios in a multi-phase state machine—resilient and fault-tolerant coordination across async workers, external systems, and escalation paths so long-running flows recover cleanly.",
+          "Led end-to-end cross-functional delivery in a remote-first setting: acted as the engineering link between business, client, infrastructure, security, support, and internal product and engineering teams—running joint planning, shared risk reviews, and integration checkpoints so diverse stakeholder groups stayed aligned from discovery through launch with tight handoffs.",
+          "Owned the E2E testing layer end to end: defined coverage for business-critical journeys, built and maintained automated E2E suites, and integrated them into CI to protect releases.",
+          "Ran cross-functional rituals that kept scope visible to every discipline: ticket-backed traceability, multi-discipline workshops with product, support, engineering, and compliance peers, collaborative solution design, and specs plus decision logs—often AI-assisted drafts, then human-reviewed—so trade-offs were explicit and reviewable."
         ],
-        "tech": "TypeScript, Node.js, GraphQL (Apollo Federation), BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture"
+        "tech": "TypeScript, Node.js, GraphQL (Apollo Federation), BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture, E2E Testing",
+        "context": {
+          "teamSize": "5",
+          "companySize": "500+",
+          "sector": "E-commerce",
+          "domain": "Customer Support",
+          "compliance": "PII, GDPR"
+        }
       },
       {
-        "company": "Personal Fitness Platform",
-        "period": "Jul/2025 - Present",
-        "position": "Founder & Software Engineer",
-        "desc": [
-          "Founding and building an AI-native fitness platform delivering personalized training and wellbeing workflows across mobile and backend systems.",
-          "Leading end-to-end product execution: market validation, domain modeling, distributed backend architecture, and AI-driven coaching systems.",
-          "Architected a scalable, event-driven backend using Clean Architecture and modular service boundaries.",
-          "Implemented infrastructure automation, CI/CD, container orchestration, and full-stack observability to support production-grade reliability.",
-          "Designing agent-based AI coaching workflows integrating LLMs for adaptive, context-aware user guidance."
+        "company": "danieltostes.com",
+        "period": "2026 - Present",
+        "position": "Software Engineer (Personal Project)",
+        "detailBodyPath": "experience/danieltostes-com",
+        "cardDescription": "The production portfolio and recruiter-assistant experience ship from 100% AI-generated application code—authored in Cursor with Copilot in the review loop—while I own architecture, threat modeling, prompts, tests, CI/CD, and AWS operations end to end.\n\nClick this card for the build plan, scope, and what is in production today.",
+        "chips": [
+          "Code: 100% AI-generated (Cursor)",
+          "Review: Human-in-the-loop (Copilot)",
+          "Assistant: RAG + streamed evaluator → analyst → pitch (Lambda)",
+          "Site: Static export (S3 / CloudFront)"
         ],
-        "tech": "React Native (Expo), React, Node.js, TypeScript, New Relic, Sentry, OpenAI"
+        "tech": "Next.js, React, TypeScript, MUI, OpenAI, AWS (S3; CloudFront; Lambda), Vitest, Playwright, GitHub Actions",
+        "context": {
+          "teamSize": "Solo",
+          "sector": "Personal Project",
+          "domain": "Career Portfolio & AI-Assisted Recruiting"
+        }
       },
       {
         "company": "Ageras (Kontist)",
         "period": "Jul/2024 - Jun/2025",
         "position": "Senior Software Engineer",
         "desc": [
-          "Built and maintained core functionality for invoicing and banking products serving small businesses across Europe.",
-          "Implemented company-level technical decisions, helping standardize engineering practices and improve long-term maintainability.",
-          "Led initiatives to improve observability and monitoring, enabling data-driven product and operational decisions."
+          "Built and maintained core functionality for invoicing and banking products serving small businesses across Europe, clarifying scope and trade-offs with product and engineering through tickets, written briefs, and design discussions.",
+          "Implemented company-level technical decisions, helping standardize engineering practices and improve long-term maintainability with documented guidelines and ADR-style rationale shared across teams.",
+          "Led initiatives to improve observability and monitoring, enabling data-driven product and operational decisions, communicated with dashboards, written playbooks, and stakeholder updates."
         ],
-        "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS, Terraform, Docker, PostgreSQL, Datadog, Sentry"
+        "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS, Terraform, Docker, PostgreSQL, Datadog, Sentry",
+        "context": {
+          "teamSize": "8",
+          "companySize": "Up to 100",
+          "sector": "Banking & Fintech",
+          "domain": "Banking & Invoicing",
+          "compliance": "PII, GDPR"
+        }
       },
       {
         "company": "Klarna",
@@ -124,49 +185,85 @@
         "position": "Software Engineer",
         "desc": [
           "Developed and evolved Klarna's transactional email and marketing campaign platform, supporting high-volume, multi-market communication.",
-          "Implemented a new marketing decision-engine model enabling personalized content delivery using machine-learning content + vector search + AI recommendations matching."
+          "Implemented a new marketing decision-engine model enabling personalized content delivery using machine-learning content + vector search + AI recommendations matching.",
+          "Operated inside cross-functional initiatives across data platform, incentives, content, marketing, analytics, and platform engineering—negotiating priorities across teams with different goals and cadences—using shared design docs, async RFC-style write-ups, and live planning sessions; mentored new joiners on the codebase and release practices and resolved disagreements with evidence-based discussion."
         ],
-        "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Datadog, OpsGenie"
+        "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Datadog, OpsGenie",
+        "context": {
+          "teamSize": "6",
+          "companySize": "5,000+",
+          "sector": "Banking/Fintech & E-commerce",
+          "domain": "Marketing",
+          "compliance": "PII, PCI, GDPR"
+        }
       },
       {
         "company": "MercadoLivre",
         "period": "Oct/2020 - Feb/2022",
         "position": "Senior Software Engineer",
         "desc": [
-          "Designed and implemented microservices and micro-frontends to support tax compliance and user experience across Latin America.",
-          "Led development of back-office systems for tax exemption management and refund processing."
+          "Drove a cross-functional program to migrate from the prior tax-experience ownership model to a new tax experience—aligning product, tax policy, UX, backend, and regional market teams who disagreed on implementation philosophy—and standardized async patterns the whole cross-functional coalition could adopt so releases stayed unblocked.",
+          "Founded and led a cross-functional engineering organization from scratch—hiring across disciplines, pairing engineering with product and operations partners, and owning back-office systems for tax exemption management and refund processing—while onboarding engineers, giving direct feedback, and resolving priority conflicts with partners outside engineering."
         ],
-        "tech": "Java, React, Node.js, TypeScript, Express, Sass, Datadog, New Relic"
+        "tech": "Java, React, Node.js, TypeScript, Express, Sass, Datadog, New Relic",
+        "context": {
+          "teamSize": "10",
+          "companySize": "5,000+",
+          "sector": "Taxes & E-commerce",
+          "domain": "User Experience"
+        }
       },
       {
         "company": "Itaú Unibanco",
         "period": "Jun/2020 - Oct/2020",
         "position": "Software Engineer",
         "desc": [
-          "Migrated critical legacy mainframe functionality to modern cloud-based and containerized solutions.",
-          "Developed internal portals and workflow state machines for overdraft and financial operations."
+          "Migrated critical legacy mainframe functionality to modern cloud-based and containerized solutions, coordinating dependencies through written cutover plans and technical walkthroughs with architecture and operations partners.",
+          "Developed internal portals and workflow state machines for overdraft and financial operations, translating business rules into written specifications reviewed with analysts and documenting behavior for compliance reviewers."
         ],
-        "tech": "Java, Spring State Machine, AngularJS, Kafka, Cassandra, AWS, OpenShift, Grafana"
+        "tech": "Java, Spring State Machine, AngularJS, Kafka, Cassandra, AWS, OpenShift, Grafana",
+        "context": {
+          "teamSize": "15",
+          "companySize": "5,000+",
+          "sector": "Banking",
+          "domain": "Overdraft",
+          "compliance": "PII, PCI"
+        }
       },
       {
         "company": "PagSeguro PagBank",
         "period": "Nov/2019 - Jun/2020",
         "position": "Systems Developer",
         "desc": [
-          "Built internal tools to reduce incident response time and improve troubleshooting for application support teams.",
-          "Implemented CI/CD pipelines and containerized services while adhering to strict security and compliance requirements."
+          "Built internal tools to reduce incident response time and improve troubleshooting for application support teams, using clear ticket workflows, handoff notes, and written troubleshooting guides.",
+          "Implemented CI/CD pipelines and containerized services while adhering to strict security and compliance requirements, documenting pipeline changes and rollout rationale for operations and security stakeholders."
         ],
-        "tech": "Node.js, Java, Docker, Jenkins, Mesos/Marathon, Splunk, New Relic"
+        "tech": "Node.js, Java, Docker, Jenkins, Mesos/Marathon, Splunk, New Relic",
+        "context": {
+          "teamSize": "4",
+          "companySize": "1,000+",
+          "sector": "Banking & Fintech",
+          "domain": "Customer Support",
+          "compliance": "PII, PCI"
+        }
       },
       {
         "company": "Five Validation",
         "period": "Mar/2017 - Nov/2019",
         "position": "Full Stack Systems Developer",
         "desc": [
-          "Designed and delivered software solutions for computer systems validation, reducing operational overhead and manual effort.",
-          "Scaled technical practices ensuring code quality, documentation standards, and controlled release processes."
+          "Designed and delivered regulated validation software in a cross-functional, founder-led context—working directly with the CEO and sales, QA, and field leads on requirements elicitation, planning, and analysis—reducing operational overhead and manual effort.",
+          "Scaled technical practices ensuring code quality, written documentation standards, and controlled release processes—with evidence packs and review notes suitable for regulated audits.",
+          "Coordinated cross-functional delivery with validation specialists, QA, sales operations, and business stakeholders—translating requirements into audit-ready documentation and keeping non-technical and technical partners aligned through every release."
         ],
-        "tech": "Java, PostgreSQL, React, AWS CodeBuild, S3, CloudFront, RDS, Route53, Jenkins, SonarQube"
+        "tech": "Java, PostgreSQL, React, AWS CodeBuild, S3, CloudFront, RDS, Route53, Jenkins, SonarQube",
+        "context": {
+          "teamSize": "5",
+          "companySize": "Up to 30",
+          "sector": "Pharmaceutical Industry",
+          "domain": "Sales",
+          "compliance": "GAMP & FDA Systems Regulations"
+        }
       }
     ],
     "icon": "Experience"
