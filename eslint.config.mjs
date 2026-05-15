@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     "public/search-index.json",
     "playwright-report/**",
     "test-results/**",
+    "services/recruiter-assistant-api/dist/**",
+    "services/recruiter-assistant-api/embeddings/**",
   ]),
 ]);
 

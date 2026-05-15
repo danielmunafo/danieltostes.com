@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:with-diagrams": "npm run render-mermaid && npm run dev",
     "build": "npm run build-search-index && npm run render-mermaid && next build; ec=$?; git checkout -- public/content/ 2>/dev/null; exit $ec",
     "build-search-index": "node scripts/build-search-index.mjs",
     "render-mermaid": "node scripts/render-mermaid.mjs",
@@ -18,17 +19,19 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@ai-sdk/react": "^1.2.12",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.8",
     "@mui/material": "^7.3.8",
     "@mui/material-nextjs": "^7.3.8",
+    "ai": "^4.3.19",
+    "fuse.js": "^7.0.0",
     "next": "16.1.6",
     "next-intl": "^4.8.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "fuse.js": "^7.0.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1"
   },
