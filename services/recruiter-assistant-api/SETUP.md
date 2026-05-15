@@ -88,6 +88,7 @@ Add **inline policy** (tighten ARNs to your account):
 | `OPENAI_SECRET_ARN`     | Secret ARN from step 3                                                                                                                                                            |
 | `EMBEDDINGS_S3_URI`     | `s3://YOUR_EMBEDDINGS_BUCKET/embeddings.json` (stable key; CI overwrites this object — see §9)                                                                                    |
 | `INTERESTS_PACK_S3_URI` | Optional: `s3://YOUR_EMBEDDINGS_BUCKET/interests-pack.json` (see §1b)                                                                                                             |
+| `RECRUITER_CHAT_MODEL`  | Optional: OpenAI chat model id. Default in code is **`gpt-5.4-mini`** (`CHAT_MODEL` in `src/constants.ts`). Set only to override (e.g. pinning or A/B).                           |
 | `ALLOWED_ORIGIN`        | Comma-separated, **exact** `Origin` match: prod `https://…` hosts plus local dev `http://localhost:3000` **and** `http://127.0.0.1:3000` if you ever open Next on the loopback IP |
 
 Do **not** set `OPENAI_API_KEY` in Lambda env (use the secret only).
@@ -189,7 +190,7 @@ Re-run whenever portfolio content under `src/messages/**` or `public/content/**`
 
 ## 10. Local development
 
-Copy [`.env.example`](./.env.example) to `.env` in this directory and set `OPENAI_API_KEY`, `EMBEDDINGS_JSON_PATH`, and `ALLOWED_ORIGIN` (see comments in the example file). Optionally set `INTERESTS_PACK_JSON_PATH` after `npm run build:interests-pack`.
+Copy [`.env.example`](./.env.example) to `.env` in this directory and set `OPENAI_API_KEY`, `EMBEDDINGS_JSON_PATH`, and `ALLOWED_ORIGIN` (see comments in the example file). Optionally set `INTERESTS_PACK_JSON_PATH` after `npm run build:interests-pack`. Chat defaults to **`gpt-5.4-mini`**; set `RECRUITER_CHAT_MODEL` only if you need a different model locally or in Lambda.
 
 Terminal A — API (after `npm run build` in `services/recruiter-assistant-api`):
 
