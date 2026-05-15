@@ -96,9 +96,19 @@ Do **not** set `OPENAI_API_KEY` in Lambda env (use the secret only).
 
 ## 6. Function URL (response streaming)
 
-- Enable **Function URL**, Auth type **NONE** (public URL; protection = CORS + rate limit + reserved concurrency).
+- Enable **Function URL**, Auth type **NONE** (public URL; protection = `ALLOWED_ORIGIN` check in code + rate limit + reserved concurrency).
 - **Invoke mode:** **RESPONSE_STREAM**
-- **CORS:** allow the same origins as `ALLOWED_ORIGIN` (no `*` in production).
+- **CORS on the Function URL: required** (handler does **not** emit `Access-Control-*` on Lambda — streaming metadata does not reliably reach browsers). Match **`ALLOWED_ORIGIN`** exactly (no `*` in production). Suggested console / CLI settings:
+
+  | Setting        | Value                                                                                                                                      |
+  | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+  | Allow origins  | Same comma-separated list as `ALLOWED_ORIGIN` (e.g. `https://dev.danieltostes.com`, `https://danieltostes.com`, local dev hosts if needed) |
+  | Allow methods  | `POST`, `OPTIONS`                                                                                                                          |
+  | Allow headers  | `content-type`, `authorization`                                                                                                            |
+  | Expose headers | `x-vercel-ai-data-stream`                                                                                                                  |
+  | Max age        | `86400` (optional)                                                                                                                         |
+
+  Keep handler `ALLOWED_ORIGIN` in sync with Function URL origins. The handler still enforces the allowlist (`403 forbidden_origin`); Function URL CORS only satisfies the browser.
 
 Copy the **Function URL** (e.g. `https://xxxx.lambda-url.us-east-1.on.aws/`).
 
@@ -205,6 +215,26 @@ npm run dev
 - **`.github/workflows/recruiter-api.yml`** — on changes under `services/recruiter-assistant-api/**`: test, bundle; **deploy** and **embeddings** on same-repo PRs (`dev` environment) and `main` (`production`), matching `.github/workflows/ci.yml`.
 - Embeddings CI publishes to **`embeddings.json`** (stable) plus a versioned `embeddings.v<sha>.json` in `RECRUITER_EMBEDDINGS_BUCKET` per environment. Interests pack uses **`interests-pack.json`** when `private/interests.source.md` exists in the runner (typically manual upload only; source is gitignored).
 - Repository secrets **`AWS_ROLE_ARN`** (shared with site CI), **`OPENAI_API_KEY`**; per-environment secrets **`LAMBDA_FUNCTION_NAME`**, **`RECRUITER_EMBEDDINGS_BUCKET`**.
+
+---
+
+## Troubleshooting
+
+### Browser shows “CORS error” (no headers, blocked request, or duplicate `access-control-allow-origin`)
+
+| Symptom                                 | Fix                                                                                                                                          |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| No `access-control-*` on the response   | **Enable** Function URL CORS (§6). Do not rely on handler headers on Lambda.                                                                 |
+| Two `access-control-allow-origin` lines | Redeployed an old bundle that still set handler CORS on Lambda — current code omits them; redeploy latest `recruiter-api` workflow artifact. |
+| `403` / `forbidden_origin` in JSON      | Add the exact browser `Origin` to **both** `ALLOWED_ORIGIN` and Function URL allow origins.                                                  |
+
+CloudWatch shows only `START` / `END` (~300–500 ms) with no `recruiter-api` logs: often an **`OPTIONS` preflight** answered at the edge (no handler logs) or a request rejected before OpenAI/RAG. Confirm the failing row in DevTools is **OPTIONS** vs **POST**.
+
+Confirm `ALLOWED_ORIGIN` includes the **exact** browser origin (e.g. `https://dev.danieltostes.com`, not a trailing slash or `www` variant unless you use that host).
+
+### CloudWatch: `interestsPack` / `S3 load failed` / `NotFound`
+
+The interests stage is optional. This happens when `INTERESTS_PACK_S3_URI` (or bucket/key env vars) is set but `interests-pack.json` is missing in that bucket (CI skips upload when `private/interests.source.md` is absent). Either upload the pack (§1b), or **unset** the interests env vars on that Lambda so the API does not call S3. Chat should still complete; only the private interests evaluator is skipped.
 
 ---
 

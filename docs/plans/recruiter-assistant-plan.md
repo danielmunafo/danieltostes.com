@@ -101,7 +101,7 @@ flowchart LR
 - **Intent gate:** lightweight LLM classification on guarded text (`runIntentGate`) before embeddings/RAG; off-topic → `400` JSON (saves cost and reduces misuse surface).
 - **Rate limit:** in-memory per-Lambda-instance token bucket per client IP; bounded further by Lambda **reserved concurrency** (see `SETUP.md`).
 - **Scope:** system instructions restrict answers to the supplied portfolio context; refuse unrelated requests (enforced in prompts + intent gate + off-topic handling in references builder).
-- **CORS:** Prefer comma-separated **`ALLOWED_ORIGIN`** in production. When unset/empty, dev-friendly reflection / `*` behavior — **do not** rely on that in prod.
+- **CORS:** Comma-separated **`ALLOWED_ORIGIN`** in Lambda env (handler enforces `403 forbidden_origin`). **Function URL CORS** must list the same origins (handler does not emit `Access-Control-*` on Lambda — response streaming). Local `npm run dev` uses handler CORS. When unset/empty on Lambda, all cross-origin calls are denied — **do not** rely on permissive dev behavior in prod.
 - **Secrets:** OpenAI key in AWS Secrets Manager in production; Lambda execution role reads `OPENAI_SECRET_ARN`.
 
 ---

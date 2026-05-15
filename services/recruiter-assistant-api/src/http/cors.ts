@@ -33,15 +33,24 @@ export function isOriginAllowed(origin: string | undefined): boolean {
   return allowed.includes(origin);
 }
 
+/**
+ * CORS response headers for local `npm run dev` only.
+ *
+ * On Lambda with **RESPONSE_STREAM** + Function URL, `HttpResponseStream` metadata does not
+ * reliably surface `Access-Control-*` to browsers — configure CORS on the Function URL
+ * (same origins as `ALLOWED_ORIGIN`) and keep this empty in Lambda to avoid duplicates.
+ */
 export function corsHeadersFor(origin: string | undefined): HeadersInit {
+  if (isProductionLambda()) {
+    return {};
+  }
   const allowed = getAllowedOrigins();
   const isAllowlistConfigured = allowed.length > 0;
-  const value =
-    !isAllowlistConfigured && !isProductionLambda()
-      ? (origin ?? "*")
-      : origin && allowed.includes(origin)
-        ? origin
-        : (allowed[0] ?? "");
+  const value = !isAllowlistConfigured
+    ? (origin ?? "*")
+    : origin && allowed.includes(origin)
+      ? origin
+      : (allowed[0] ?? "");
   return {
     "Access-Control-Allow-Origin": value,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
