@@ -30,6 +30,9 @@ This file is a compact map for AI agents. Use it to discover the right rules and
   - `.cursor/rules/i18n/RULE.md`
 - **Search index (sections & content)**
   - `docs/search-index.md` — When adding or updating sections or locale content, ensure they comply with search index requirements (message paths, scroll target IDs, impact messages + markdown, all locales).
+- **Recruiter AI assistant (chat + Lambda RAG)**
+  - `.cursor/rules/recruiter-assistant/RULE.md`
+  - Plan: `docs/plans/recruiter-assistant-plan.md` — AWS runbook: `services/recruiter-assistant-api/SETUP.md`
 - **Testing (Vitest, Playwright)**
   - `.cursor/rules/testing/RULE.md`
 - **Scripts & tooling**
@@ -48,6 +51,17 @@ This file is a compact map for AI agents. Use it to discover the right rules and
 Skills live in **`.cursor/skills/<name>/`**; each has a `SKILL.md`. **When to use** and **example prompts** are below so you can invoke without opening the full file.
 
 **Invocation:** The agent may apply a skill when your prompt matches the **When** criteria even if you don’t name it, but that is not guaranteed. **To ensure the skill runs, mention it in your prompt** (e.g. “use the portfolio-career-reviewer skill” or paste an example below).
+
+---
+
+**Recruiter assistant (RAG chat + Lambda)**
+
+- **Where:** `.cursor/skills/recruiter-assistant/SKILL.md` (extra context: `reference.md` in same dir).
+- **When:** Changing recruiter assistant UI, streaming chat UX, Lambda handler, RAG/prompts/references, guards, rate limits, embeddings build, AWS/CI for `services/recruiter-assistant-api`, or terms/i18n for the feature.
+- **Example prompts:**
+  - “Use the recruiter-assistant skill to adjust RAG_TOP_K and the evidence brief.”
+  - “Using recruiter-assistant, trace why the References block is empty and fix it.”
+  - “Apply recruiter-assistant conventions: add a string to all four locales and the terms markdown.”
 
 ---
 

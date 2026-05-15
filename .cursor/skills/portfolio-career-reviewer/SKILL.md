@@ -89,7 +89,7 @@ When asked to **write** a new entry from notes:
 3. **Draft using templates**
    - Use the relevant template below.
 4. **Tighten for impact**
-   - Prefer 3–6 bullets of strong impact, each with:
+   - Prefer 3-6 bullets of strong impact, each with:
      - A clear action Daniel took.
      - Technologies or domains only where relevant.
      - A concrete result where possible.
@@ -126,7 +126,7 @@ Use this for case studies like those on LinkedIn:
 [Dates or context]
 
 Overview  
-1–2 sentences describing what problem the project solved and for whom.
+1-2 sentences describing what problem the project solved and for whom.
 
 Key Responsibilities & Achievements
 
