@@ -21,14 +21,14 @@
     "briefingMatchProfileLabel": "Building capability match profile…",
     "briefingDraftingLabel": "Drafting recruiter briefing…",
     "evidenceReferencesLabel": "Evidence references",
-    "jobContextLabel": "Role context",
+    "jobContextLabel": "Role Context",
+    "jobDescriptionSectionLabel": "Job description",
     "placeholder": "Paste the job description here…",
     "send": "Send",
     "sending": "Thinking…",
     "unavailable": "Assistant is not configured (missing API URL).",
     "badPromptStrikesCounter": "Off-topic prompts: {count} / {max} — the assistant only accepts job or recruiting text.",
-    "payloadTooLargeWarning": "Message too large. To paste a new job opportunity, please refresh your browser window.",
-    "disclaimer": "AI-generated from public portfolio content; verify facts before decisions.",
+    "disclaimer": "AI analysis may vary or contain mistakes. Generated from public portfolio content — verify key facts before making decisions.",
     "scrollDownCue": "More content below — scroll down",
     "termsModalTitle": "Terms and conditions",
     "termsModalDescription": "You must agree before this text is submitted. The <terms>full terms and fair use</terms> explain what happens when you send it.",
@@ -46,7 +46,8 @@
     "chartRecommendationPursue": "Pursue",
     "chartRecommendationMaybe": "Maybe / validate first",
     "chartRecommendationWeakFit": "Weak fit",
-    "chartRecommendationSkip": "Skip"
+    "chartRecommendationSkip": "Skip",
+    "scoresRationaleLabel": "Rationale"
   },
   "RecruiterAssistantTerms": {
     "metaTitle": "Recruiter Assistant terms",

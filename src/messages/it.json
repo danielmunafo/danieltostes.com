@@ -22,13 +22,13 @@
     "briefingDraftingLabel": "Stesura del briefing per recruiter…",
     "evidenceReferencesLabel": "Riferimenti alle evidenze",
     "jobContextLabel": "Contesto della posizione",
+    "jobDescriptionSectionLabel": "Descrizione della posizione",
     "placeholder": "Incolla qui la job description…",
     "send": "Invia",
     "sending": "Sto pensando…",
     "unavailable": "Assistente non configurato (manca l’URL dell’API).",
     "badPromptStrikesCounter": "Prompt fuori contesto: {count} / {max} — l’assistente accetta solo testo su posizione o recruiting.",
-    "payloadTooLargeWarning": "Messaggio troppo grande. Per incollare una nuova opportunità di lavoro, aggiorna la finestra del browser.",
-    "disclaimer": "Generato da IA dal contenuto pubblico del portfolio; verifica i fatti prima di decidere.",
+    "disclaimer": "L'analisi IA può variare o contenere errori. Generata dai contenuti pubblici del portfolio — verifica i fatti principali prima di prendere decisioni.",
     "scrollDownCue": "Altri contenuti sotto — scorri verso il basso",
     "termsModalTitle": "Termini e condizioni",
     "termsModalDescription": "Devi accettare prima di inviare questi dati. I <terms>termini completi e uso leale</terms> spiegano cosa succede in caso di invio.",
@@ -46,7 +46,8 @@
     "chartRecommendationPursue": "Procedere",
     "chartRecommendationMaybe": "Forse / validare prima",
     "chartRecommendationWeakFit": "Scarso aderenza",
-    "chartRecommendationSkip": "Saltare"
+    "chartRecommendationSkip": "Saltare",
+    "scoresRationaleLabel": "Motivazione"
   },
   "RecruiterAssistantTerms": {
     "metaTitle": "Termini dell’Assistente IA per recruiter",
