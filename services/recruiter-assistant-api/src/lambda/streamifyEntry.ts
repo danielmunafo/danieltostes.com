@@ -1,6 +1,10 @@
 import { Buffer } from "node:buffer";
 import type { Writable } from "node:stream";
 import { handleChatRequest } from "../handleChatRequest.js";
+import {
+  internalErrorJsonBody,
+  logInternalServerError,
+} from "../http/internalError.js";
 import type { LambdaHttpEvent } from "../http/lambdaHttpEvent.js";
 
 type AwslambdaGlobal = {
@@ -51,14 +55,14 @@ async function streamifyHandler(
   try {
     webResponse = await handleChatRequest(event as LambdaHttpEvent);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "internal_error";
+    logInternalServerError("streamifyHandler", err);
     const out = awslambda.HttpResponseStream.from(responseStream, {
       statusCode: 500,
       headers: {
         "content-type": "application/json",
       },
     });
-    out.write(JSON.stringify({ error: "internal", message: msg }));
+    out.write(internalErrorJsonBody());
     out.end();
     return;
   }

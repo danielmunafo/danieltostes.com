@@ -32,6 +32,10 @@ import {
 import { recruiterChatBodySchema } from "./http/chatBodySchema.js";
 import { corsHeadersFor, isOriginAllowed } from "./http/cors.js";
 import {
+  internalErrorResponse,
+  logInternalServerError,
+} from "./http/internalError.js";
+import {
   decodeLambdaHttpBody,
   getClientIp,
   getMethod,
@@ -183,142 +187,153 @@ export async function handleChatRequest(
     });
   }
 
-  const apiKey = await getOpenAiApiKey();
-  const openai = createOpenAI({ apiKey });
+  try {
+    const apiKey = await getOpenAiApiKey();
+    const openai = createOpenAI({ apiKey });
 
-  const intent = await runIntentGate(openai, guarded.text);
-  if (!intent.ok) {
-    return new Response(JSON.stringify({ error: intent.reason }), {
-      status: 400,
-      headers: {
-        "content-type": "application/json",
-        ...corsHeadersFor(origin),
-      },
-    });
-  }
-
-  return createDataStreamResponse({
-    headers: corsHeadersFor(origin),
-    onError: () => "stream_error",
-    execute: async (dataStream) => {
-      dataStream.write(
-        formatDataStreamPart("text", `${THINKING_OPEN_MARKER}\n`)
-      );
-
-      const embeddingsFile = await loadEmbeddingsFile();
-      const interestsPack = await loadInterestsPack();
-      const chunksForNavLocale = filterChunksByNavigationLocale(
-        embeddingsFile.chunks,
-        navLocale
-      );
-      const { embedding } = await embed({
-        model: openai.embedding(EMBEDDING_MODEL),
-        value: guarded.text,
+    const intent = await runIntentGate(openai, guarded.text);
+    if (!intent.ok) {
+      return new Response(JSON.stringify({ error: intent.reason }), {
+        status: 400,
+        headers: {
+          "content-type": "application/json",
+          ...corsHeadersFor(origin),
+        },
       });
-      const topChunks = retrieveTopK(chunksForNavLocale, embedding, RAG_TOP_K);
-      const sourceExcerpts = formatPortfolioChunks(topChunks, navLocale);
+    }
 
-      const evidenceEvaluatorUserPrompt = buildEvidenceEvaluatorUserPrompt(
-        navLocale,
-        guarded.text,
-        sourceExcerpts
-      );
+    return createDataStreamResponse({
+      headers: corsHeadersFor(origin),
+      onError: () => "stream_error",
+      execute: async (dataStream) => {
+        dataStream.write(
+          formatDataStreamPart("text", `${THINKING_OPEN_MARKER}\n`)
+        );
 
-      const evaluatorResult = streamText({
-        model: openai(CHAT_MODEL),
-        system: buildEvidenceEvaluatorSystemPrompt(navLocale),
-        prompt: evidenceEvaluatorUserPrompt,
-        maxTokens: EVIDENCE_EVALUATOR_MAX_TOKENS,
-        experimental_transform: recruiterStreamTextSmoothTransform,
-      });
-      evaluatorResult.mergeIntoDataStream(dataStream, {
-        experimental_sendFinish: false,
-      });
-      const evaluationMarkdown = (await evaluatorResult.text).trim();
-
-      dataStream.write(formatDataStreamPart("text", "\n\n---\n\n"));
-
-      const canRunInterests =
-        Boolean(interestsPack?.criteriaMarkdown.trim()) &&
-        !isRecruiterOffTopicBriefMarkdown(evaluationMarkdown);
-
-      if (canRunInterests && interestsPack) {
-        const { text: rawInterests } = await generateText({
-          model: openai(CHAT_MODEL),
-          system: buildInterestsEvaluatorSystemPrompt(navLocale),
-          prompt: buildInterestsEvaluatorUserPrompt(
-            navLocale,
-            guarded.text,
-            interestsPack.criteriaMarkdown
-          ),
-          maxTokens: INTERESTS_ALIGNMENT_MAX_TOKENS,
+        const embeddingsFile = await loadEmbeddingsFile();
+        const interestsPack = await loadInterestsPack();
+        const chunksForNavLocale = filterChunksByNavigationLocale(
+          embeddingsFile.chunks,
+          navLocale
+        );
+        const { embedding } = await embed({
+          model: openai.embedding(EMBEDDING_MODEL),
+          value: guarded.text,
         });
-        const trimmedInterests = rawInterests.trim();
-        if (!shouldOmitInterestsOutputMarkdown(trimmedInterests)) {
-          console.log(
-            "[recruiter-interests-not-in-response] navLocale=%s chars=%s\n%s",
-            navLocale,
-            String(trimmedInterests.length),
-            trimmedInterests
+        const topChunks = retrieveTopK(
+          chunksForNavLocale,
+          embedding,
+          RAG_TOP_K
+        );
+        const sourceExcerpts = formatPortfolioChunks(topChunks, navLocale);
+
+        const evidenceEvaluatorUserPrompt = buildEvidenceEvaluatorUserPrompt(
+          navLocale,
+          guarded.text,
+          sourceExcerpts
+        );
+
+        const evaluatorResult = streamText({
+          model: openai(CHAT_MODEL),
+          system: buildEvidenceEvaluatorSystemPrompt(navLocale),
+          prompt: evidenceEvaluatorUserPrompt,
+          maxTokens: EVIDENCE_EVALUATOR_MAX_TOKENS,
+          experimental_transform: recruiterStreamTextSmoothTransform,
+        });
+        evaluatorResult.mergeIntoDataStream(dataStream, {
+          experimental_sendFinish: false,
+        });
+        const evaluationMarkdown = (await evaluatorResult.text).trim();
+
+        dataStream.write(formatDataStreamPart("text", "\n\n---\n\n"));
+
+        const canRunInterests =
+          Boolean(interestsPack?.criteriaMarkdown.trim()) &&
+          !isRecruiterOffTopicBriefMarkdown(evaluationMarkdown);
+
+        if (canRunInterests && interestsPack) {
+          const { text: rawInterests } = await generateText({
+            model: openai(CHAT_MODEL),
+            system: buildInterestsEvaluatorSystemPrompt(navLocale),
+            prompt: buildInterestsEvaluatorUserPrompt(
+              navLocale,
+              guarded.text,
+              interestsPack.criteriaMarkdown
+            ),
+            maxTokens: INTERESTS_ALIGNMENT_MAX_TOKENS,
+          });
+          const trimmedInterests = rawInterests.trim();
+          if (!shouldOmitInterestsOutputMarkdown(trimmedInterests)) {
+            console.log(
+              "[recruiter-interests-not-in-response] navLocale=%s chars=%s\n%s",
+              navLocale,
+              String(trimmedInterests.length),
+              trimmedInterests
+            );
+          }
+        }
+
+        const evidenceAnalystUserPrompt = buildEvidenceAnalystUserPrompt(
+          navLocale,
+          guarded.text,
+          sourceExcerpts,
+          evaluationMarkdown
+        );
+
+        const briefResult = streamText({
+          model: openai(CHAT_MODEL),
+          system: buildEvidenceAnalystSystemPrompt(navLocale),
+          prompt: evidenceAnalystUserPrompt,
+          maxTokens: EVIDENCE_BRIEF_MAX_TOKENS,
+          experimental_transform: recruiterStreamTextSmoothTransform,
+        });
+        briefResult.mergeIntoDataStream(dataStream, {
+          experimental_sendFinish: false,
+        });
+        const evidenceAnalystText = (await briefResult.text).trim();
+
+        const evidenceBriefParts = [
+          evaluationMarkdown || "(No evaluator output.)",
+          evidenceAnalystText || "(No analyst brief produced.)",
+        ];
+        const evidenceBriefForPitch = evidenceBriefParts.join("\n\n---\n\n");
+
+        dataStream.write(
+          formatDataStreamPart("text", `\n${THINKING_CLOSE_MARKER}\n\n`)
+        );
+
+        const pitchResult = streamText({
+          model: openai(CHAT_MODEL),
+          system: buildRecruiterPitchSystemPrompt(
+            evidenceBriefForPitch,
+            sourceExcerpts,
+            portfolioLanguage,
+            navLocale
+          ),
+          messages: coreMessages,
+          maxTokens: RECRUITER_PITCH_MAX_TOKENS,
+          experimental_transform: recruiterStreamTextSmoothTransform,
+        });
+        pitchResult.mergeIntoDataStream(dataStream, {
+          experimental_sendStart: false,
+        });
+
+        const assistantText = await pitchResult.text;
+        const referencesMd = await buildReferencesMarkdown(
+          openai,
+          assistantText,
+          chunksForNavLocale,
+          navLocale
+        );
+        if (referencesMd) {
+          dataStream.write(
+            formatDataStreamPart("text", `\n\n${referencesMd}\n`)
           );
         }
-      }
-
-      const evidenceAnalystUserPrompt = buildEvidenceAnalystUserPrompt(
-        navLocale,
-        guarded.text,
-        sourceExcerpts,
-        evaluationMarkdown
-      );
-
-      const briefResult = streamText({
-        model: openai(CHAT_MODEL),
-        system: buildEvidenceAnalystSystemPrompt(navLocale),
-        prompt: evidenceAnalystUserPrompt,
-        maxTokens: EVIDENCE_BRIEF_MAX_TOKENS,
-        experimental_transform: recruiterStreamTextSmoothTransform,
-      });
-      briefResult.mergeIntoDataStream(dataStream, {
-        experimental_sendFinish: false,
-      });
-      const evidenceAnalystText = (await briefResult.text).trim();
-
-      const evidenceBriefParts = [
-        evaluationMarkdown || "(No evaluator output.)",
-        evidenceAnalystText || "(No analyst brief produced.)",
-      ];
-      const evidenceBriefForPitch = evidenceBriefParts.join("\n\n---\n\n");
-
-      dataStream.write(
-        formatDataStreamPart("text", `\n${THINKING_CLOSE_MARKER}\n\n`)
-      );
-
-      const pitchResult = streamText({
-        model: openai(CHAT_MODEL),
-        system: buildRecruiterPitchSystemPrompt(
-          evidenceBriefForPitch,
-          sourceExcerpts,
-          portfolioLanguage,
-          navLocale
-        ),
-        messages: coreMessages,
-        maxTokens: RECRUITER_PITCH_MAX_TOKENS,
-        experimental_transform: recruiterStreamTextSmoothTransform,
-      });
-      pitchResult.mergeIntoDataStream(dataStream, {
-        experimental_sendStart: false,
-      });
-
-      const assistantText = await pitchResult.text;
-      const referencesMd = await buildReferencesMarkdown(
-        openai,
-        assistantText,
-        chunksForNavLocale,
-        navLocale
-      );
-      if (referencesMd) {
-        dataStream.write(formatDataStreamPart("text", `\n\n${referencesMd}\n`));
-      }
-    },
-  });
+      },
+    });
+  } catch (err) {
+    logInternalServerError("handleChatRequest", err);
+    return internalErrorResponse(origin);
+  }
 }

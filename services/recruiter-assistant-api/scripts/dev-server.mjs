@@ -51,11 +51,11 @@ createServer(async (req, res) => {
     }
     res.end();
   } catch (err) {
-    console.error(err);
+    console.error("[recruiter-api] dev-server", err);
     if (!res.headersSent) {
-      res.writeHead(500, { "content-type": "text/plain" });
+      res.writeHead(500, { "content-type": "application/json" });
     }
-    res.end("internal error");
+    res.end(JSON.stringify({ error: "internal" }));
   }
 }).listen(port, "127.0.0.1", () => {
   console.log(`recruiter-assistant-api dev http://127.0.0.1:${port}`);
