@@ -38,7 +38,9 @@ If unset or invalid, the API skips the interests stage and behaves as before.
 
 ## 3. Secrets Manager — OpenAI API key
 
-- Create secret (plain string) with the OpenAI key.
+- Create secret with the OpenAI key as either:
+  - **Plain string:** `sk-…` (recommended), or
+  - **JSON object:** `{"OPENAI_API_KEY":"sk-…"}` (supported when reusing a site-wide secret).
 - Note the **secret ARN** (e.g. `arn:aws:secretsmanager:us-east-1:123456789012:secret:...`).
 
 ---

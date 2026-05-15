@@ -2,6 +2,7 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
+import { parseOpenAiApiKeyFromSecret } from "./parseOpenAiApiKeyFromSecret.js";
 
 const secretsClient = new SecretsManagerClient({});
 
@@ -23,11 +24,11 @@ export async function getOpenAiApiKey(): Promise<string> {
   const res = await secretsClient.send(
     new GetSecretValueCommand({ SecretId: arn })
   );
-  const secretString = res.SecretString?.trim();
-  if (!secretString) {
+  const secretString = res.SecretString;
+  if (!secretString?.trim()) {
     throw new Error("Secret has no SecretString");
   }
-  cachedKey = secretString;
+  cachedKey = parseOpenAiApiKeyFromSecret(secretString);
   return cachedKey;
 }
 
