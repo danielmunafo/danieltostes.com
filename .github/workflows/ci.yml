@@ -31,6 +31,13 @@ jobs:
       - name: Unit tests
         run: npm run test
 
+      - name: Check recruiter API URL on main
+        if: github.ref == 'refs/heads/main'
+        run: |
+          if [ -z "${{ vars.RECRUITER_API_URL }}" ]; then
+            echo "::warning::RECRUITER_API_URL is unset; production builds will ship without a recruiter API endpoint"
+          fi
+
       - name: Build
         env:
           NEXT_PUBLIC_RECRUITER_API_URL: ${{ vars.RECRUITER_API_URL }}

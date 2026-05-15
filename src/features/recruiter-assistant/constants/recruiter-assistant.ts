@@ -33,8 +33,15 @@ export const RECRUITER_BAD_PROMPT_COUNT_STORAGE_KEY =
 export const RECRUITER_ASSISTANT_LOCKED_STORAGE_KEY =
   "danieltostes.recruiterAssistant.locked.v1" as const;
 
+/** Epoch ms when a bad-prompt lock expires (`RECRUITER_BAD_PROMPT_LOCK_DURATION_MS`). */
+export const RECRUITER_ASSISTANT_LOCK_EXPIRES_STORAGE_KEY =
+  "danieltostes.recruiterAssistant.lockedExpiresAt.v1" as const;
+
 /** After this many rejected non-recruiting prompts, the assistant disables until storage is cleared. */
 export const RECRUITER_BAD_PROMPT_MAX_STRIKES = 3;
+
+/** Temporary lock duration after max bad-prompt strikes (ms). */
+export const RECRUITER_BAD_PROMPT_LOCK_DURATION_MS = 24 * 60 * 60 * 1000;
 
 /** Dispatched on `window` after the bad-prompt counter changes (same tab). */
 export const RECRUITER_BAD_PROMPT_STRIKE_EVENT =

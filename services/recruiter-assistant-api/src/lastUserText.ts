@@ -17,7 +17,7 @@ function joinTextPartsFromPartsArray(parts: unknown): string {
       texts.push((part as { text: string }).text);
     }
   }
-  return texts.join("\n");
+  return texts.join("");
 }
 
 function joinTextPartsFromContentArray(content: unknown): string {
@@ -35,7 +35,7 @@ function joinTextPartsFromContentArray(content: unknown): string {
       texts.push((part as { text: string }).text);
     }
   }
-  return texts.join("\n");
+  return texts.join("");
 }
 
 /**

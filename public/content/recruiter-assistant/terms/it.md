@@ -1,6 +1,6 @@
 # Assistente IA per recruiter — Termini d’uso e uso leale
 
-**In vigore dal:** 13 maggio 2026
+**In vigore dal:** 15 maggio 2026
 
 Questi termini si applicano quando usi l’**Assistente IA per recruiter** su questo sito portfolio (l’“**Assistente**”). Descrivono un uso leale, cosa succede alle informazioni che invii e cosa puoi aspettarti dall’output. **Non** costituiscono consulenza legale; per la tua organizzazione rivolgiti a un professionista abilitato.
 

@@ -17,6 +17,8 @@ import { SectionItem } from "./SectionItem";
 
 const SECTION_ID = "experience" as const;
 
+const MAX_FETCHED_BODY_CACHE_ENTRIES = 16;
+
 type RoleContext = {
   teamSize?: string;
   companySize?: string;
@@ -68,14 +70,33 @@ export function ExperienceSection() {
     const key = cacheKey(bodyPath, locale);
     if (fetchedBodies[key]) return;
     const url = contentUrl(bodyPath, locale);
+    const isDevelopment = process.env.NODE_ENV === "development";
     fetch(url)
       .then((res) => {
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (isDevelopment) {
+            console.warn(
+              `[experience] prefetch ${url} failed with status ${res.status}`
+            );
+          }
+          return;
+        }
         return res.text();
       })
       .then((text) => {
-        if (text != null)
-          setFetchedBodies((prev) => ({ ...prev, [key]: text }));
+        if (text == null) return;
+        setFetchedBodies((prev) => {
+          const next = { ...prev, [key]: text };
+          const keys = Object.keys(next);
+          if (keys.length <= MAX_FETCHED_BODY_CACHE_ENTRIES) return next;
+          const trimmed: Record<string, string> = {};
+          for (const cacheKeyName of keys.slice(
+            keys.length - MAX_FETCHED_BODY_CACHE_ENTRIES
+          )) {
+            trimmed[cacheKeyName] = next[cacheKeyName];
+          }
+          return trimmed;
+        });
       })
       .catch(() => {
         // Silently ignore prefetch errors to avoid unhandled promise rejections

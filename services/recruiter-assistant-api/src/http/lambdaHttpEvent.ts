@@ -15,12 +15,16 @@ export function getMethod(event: LambdaHttpEvent): string {
 }
 
 export function getClientIp(event: LambdaHttpEvent): string {
+  const sourceIp = event.requestContext?.http?.sourceIp;
+  if (typeof sourceIp === "string" && sourceIp.length > 0) {
+    return sourceIp;
+  }
   const headers = event.headers ?? {};
   const xff = headers["x-forwarded-for"] ?? headers["X-Forwarded-For"];
   if (typeof xff === "string" && xff.length > 0) {
     return xff.split(",")[0].trim();
   }
-  return event.requestContext?.http?.sourceIp ?? "unknown";
+  return "unknown";
 }
 
 export function getRequestOrigin(event: LambdaHttpEvent): string | undefined {

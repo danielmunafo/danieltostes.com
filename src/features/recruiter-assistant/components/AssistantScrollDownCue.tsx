@@ -32,20 +32,39 @@ export function AssistantScrollDownCue() {
   const theme = useTheme();
   const t = useTranslations("RecruiterAssistant");
   const { assistantLocked } = useRecruiterAssistantUi();
-  const [scrollY, setScrollY] = useState(0);
+  const [scrollFadeProgress, setScrollFadeProgress] = useState(0);
 
   useEffect(() => {
     if (assistantLocked) return;
     const isWindowUndefined = typeof window === "undefined";
     if (isWindowUndefined) return;
 
-    const onScroll = () => {
-      setScrollY(window.scrollY);
+    let rafId = 0;
+    let lastBucket = -1;
+
+    const updateScrollFade = () => {
+      const progress = Math.min(
+        1,
+        window.scrollY / ASSISTANT_SCROLL_CUE_FADE_DISTANCE_PX
+      );
+      const bucket = Math.floor(progress * 40);
+      if (bucket !== lastBucket) {
+        lastBucket = bucket;
+        setScrollFadeProgress(progress);
+      }
     };
 
-    onScroll();
+    updateScrollFade();
+    const onScroll = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updateScrollFade);
+    };
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [assistantLocked]);
 
   if (assistantLocked) {
@@ -68,11 +87,7 @@ export function AssistantScrollDownCue() {
     });
   };
 
-  const scrollProgress = Math.min(
-    1,
-    scrollY / ASSISTANT_SCROLL_CUE_FADE_DISTANCE_PX
-  );
-  const cueFadeFactor = 1 - scrollProgress;
+  const cueFadeFactor = 1 - scrollFadeProgress;
   const cueDisplayOpacity = cueFadeFactor * ASSISTANT_SCROLL_CUE_MAX_OPACITY;
   const isCueInvisible = cueDisplayOpacity < 0.02;
 

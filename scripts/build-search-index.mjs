@@ -11,7 +11,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 const LOCALES = ["en", "pt-BR", "es", "it"];
 const MESSAGES_DIR = "src/messages";
@@ -179,6 +179,18 @@ function buildEntriesFromImpactMd(locale, impactItems) {
   return entries;
 }
 
+const CONTENT_ROOT = resolve("public/content");
+
+function resolveExperienceDetailMarkdownPath(bodyPath, locale) {
+  const mdRelative = join(
+    ...bodyPath.split("/").filter(Boolean),
+    `${locale}.md`
+  );
+  const mdPath = resolve(CONTENT_ROOT, mdRelative);
+  if (!mdPath.startsWith(CONTENT_ROOT)) return null;
+  return mdPath;
+}
+
 function mergeExperienceDetailMarkdown(locale, entries, messages) {
   const roles = messages?.Experience?.roles;
   if (!Array.isArray(roles)) return entries;
@@ -190,12 +202,8 @@ function mergeExperienceDetailMarkdown(locale, entries, messages) {
         ? role.detailBodyPath.trim()
         : "";
     if (!bodyPath) return entry;
-    const mdRelative = join(
-      ...bodyPath.split("/").filter(Boolean),
-      `${locale}.md`
-    );
-    const mdPath = join("public/content", mdRelative);
-    if (!existsSync(mdPath)) return entry;
+    const mdPath = resolveExperienceDetailMarkdownPath(bodyPath, locale);
+    if (!mdPath || !existsSync(mdPath)) return entry;
     const raw = readFileSync(mdPath, "utf8");
     const stripped = stripMarkdownForSearch(raw);
     if (!stripped) return entry;

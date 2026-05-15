@@ -19,6 +19,18 @@ export type PitchAndReferencesSplit = {
   readonly referencesMarkdown: string | null;
 };
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function findReferencesHeadingIndex(markdown: string, refLine: string): number {
+  const headingText = refLine.replace(/^##\s+/, "").trim();
+  if (!headingText) return -1;
+  const pattern = new RegExp(`^##\\s+${escapeRegExp(headingText)}\\s*$`, "m");
+  const match = pattern.exec(markdown);
+  return match?.index ?? -1;
+}
+
 /**
  * Separates the streamed pitch from the post-stream `## References` block when present.
  */
@@ -28,7 +40,7 @@ export function splitPitchAndReferencesMarkdown(
 ): PitchAndReferencesSplit {
   const trimmed = markdown.trim();
   const refLine = RECRUITER_REFERENCE_SECTION_LINE[locale] ?? "## References";
-  const idx = trimmed.indexOf(refLine);
+  const idx = findReferencesHeadingIndex(trimmed, refLine);
   if (idx === -1) {
     return { pitchMarkdown: trimmed, referencesMarkdown: null };
   }

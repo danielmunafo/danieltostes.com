@@ -74,16 +74,10 @@ export function createPortfolioDeepLinkMarkdownComponents(
   const locale = isValidLocale(localeProp) ? localeProp : "en";
   return {
     a(props) {
-      const {
-        href,
-        children,
-        node,
-        onClick: propsOnClick,
-        ...anchorRest
-      } = props;
+      const { href, children, node, onClick: propsOnClick, className } = props;
       void node;
       if (!href || typeof href !== "string") {
-        return <span {...anchorRest}>{children}</span>;
+        return <span className={className}>{children}</span>;
       }
       const resolvedHref = rewritePortfolioDeepLinkHref(href, locale);
       const isSameSitePath =
@@ -94,11 +88,11 @@ export function createPortfolioDeepLinkMarkdownComponents(
             component={NextLink}
             href={resolvedHref}
             underline="hover"
+            className={className}
             onClick={(e) => {
               scrollToSameHashPortfolioTarget(e, resolvedHref);
               propsOnClick?.(e);
             }}
-            {...anchorRest}
           >
             {children}
           </MuiLink>
@@ -110,7 +104,7 @@ export function createPortfolioDeepLinkMarkdownComponents(
           underline="hover"
           target="_blank"
           rel="noopener noreferrer"
-          {...anchorRest}
+          className={className}
         >
           {children}
         </MuiLink>

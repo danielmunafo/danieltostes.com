@@ -8,10 +8,15 @@ type Bucket = { count: number; windowStart: number };
 
 const buckets = new Map<string, Bucket>();
 
-function evictIfNeeded(): void {
+function touchBucket(clientIp: string, bucket: Bucket): void {
+  buckets.delete(clientIp);
+  buckets.set(clientIp, bucket);
+}
+
+function evictLeastRecentlyUsed(): void {
   if (buckets.size <= RATE_LIMIT_MAX_ENTRIES) return;
-  const firstKey = buckets.keys().next().value as string | undefined;
-  if (firstKey !== undefined) buckets.delete(firstKey);
+  const oldestKey = buckets.keys().next().value as string | undefined;
+  if (oldestKey !== undefined) buckets.delete(oldestKey);
 }
 
 /**
@@ -19,9 +24,9 @@ function evictIfNeeded(): void {
  * Returns whether the request is allowed.
  */
 export function checkRateLimit(clientIp: string, nowMs: number): boolean {
-  evictIfNeeded();
   const existing = buckets.get(clientIp);
   if (!existing) {
+    evictLeastRecentlyUsed();
     buckets.set(clientIp, { count: 1, windowStart: nowMs });
     return true;
   }
@@ -29,12 +34,15 @@ export function checkRateLimit(clientIp: string, nowMs: number): boolean {
   if (elapsed >= RATE_LIMIT_WINDOW_MS) {
     existing.count = 1;
     existing.windowStart = nowMs;
+    touchBucket(clientIp, existing);
     return true;
   }
   if (existing.count >= RATE_LIMIT_MAX_REQUESTS) {
+    touchBucket(clientIp, existing);
     return false;
   }
   existing.count += 1;
+  touchBucket(clientIp, existing);
   return true;
 }
 

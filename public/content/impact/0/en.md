@@ -10,7 +10,7 @@ Delivered a resilient, cost-efficient architecture capable of processing image-b
 - Increased automation coverage while maintaining support escalation safeguards.
 - Established a scalable, low-cost automation framework adaptable to evolving business rules.
 
-### Architecture Diagram=
+### Architecture Diagram
 
 ![diagram](/content/diagrams/impact-0-en-0.svg)
 

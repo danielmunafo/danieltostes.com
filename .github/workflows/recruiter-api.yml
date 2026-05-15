@@ -39,11 +39,9 @@ jobs:
         run: npm run build
 
       - name: Zip artifact
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: cd dist && zip -r "$GITHUB_WORKSPACE/function.zip" index.cjs
 
       - name: Upload zip
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
           name: recruiter-lambda-zip
@@ -78,6 +76,9 @@ jobs:
   embeddings:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     defaults:
       run:
         working-directory: services/recruiter-assistant-api

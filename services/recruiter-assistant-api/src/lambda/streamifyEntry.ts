@@ -94,6 +94,11 @@ async function streamifyHandler(
 }
 
 const awslambdaRuntime = getAwslambda();
+if (!awslambdaRuntime) {
+  console.warn(
+    "[recruiter-api] awslambda global missing; exporting raw streamify handler (local dev only)"
+  );
+}
 export const handler = awslambdaRuntime
   ? awslambdaRuntime.streamifyResponse(streamifyHandler)
   : streamifyHandler;

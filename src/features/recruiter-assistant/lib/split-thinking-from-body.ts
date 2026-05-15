@@ -50,9 +50,15 @@ export function splitThinkingFromBody(text: string): ThinkingSplit {
   }
 
   const afterClose = closeIdx + THINKING_CLOSE_MARKER.length;
+  const prefix = beforeOpen.trim();
+  const suffix = text.slice(afterClose).trim();
+  const body =
+    prefix.length > 0 && suffix.length > 0
+      ? `${prefix}\n\n${suffix}`
+      : `${prefix}${suffix}`.trim();
   return {
     thinking: text.slice(afterOpen, closeIdx).trim(),
-    body: `${beforeOpen}${text.slice(afterClose)}`.trim(),
+    body,
     isThinkingStreaming: false,
     hasThinking: true,
   };

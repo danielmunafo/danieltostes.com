@@ -10,7 +10,7 @@ Built a system that transforms customer interaction data into embeddings and mat
 
 - Increased engagement with personalized content blocks, improving click-through and conversion in transactional emails.
 - Established a scalable, low-latency foundation for AI-powered personalization across additional channels.
-- CTR from 1.4% to 1.8% - For 1m monthtly purchases it represents ~3k additional month traffic to campaigns and company ads
+- CTR from 1.4% to 1.8% - For 1m monthly purchases it represents ~3k additional month traffic to campaigns and company ads
 
 ![diagram](/content/diagrams/impact-1-en-0.svg)
 

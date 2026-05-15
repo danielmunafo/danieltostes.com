@@ -1,7 +1,16 @@
 import { z } from "zod";
+import { MAX_CHAT_MESSAGES } from "../constants.js";
+
+const recruiterChatMessageSchema = z
+  .object({
+    role: z.enum(["user", "assistant", "system"]),
+    content: z.union([z.string(), z.array(z.unknown())]).optional(),
+    parts: z.array(z.unknown()).optional(),
+  })
+  .passthrough();
 
 export const recruiterChatBodySchema = z.object({
-  messages: z.array(z.record(z.unknown())).min(1),
+  messages: z.array(recruiterChatMessageSchema).min(1).max(MAX_CHAT_MESSAGES),
   /** BCP-47 site locale (`en`, `pt-BR`, `es`, `it`). Preferred. */
   locale: z.string().optional(),
   /** Alias for `locale` (same values). */

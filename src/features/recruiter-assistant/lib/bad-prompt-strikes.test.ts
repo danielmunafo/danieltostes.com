@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  RECRUITER_ASSISTANT_LOCK_EXPIRES_STORAGE_KEY,
   RECRUITER_ASSISTANT_LOCKED_STORAGE_KEY,
   RECRUITER_BAD_PROMPT_COUNT_STORAGE_KEY,
+  RECRUITER_BAD_PROMPT_LOCK_DURATION_MS,
 } from "../constants/recruiter-assistant";
 import {
   parseStrikeStoreSnapshot,
@@ -45,6 +47,25 @@ describe("bad-prompt-strikes", () => {
     });
     expect(store.get(RECRUITER_ASSISTANT_LOCKED_STORAGE_KEY)).toBe("1");
     expect(store.get(RECRUITER_BAD_PROMPT_COUNT_STORAGE_KEY)).toBe("3");
+  });
+
+  it("stores lock expiry and unlocks after the duration", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-15T12:00:00Z"));
+    try {
+      for (let i = 0; i < 3; i++) recordBadIntentRejection();
+      expect(readBadPromptStrikeState().locked).toBe(true);
+      expect(store.get(RECRUITER_ASSISTANT_LOCK_EXPIRES_STORAGE_KEY)).toBe(
+        String(
+          Date.parse("2026-05-15T12:00:00Z") +
+            RECRUITER_BAD_PROMPT_LOCK_DURATION_MS
+        )
+      );
+      vi.advanceTimersByTime(RECRUITER_BAD_PROMPT_LOCK_DURATION_MS + 1);
+      expect(readBadPromptStrikeState()).toEqual({ count: 0, locked: false });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("parseStrikeStoreSnapshot derives lock from count or flag", () => {

@@ -1,6 +1,8 @@
 import {
+  RECRUITER_ASSISTANT_LOCK_EXPIRES_STORAGE_KEY,
   RECRUITER_ASSISTANT_LOCKED_STORAGE_KEY,
   RECRUITER_BAD_PROMPT_COUNT_STORAGE_KEY,
+  RECRUITER_BAD_PROMPT_LOCK_DURATION_MS,
   RECRUITER_BAD_PROMPT_MAX_STRIKES,
   RECRUITER_BAD_PROMPT_STRIKE_EVENT,
 } from "../constants/recruiter-assistant";
@@ -16,6 +18,21 @@ function parseCount(raw: string | null): number {
   return Math.min(n, 999);
 }
 
+function clearBadPromptStrikeStorage(): void {
+  window.localStorage.removeItem(RECRUITER_BAD_PROMPT_COUNT_STORAGE_KEY);
+  window.localStorage.removeItem(RECRUITER_ASSISTANT_LOCKED_STORAGE_KEY);
+  window.localStorage.removeItem(RECRUITER_ASSISTANT_LOCK_EXPIRES_STORAGE_KEY);
+}
+
+function isLockExpired(nowMs: number): boolean {
+  const raw = window.localStorage.getItem(
+    RECRUITER_ASSISTANT_LOCK_EXPIRES_STORAGE_KEY
+  );
+  const expiresAt = parseInt(raw ?? "", 10);
+  if (Number.isNaN(expiresAt) || expiresAt <= 0) return false;
+  return nowMs > expiresAt;
+}
+
 /**
  * Reads strike count and lock flag from `localStorage` (client only).
  */
@@ -24,6 +41,10 @@ export function readBadPromptStrikeState(): BadPromptStrikeState {
     return { count: 0, locked: false };
   }
   try {
+    if (isLockExpired(Date.now())) {
+      clearBadPromptStrikeStorage();
+      return { count: 0, locked: false };
+    }
     const lockedFlag = window.localStorage.getItem(
       RECRUITER_ASSISTANT_LOCKED_STORAGE_KEY
     );
@@ -78,10 +99,12 @@ export function recordBadIntentRejection(): BadPromptStrikeState {
     return { count: 0, locked: false };
   }
   try {
-    const nextCount =
+    const nextCount = Math.min(
       parseCount(
         window.localStorage.getItem(RECRUITER_BAD_PROMPT_COUNT_STORAGE_KEY)
-      ) + 1;
+      ) + 1,
+      999
+    );
     window.localStorage.setItem(
       RECRUITER_BAD_PROMPT_COUNT_STORAGE_KEY,
       String(nextCount)
@@ -89,6 +112,10 @@ export function recordBadIntentRejection(): BadPromptStrikeState {
     const locked = nextCount >= RECRUITER_BAD_PROMPT_MAX_STRIKES;
     if (locked) {
       window.localStorage.setItem(RECRUITER_ASSISTANT_LOCKED_STORAGE_KEY, "1");
+      window.localStorage.setItem(
+        RECRUITER_ASSISTANT_LOCK_EXPIRES_STORAGE_KEY,
+        String(Date.now() + RECRUITER_BAD_PROMPT_LOCK_DURATION_MS)
+      );
     }
     window.dispatchEvent(new Event(RECRUITER_BAD_PROMPT_STRIKE_EVENT));
     return { count: nextCount, locked };

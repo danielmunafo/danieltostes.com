@@ -1,6 +1,6 @@
 # AI Recruiter Assistant — Terms of use and fair use
 
-**Effective date:** 13 May 2026
+**Effective date:** 15 May 2026
 
 These terms apply when you use the **AI Recruiter Assistant** on this portfolio site (the “**Assistant**”). They describe fair use, what happens to information you submit, and what you can expect from the output. They are **not** legal advice; if you need advice for your organisation, consult qualified counsel.
 

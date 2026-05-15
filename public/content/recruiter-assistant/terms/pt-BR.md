@@ -1,6 +1,6 @@
 # Assistente de IA para recrutadores — Termos de uso e uso justo
 
-**Vigência:** 13 de maio de 2026
+**Vigência:** 15 de maio de 2026
 
 Estes termos aplicam-se quando você usa o **Assistente de IA para recrutadores** neste site de portfólio (o “**Assistente**”). Eles descrevem uso justo, o que ocorre com as informações que você envia e o que pode esperar das respostas. **Não** constituem aconselhamento jurídico; para a sua organização, consulte um profissional habilitado.
 

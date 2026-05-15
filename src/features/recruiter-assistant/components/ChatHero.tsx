@@ -125,10 +125,8 @@ function ChatHeroInner() {
 export function ChatHero() {
   return (
     <RecruiterAssistantUiProvider>
-      <>
-        <ChatHeroInner />
-        <AssistantScrollDownCue />
-      </>
+      <ChatHeroInner />
+      <AssistantScrollDownCue />
     </RecruiterAssistantUiProvider>
   );
 }

@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { isValidLocale, type Locale } from "@/i18n/request";
+import { createPortfolioDeepLinkMarkdownComponents } from "../lib/createPortfolioDeepLinkMarkdownComponents";
 
 const markdownSx = {
   "& p": { mb: 1.5, "&:last-child": { mb: 0 } },
@@ -52,13 +53,19 @@ function RecruiterAssistantTermsMarkdownBody({
   const t = useTranslations("RecruiterAssistantTerms");
   const [markdown, setMarkdown] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const markdownComponents = useMemo(
+    () => createPortfolioDeepLinkMarkdownComponents(contentLocale),
+    [contentLocale]
+  );
 
   useEffect(() => {
     let cancelled = false;
     const url = `/content/recruiter-assistant/terms/${contentLocale}.md`;
     void fetch(url)
       .then((response) => {
-        if (!response.ok) throw new Error("terms fetch failed");
+        if (!response.ok) {
+          throw new Error(`terms fetch failed (${response.status})`);
+        }
         return response.text();
       })
       .then((text) => {
@@ -67,7 +74,8 @@ function RecruiterAssistantTermsMarkdownBody({
           setLoadError(false);
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error(`[recruiter-terms] failed to load ${url}`, err);
         if (!cancelled) {
           setLoadError(true);
           setMarkdown(null);
@@ -123,7 +131,12 @@ function RecruiterAssistantTermsMarkdownBody({
             ...markdownSx,
           }}
         >
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={markdownComponents}
+          >
+            {markdown}
+          </ReactMarkdown>
         </Box>
       ) : null}
     </>

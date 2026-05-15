@@ -1,6 +1,6 @@
 # Asistente de IA para reclutadores — Términos de uso y uso razonable
 
-**Vigencia:** 13 de mayo de 2026
+**Vigencia:** 15 de mayo de 2026
 
 Estos términos se aplican cuando usas el **Asistente de IA para reclutadores** en este sitio de portafolio (el “**Asistente**”). Describen un uso razonable, qué ocurre con la información que envías y qué puedes esperar de las respuestas. **No** constituyen asesoramiento legal; para tu organización, consulta a un profesional cualificado.
 

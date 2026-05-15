@@ -14,6 +14,13 @@ describe("splitPitchAndReferencesMarkdown", () => {
     expect(out.pitchMarkdown).not.toContain("## References");
   });
 
+  it("does not split when the references heading appears only in pitch prose", () => {
+    const md = `# Verdict\nSee ## References below for sources.\n\nMore pitch.`;
+    const out = splitPitchAndReferencesMarkdown(md, "en");
+    expect(out.referencesMarkdown).toBeNull();
+    expect(out.pitchMarkdown).toBe(md);
+  });
+
   it("uses Italian references heading for it locale", () => {
     const md = `Body\n\n## Riferimenti\n\nMore`;
     const out = splitPitchAndReferencesMarkdown(md, "it");

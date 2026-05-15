@@ -14,6 +14,7 @@ import {
   EVIDENCE_BRIEF_MAX_TOKENS,
   EVIDENCE_EVALUATOR_MAX_TOKENS,
   INTERESTS_ALIGNMENT_MAX_TOKENS,
+  MAX_CHAT_HISTORY_JSON_CHARS,
   RAG_TOP_K,
   RECRUITER_NAV_LOCALE_WRITING_LABEL,
   RECRUITER_PITCH_MAX_TOKENS,
@@ -121,6 +122,17 @@ export async function handleChatRequest(
   if (!parsed.success) {
     return new Response(JSON.stringify({ error: "invalid_body" }), {
       status: 400,
+      headers: {
+        "content-type": "application/json",
+        ...corsHeadersFor(origin),
+      },
+    });
+  }
+
+  const messagesJsonLength = JSON.stringify(parsed.data.messages).length;
+  if (messagesJsonLength > MAX_CHAT_HISTORY_JSON_CHARS) {
+    return new Response(JSON.stringify({ error: "payload_too_large" }), {
+      status: 413,
       headers: {
         "content-type": "application/json",
         ...corsHeadersFor(origin),
