@@ -10,6 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'pull_request' && 'dev' || 'production' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -31,12 +32,14 @@ jobs:
       - name: Unit tests
         run: npm run test
 
-      - name: Check recruiter API URL
+      - name: Require recruiter API URL
         env:
           RECRUITER_API_URL: ${{ secrets.RECRUITER_API_URL || vars.RECRUITER_API_URL }}
+          DEPLOY_ENV: ${{ github.event_name == 'pull_request' && 'dev' || 'production' }}
         run: |
           if [ -z "$RECRUITER_API_URL" ]; then
-            echo "::warning::RECRUITER_API_URL is unset (set a repository secret or variable); builds will ship without a recruiter API endpoint"
+            echo "::error::RECRUITER_API_URL is unset for environment '$DEPLOY_ENV'. Add an environment secret (Settings → Environments → $DEPLOY_ENV), or a repository secret/variable."
+            exit 1
           fi
 
       - name: Build

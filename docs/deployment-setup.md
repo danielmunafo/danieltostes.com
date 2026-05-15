@@ -47,11 +47,15 @@ Navigate to **Settings → Secrets and variables → Actions → Repository secr
 
 ### Recruiter assistant (optional)
 
-Add **`RECRUITER_API_URL`** as a repository **secret** or **variable** (Settings → Secrets and variables → Actions). The workflow reads either; a **variable** is enough (the URL is public in the static bundle).
+Add **`RECRUITER_API_URL`** per GitHub **environment** (recommended) or at repository level:
 
-| Name                | Description                                                                                           |
-| ------------------- | ----------------------------------------------------------------------------------------------------- |
-| `RECRUITER_API_URL` | Lambda Function URL (no trailing slash). Baked into static `out/` as `NEXT_PUBLIC_RECRUITER_API_URL`. |
+| Where                                  | When                                                           |
+| -------------------------------------- | -------------------------------------------------------------- |
+| **Environments → dev → Secret**        | PR previews (`dev.danieltostes.com`) — dev Lambda Function URL |
+| **Environments → production → Secret** | `main` builds — prod Lambda Function URL                       |
+| **Repository secret or variable**      | Fallback for either environment if not set on the environment  |
+
+The **Frontend / build** job uses the same `dev` / `production` environment as deploy, so environment secrets are visible during `npm run build`. A **variable** is enough (the URL is public in the static bundle).
 
 After adding or changing it, re-run the **Frontend** workflow (site build + deploy), not only Recruiter API.
 
