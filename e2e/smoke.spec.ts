@@ -8,6 +8,31 @@ test("home page loads and shows the Summary section", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Summary" })).toBeVisible();
 });
 
+test("recruiter assistant hero is visible", async ({ page }) => {
+  await page.goto(defaultLocalePath);
+  await expect(
+    page.getByRole("heading", { name: /recruiter assistant/i })
+  ).toBeVisible();
+});
+
+test("recruiter assistant terms page loads", async ({ page }) => {
+  await page.goto(`${defaultLocalePath}/recruiter-assistant/terms`);
+  await expect(
+    page.getByRole("heading", {
+      name: /AI Recruiter Assistant — Terms of use and fair use/i,
+    })
+  ).toBeVisible();
+});
+
+test("summary remains reachable after scrolling past assistant", async ({
+  page,
+}) => {
+  await page.goto(defaultLocalePath);
+  await expect(page.getByRole("heading", { name: "Summary" })).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 1200));
+  await expect(page.getByRole("heading", { name: "Summary" })).toBeVisible();
+});
+
 test("all four sections are rendered", async ({ page }) => {
   await page.goto(defaultLocalePath);
   await expect(page.getByRole("heading", { name: "Summary" })).toBeVisible();
