@@ -68,7 +68,7 @@ test("footer displays legal text", async ({ page }) => {
 
 test("experience section shows company names", async ({ page }) => {
   await page.goto(defaultLocalePath);
-  await expect(page.getByText("Personal Fitness Platform")).toBeVisible();
+  await expect(page.getByText("danieltostes.com")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Klarna" })).toBeVisible();
 });
 
