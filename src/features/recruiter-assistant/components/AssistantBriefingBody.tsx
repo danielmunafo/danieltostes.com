@@ -78,7 +78,10 @@ export function AssistantBriefingBody({
           title={referencesPanelTitle}
           open={referencesOpen}
           onToggle={() => setReferencesOpen((v) => !v)}
-          bodySx={[referencesPanelBodyMarkdownSx, contentSx]}
+          bodySx={[
+            referencesPanelBodyMarkdownSx,
+            ...(Array.isArray(contentSx) ? contentSx : [contentSx]),
+          ]}
         >
           <ReactMarkdown
             remarkPlugins={BRIEFING_REMARK_PLUGINS}
