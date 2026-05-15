@@ -144,8 +144,7 @@ OIDC trust for the repo is unchanged; see [docs/deployment-setup.md](../../docs/
 
 ## 8. GitHub repository variables
 
-- **`RECRUITER_API_URL`** — full Function URL (no trailing slash).  
-  The site workflow passes it to the Next build as `NEXT_PUBLIC_RECRUITER_API_URL` (see `.github/workflows/ci.yml`).
+- **`RECRUITER_API_URL`** — full Function URL (no trailing slash). Repository **secret** or **variable**; the Frontend workflow passes it to the Next build as `NEXT_PUBLIC_RECRUITER_API_URL` (see `.github/workflows/ci.yml`).
 
 ---
 

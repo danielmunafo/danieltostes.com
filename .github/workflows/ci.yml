@@ -1,4 +1,4 @@
-name: CI
+name: Frontend
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
       - main
 
 jobs:
-  lint-test-build:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,14 +32,16 @@ jobs:
         run: npm run test
 
       - name: Check recruiter API URL
+        env:
+          RECRUITER_API_URL: ${{ secrets.RECRUITER_API_URL || vars.RECRUITER_API_URL }}
         run: |
-          if [ -z "${{ vars.RECRUITER_API_URL }}" ]; then
-            echo "::warning::RECRUITER_API_URL is unset; builds will ship without a recruiter API endpoint"
+          if [ -z "$RECRUITER_API_URL" ]; then
+            echo "::warning::RECRUITER_API_URL is unset (set a repository secret or variable); builds will ship without a recruiter API endpoint"
           fi
 
       - name: Build
         env:
-          NEXT_PUBLIC_RECRUITER_API_URL: ${{ vars.RECRUITER_API_URL }}
+          NEXT_PUBLIC_RECRUITER_API_URL: ${{ secrets.RECRUITER_API_URL || vars.RECRUITER_API_URL }}
         run: npm run build
 
       - name: Install Playwright browsers
@@ -55,7 +57,7 @@ jobs:
           path: out/
 
   deploy:
-    needs: lint-test-build
+    needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     environment: ${{ github.event_name == 'pull_request' && 'dev' || 'production' }}

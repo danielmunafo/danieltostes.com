@@ -1,6 +1,6 @@
 # [danieltostes.com](https://danieltostes.com)
 
-[![CI](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml?query=branch%3Amain) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fdanieltostes.com)](https://danieltostes.com)
+[![Frontend](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/danielmunafo/danieltostes.com/actions/workflows/ci.yml?query=branch%3Amain) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fdanieltostes.com)](https://danieltostes.com)
 
 ![Open Graph image](public/og-image.png)
 

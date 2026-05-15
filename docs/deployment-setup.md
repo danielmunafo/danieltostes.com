@@ -4,7 +4,7 @@ This document describes how to configure GitHub Actions to deploy to both dev an
 
 ## Overview
 
-The CI/CD workflow (`.github/workflows/ci.yml`) automatically deploys to two environments:
+The **Frontend** workflow (`.github/workflows/ci.yml`) automatically deploys to two environments:
 
 - **dev**: Deployed on pull requests for preview and testing
 - **production**: Deployed on merge to `main`
@@ -47,13 +47,13 @@ Navigate to **Settings → Secrets and variables → Actions → Repository secr
 
 ### Recruiter assistant (optional)
 
-Add a **repository variable** (Settings → Secrets and variables → Actions → Variables):
+Add **`RECRUITER_API_URL`** as a repository **secret** or **variable** (Settings → Secrets and variables → Actions). The workflow reads either; a **variable** is enough (the URL is public in the static bundle).
 
-| Variable Name       | Description                                                                                           |
+| Name                | Description                                                                                           |
 | ------------------- | ----------------------------------------------------------------------------------------------------- |
 | `RECRUITER_API_URL` | Lambda Function URL (no trailing slash). Baked into static `out/` as `NEXT_PUBLIC_RECRUITER_API_URL`. |
 
-After adding or changing it, re-run the **CI** workflow (site build + deploy), not only Recruiter API.
+After adding or changing it, re-run the **Frontend** workflow (site build + deploy), not only Recruiter API.
 
 For the API deploy workflow and embeddings upload secrets, see [services/recruiter-assistant-api/SETUP.md](../services/recruiter-assistant-api/SETUP.md).
 
