@@ -1,0 +1,13 @@
+---
+description: Mandatory pre-completion review checklist
+alwaysApply: false
+---
+
+Run **after edits, before the final reply**.
+
+1. Comply with `AGENTS.md` and each `.mdc` rule for areas you touched (see `.cursor/AI_INDEX.md`).
+2. **MANDATORY:** `npm run format:check` (fix with `npm run format` if needed).
+3. Dependencies changed → `dependencies.mdc`. Messages/locales → `i18n.mdc`. Docs/plans → `documentation.mdc`. Commits → `commits.mdc`.
+4. Fix lint/test failures you introduced; note if the user asked to skip.
+
+**Output:** One sentence — review done and any fixes or skips.

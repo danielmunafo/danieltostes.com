@@ -83,7 +83,7 @@ flowchart LR
 - **`src/components/HomeContent.tsx`** — Composes `ChatHero` above `ParallaxLayout`.
 - **`src/constants/sections.ts`** — `SECTION_IDS` includes `assistant` first for background crossfade; `PARALLAX_SECTION_IDS` lists scrollable CV sections only (no duplicate assistant column).
 - **`docs/plans/recruiter-assistant-plan.md`** — This file.
-- **`.cursor/rules/recruiter-assistant/RULE.md`** — Short pointer + conventions for agents.
+- **`.cursor/rules/recruiter-assistant.mdc`** — Short pointer + conventions for agents.
 
 ---
 

@@ -39,7 +39,7 @@ npm start        # serve out/ (preview)
 Other: `npm run lint`, `npm run format:check`, `npm run test`, `npm run test:e2e`.  
 Pre-push runs format check, lint, and unit tests. Full workflow: [docs/development.md](docs/development.md).
 
-**When starting a change:** 1) Read [AGENTS.md](AGENTS.md). 2) Find the relevant RULE in [.cursor/AI_INDEX.md](.cursor/AI_INDEX.md). 3) Make your change. 4) Run checks (pre-push runs format check, lint, test). 5) Do the pre-completion review (see [AGENTS.md](AGENTS.md) and [.cursor/rules/code-review/RULE.md](.cursor/rules/code-review/RULE.md)).
+**When starting a change:** 1) Read [AGENTS.md](AGENTS.md). 2) Find the relevant rule in [.cursor/AI_INDEX.md](.cursor/AI_INDEX.md). 3) Make your change. 4) Run checks (pre-push runs format check, lint, test). 5) Do the pre-completion review (see [AGENTS.md](AGENTS.md) and [.cursor/rules/code-review.mdc](.cursor/rules/code-review.mdc)).
 
 ---
 
@@ -56,7 +56,7 @@ Setup and secrets: [docs/deployment-setup.md](docs/deployment-setup.md).
 
 See [docs/README.md](docs/README.md) for the full documentation index.
 
-**AI / Cursor:** [AGENTS.md](AGENTS.md) has stack and style rules plus **how to use skills** (where they live, when to use them, example prompts). Skill list and invocation examples: [.cursor/AI_INDEX.md](.cursor/AI_INDEX.md) → Skills.
+**AI / Cursor:** [AGENTS.md](AGENTS.md) for stack and style; [.cursor/AI_INDEX.md](.cursor/AI_INDEX.md) for scoped rules and skills.
 
 ---
 

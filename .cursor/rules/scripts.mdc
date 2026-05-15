@@ -1,0 +1,8 @@
+---
+description: Node ESM scripts and tooling
+globs: scripts/**
+alwaysApply: false
+---
+
+- ESM `.mjs`; focused scripts; clear CLI args and exit codes.
+- CI-safe (non-interactive); idempotent file ops; concise logs.

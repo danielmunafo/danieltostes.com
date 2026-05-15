@@ -1,0 +1,23 @@
+---
+description: Recruiter AI chat feature (UI + Lambda RAG)
+globs: src/features/recruiter-assistant/**,services/recruiter-assistant-api/**,public/content/recruiter-assistant/**
+alwaysApply: false
+---
+
+## Scope
+
+UI: `src/features/recruiter-assistant/**`. API: `services/recruiter-assistant-api/**`.
+
+Read `docs/plans/recruiter-assistant-plan.md` and `services/recruiter-assistant-api/SETUP.md` for AWS/CI.
+
+## Conventions
+
+- i18n: `RecruiterAssistant` / `RecruiterAssistantTerms` in all four `src/messages/*.json`; terms body `public/content/recruiter-assistant/terms/<locale>.md`.
+- `NEXT_PUBLIC_RECRUITER_API_URL` at Next build time; dev default `http://127.0.0.1:3001`.
+- MUI + `sx` (see `components.mdc`).
+- Pipeline: RAG top-K → evaluator + analyst (thinking markers) → pitch + `## References`; optional interests step is server-logged only. Tune caps in `services/recruiter-assistant-api/src/constants.ts`.
+- Deps: root `ai` + `@ai-sdk/react`; service `ai` + `@ai-sdk/openai` — follow `dependencies.mdc` per package.
+
+## Security
+
+No logging API keys, full prompts, or interests pack contents. Align `ALLOWED_ORIGIN` with CORS.

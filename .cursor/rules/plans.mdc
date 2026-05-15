@@ -1,0 +1,8 @@
+---
+description: Implementation plans in docs/plans
+globs: docs/plans/**
+alwaysApply: false
+---
+
+- New plans: `docs/plans/<kebab-name>.md` + entry in `docs/plans/README.md`.
+- Reference as `docs/plans/<name>.md`; follow `documentation.mdc` when updating.

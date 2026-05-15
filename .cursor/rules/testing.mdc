@@ -1,0 +1,9 @@
+---
+description: Vitest and Playwright testing
+globs: "**/*.{test,spec}.{ts,tsx}",e2e/**,playwright.config.*
+alwaysApply: false
+---
+
+- Vitest for unit/component; Playwright against built `out/`.
+- Behavior-focused tests; role/label selectors in E2E.
+- Before push: tests + `npm run lint` + `npm run format:check` (pre-push hook).

@@ -1,11 +1,6 @@
 ---
 name: recruiter-assistant
-description: >-
-  Works on the recruiter-facing AI chat (Next.js hero + streaming Lambda RAG),
-  embeddings pipeline, security gates, and AWS/CI wiring for
-  danieltostes.com. Use when changing recruiter assistant UI, API handler,
-  prompts, retrieval, references block, constants/tuning, i18n/terms content,
-  embeddings build, or recruiter-api GitHub Actions.
+description: Recruiter AI chat (Next.js + Lambda RAG). Invoke for assistant UI, API, embeddings, terms, or recruiter CI.
 ---
 
 # Recruiter Assistant
@@ -30,7 +25,7 @@ Use this skill when the task touches any of:
 
 ## Read first (in order)
 
-1. `.cursor/rules/recruiter-assistant/RULE.md` — scope, i18n keys, API URL, styling, pipeline summary, dependency split.
+1. `.cursor/rules/recruiter-assistant.mdc` — scope, i18n keys, API URL, styling, pipeline summary, dependency split.
 2. `docs/plans/recruiter-assistant-plan.md` — locked decisions, handler flow, security, CI, verification.
 3. AWS / deploy / secrets steps: `services/recruiter-assistant-api/SETUP.md`.
 
@@ -47,7 +42,7 @@ For a **file map and command cheat sheet**, open [reference.md](reference.md).
 
 1. Confirm whether the change is **UI-only**, **API-only**, **content/embeddings**, or **infra/CI**; read the minimum files from [reference.md](reference.md) for that track.
 2. Respect **security**: do not log secrets or full prompts in production; keep CORS allowlist aligned in prod.
-3. **i18n:** user-visible strings under `RecruiterAssistant` / `RecruiterAssistantTerms` in **all four** `src/messages/*.json` (see `.cursor/rules/i18n/RULE.md`).
+3. **i18n:** user-visible strings under `RecruiterAssistant` / `RecruiterAssistantTerms` in **all four** `src/messages/*.json` (see `.cursor/rules/i18n.mdc`).
 4. After edits, run checks listed in **Verification** on the relevant package (root and/or service).
 
 ## Verification

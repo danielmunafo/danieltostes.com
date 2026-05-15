@@ -12,4 +12,4 @@
 | [plans/README.md](./plans/README.md)                                     | Implementation and execution plans (scaffolding, parallax, recruiter assistant, etc.) |
 | [plans/recruiter-assistant-plan.md](./plans/recruiter-assistant-plan.md) | Recruiter AI chat: RAG, Lambda streaming, security, CI                                |
 
-When code, config, or behavior changes in a way that affects a doc, update that doc. See `.cursor/rules/documentation/RULE.md` for conventions.
+When code, config, or behavior changes in a way that affects a doc, update that doc. See `.cursor/rules/documentation.mdc` for conventions.

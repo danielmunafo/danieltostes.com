@@ -1,0 +1,9 @@
+---
+description: Keeping docs in sync with code
+globs: docs/**
+alwaysApply: false
+---
+
+- Update docs in the same PR when behavior, scripts, or config they describe changes.
+- One canonical doc per topic; link instead of duplicating.
+- Plans live in `docs/plans/` (see `plans.mdc`); list new docs in `docs/README.md`.

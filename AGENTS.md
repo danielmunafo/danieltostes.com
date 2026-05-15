@@ -1,64 +1,30 @@
 # Agent instructions
 
-Personal blog/CV site. Next.js, static export (`output: 'export'`), S3 hosting. Root page only for now; content in later PRs.
+Personal blog/CV site. Next.js static export (`output: 'export'`), S3 + CloudFront. SPA, client-side rendering.
 
 ## Stack
 
-- Next.js (React), TypeScript (ESM/ESNext), MUI + Emotion
-- Lint: ESLint + Prettier. Test: Playwright + Vitest. When adding or changing dependencies: remove `node_modules` and `package-lock.json`, then run `npm install` to regenerate the lockfile (see `.cursor/rules/dependencies/RULE.md`).
-- DX: Git hooks (Husky + lint-staged). Pre-commit runs format + lint on staged files; pre-push runs format check, full lint, and unit tests. Ensure tests and linters pass before committing or pushing.
-- i18n: 4 locales (en, pt-BR, es, it). Dark/light theme. Lighthouse ≥ 95. Deploy: GitHub → AWS (bundle small, on-demand where possible).
+- Next.js (React), TypeScript (ESM), MUI + Emotion
+- ESLint + Prettier; Vitest + Playwright
+- i18n: en, pt-BR, es, it. Dark/light theme. Lighthouse ≥ 95
 
 ## Code style
 
-- **Constants:** Named constants or const arrays; derive types from them. No hardcoded magic strings.
-- **Conditions:** Use descriptive variables (e.g. `const isWindowUndefined = typeof window === "undefined"`) instead of inlining.
+- Named constants / const arrays; derive types. No magic strings.
+- Descriptive condition variables (e.g. `const isWindowUndefined = typeof window === "undefined"`).
 
-## CSS (MUI only; no extra styling lib)
+## CSS (MUI only)
 
-1. **Theme-first:** Colors, typography, spacing, radii, shadows, breakpoints in `theme/` (or `src/theme/`).
-2. **sx for most:** Use `sx` for ~80%; avoid one-off styled components.
-3. **styled() for reuse:** Card variants, Hero, layout primitives → MUI `styled()`.
-4. **Global:** `CssBaseline` + minimal `global.css` (e.g. `@font-face`, resets). Rest via theme/MUI.
+1. Theme-first: tokens in `src/theme/`
+2. `sx` for most styling; `styled()` for reusable primitives
+3. Global: `CssBaseline` + minimal `global.css`
 
-## Architecture
+## AI workflow
 
-SPA, client-side rendering, static export for S3. See `docs/architecture.md` and `docs/diagrams.md` for details.
+- Map: `.cursor/AI_INDEX.md` → scoped rules in `.cursor/rules/*.mdc`
+- Skills: `.cursor/skills/<name>/` — mention the skill by name in your prompt
+- Before finishing: `.cursor/rules/code-review.mdc`
 
-## AI usage
+## Dev (summary)
 
-- **Start here**: skim this `AGENTS.md` for stack, style, and architecture context.
-- **Find area-specific rules** via `.cursor/AI_INDEX.md` (global map of code areas and RULE files).
-- **Before large changes**, open the relevant `.cursor/rules/**/RULE.md` file (e.g. app, components, theme, hooks, i18n, testing, scripts) to understand local constraints.
-- **Use detailed docs** in `docs/architecture.md` and `docs/diagrams.md` only when architecture-level context is needed; prefer the small RULE files to minimize navigation.
-
-## How to use skills (humans)
-
-**Skills** are reusable workflows for the AI; they live in **`.cursor/skills/<skill-name>/`** (each has a `SKILL.md` and optional context files).
-
-- **When to use which skill** and **example prompts** are listed in **`.cursor/AI_INDEX.md`** under **Skills**. Open that section to see what each skill does and how to invoke it without reading the full SKILL file.
-- **To invoke a skill:** In your prompt, ask the agent to use the skill by name or paste an example (e.g. “Use the portfolio-career-reviewer skill to review this job entry.”). The agent will follow the skill’s instructions.
-
-## Pre-completion code review
-
-**Before you consider your response finished**, run a code-review step against the project’s guidelines:
-
-1. Re-read this `AGENTS.md` and the **RULE.md for each area you changed** (see `.cursor/AI_INDEX.md`). Ensure your edits comply with constraints and gotchas.
-2. **MANDATORY**: Run `npm run format:check` and fix any formatting issues before committing. Do not skip this step.
-3. **Commit structure**: Review `.cursor/rules/commits/RULE.md` - group changes logically (CI/CD, scripts, docs, code should be separate commits when possible).
-4. If you added or changed dependencies, i18n messages, or locale-specific content, or docs/plans, follow the corresponding rule (dependencies, i18n, documentation, plans).
-5. Do not leave lint or test failures; fix them or note that the user should run format check, lint, and tests (pre-push will run them).
-
-Detail and checklist: `.cursor/rules/code-review/RULE.md`. In your final reply, state briefly that you ran the review and whether you found or fixed any violations.
-
-## Cursor Cloud specific instructions
-
-This is a purely static Next.js site with no backend, database, or external services. The update script handles `npm install` only.
-
-- **Node version:** 20 (managed via nvm; `nvm use 20` is set as default).
-- **Dev server:** `npm run dev` → http://localhost:3000 (redirects to `/en` by default).
-- **Lint/format/test commands:** See `package.json` scripts — `npm run lint`, `npm run format:check`, `npm run test` (Vitest), `npm run test:e2e` (Playwright, builds first then serves `out/`).
-- **Playwright:** Requires `npx playwright install --with-deps chromium` before first E2E run. Chromium-only.
-- **Build:** `npm run build` renders Mermaid diagrams into SVGs, runs `next build`, then restores `public/content/` via `git checkout`. The `out/` directory is the static export.
-- **Port 3000:** Both the dev server and the E2E static server (`serve`) use port 3000. Kill the dev server before running E2E tests.
-- **Git hooks:** Pre-commit runs lint-staged (format + lint on staged files). Pre-push runs `format:check`, `lint`, and `test`. Ensure these pass before pushing.
+Node 20 · `npm run dev` (:3000) · `npm run build` → `out/` · pre-push: format:check, lint, test · details: `docs/development.md`

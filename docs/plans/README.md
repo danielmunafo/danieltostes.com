@@ -8,4 +8,4 @@ This directory holds **implementation plans** and **execution plans** for featur
 | [parallax-sections-plan.md](./parallax-sections-plan.md)                   | Parallax two-plane scrolling, glassmorphism, section layout       |
 | [recruiter-assistant-plan.md](./recruiter-assistant-plan.md)               | Recruiter AI chat (RAG), Lambda streaming, AWS runbook, CI        |
 
-**Conventions:** See `.cursor/rules/plans/RULE.md` (plan location and structure) and `.cursor/rules/documentation/RULE.md` (updating and versioning all docs, including plans).
+**Conventions:** See `.cursor/rules/plans.mdc` (plan location and structure) and `.cursor/rules/documentation.mdc` (updating and versioning all docs, including plans).

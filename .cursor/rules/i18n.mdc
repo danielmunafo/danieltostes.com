@@ -1,0 +1,10 @@
+---
+description: i18n and locale message sync
+globs: src/i18n/**,src/messages/**,public/content/**
+alwaysApply: false
+---
+
+- Locales: `en`, `pt-BR`, `es`, `it`. Explicit locale paths; no runtime locale detection.
+- **Sync rule:** Any key or `public/content/.../<locale>.md` change → update **all four** locales in the same change.
+- Stable message keys; simple strings in JSON; formatting in code.
+- Search index: see `docs/search-index.md`.
