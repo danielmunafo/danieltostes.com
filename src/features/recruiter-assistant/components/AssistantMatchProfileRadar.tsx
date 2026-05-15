@@ -114,7 +114,9 @@ export function AssistantMatchProfileRadar({
             dot={(props) => {
               const { cx, cy, index } = props;
               const row = data[index ?? 0];
-              if (cx === undefined || cy === undefined || !row) return null;
+              if (cx === undefined || cy === undefined || !row) {
+                return <g />;
+              }
               return (
                 <circle
                   key={`${row.label}-${index}`}
