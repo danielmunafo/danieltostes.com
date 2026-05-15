@@ -12,46 +12,11 @@ Built a system that transforms customer interaction data into embeddings and mat
 - Established a scalable, low-latency foundation for AI-powered personalization across additional channels.
 - CTR from 1.4% to 1.8% - For 1m monthtly purchases it represents ~3k additional month traffic to campaigns and company ads
 
-```mermaid
-flowchart LR
-    CP[Communication Platform] --> MS[Marketing Service]
+![diagram](/content/diagrams/impact-1-en-0.svg)
 
-    MS --> DE[Decision Engine]
+### Sequence Diagram - Personalization Flow with Fallback
 
-    DE -->|Match Campaign| MS
-
-    CDP[(Customer Data Platform)]
-    CDP -->|Async Data Sync| DE
-
-    MS --> CP
-```
-
-### Sequence Diagram – Personalization Flow with Fallback
-
-```mermaid
-sequenceDiagram
-    participant CP as Communication Platform
-    participant MS as Marketing Service
-    participant DE as Decision Engine
-    participant CDP as Customer Data Platform
-
-    CP->>MS: Request Transactional Email Content
-
-    MS->>DE: Request Personalized Block (active campaigns)
-
-    Note over CDP,DE: Customer embeddings synced asynchronously
-
-    DE->>DE: Evaluate embeddings vs campaign vectors
-
-    alt Match Found
-        DE-->>MS: Return Personalized Content
-    else No Match
-        DE-->>MS: Return No-Match
-        MS->>MS: Select Fallback Block
-    end
-
-    MS-->>CP: Final Email Payload
-```
+![diagram](/content/diagrams/impact-1-en-1.svg)
 
 ### Decision Engine Architecture
 

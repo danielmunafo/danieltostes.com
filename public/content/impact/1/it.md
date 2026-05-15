@@ -12,46 +12,11 @@ Ho costruito un sistema che trasforma i dati di interazione del cliente in embed
 - Istituzione di una base scalabile e a bassa latenza per la personalizzazione con IA su canali aggiuntivi.
 - CTR da 1,4% a 1,8% — Per 1 milione di acquisti mensili rappresenta ~3k visite aggiuntive al mese a campagne e annunci aziendali.
 
-```mermaid
-flowchart LR
-    CP[Communication Platform] --> MS[Marketing Service]
+![diagram](/content/diagrams/impact-1-it-0.svg)
 
-    MS --> DE[Decision Engine]
+### Diagramma di Sequenza - Flusso di Personalizzazione con Fallback
 
-    DE -->|Match Campaign| MS
-
-    CDP[(Customer Data Platform)]
-    CDP -->|Async Data Sync| DE
-
-    MS --> CP
-```
-
-### Diagramma di Sequenza – Flusso di Personalizzazione con Fallback
-
-```mermaid
-sequenceDiagram
-    participant CP as Communication Platform
-    participant MS as Marketing Service
-    participant DE as Decision Engine
-    participant CDP as Customer Data Platform
-
-    CP->>MS: Request Transactional Email Content
-
-    MS->>DE: Request Personalized Block (active campaigns)
-
-    Note over CDP,DE: Customer embeddings synced asynchronously
-
-    DE->>DE: Evaluate embeddings vs campaign vectors
-
-    alt Match Found
-        DE-->>MS: Return Personalized Content
-    else No Match
-        DE-->>MS: Return No-Match
-        MS->>MS: Select Fallback Block
-    end
-
-    MS-->>CP: Final Email Payload
-```
+![diagram](/content/diagrams/impact-1-it-1.svg)
 
 ### Architettura del Motore Decisionale
 

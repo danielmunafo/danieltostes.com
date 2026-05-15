@@ -16,57 +16,7 @@ La solución coordina múltiples dominios de backend (autorización, riesgo, ser
 
 El servicio de orquestación actúa como motor de flujo centralizado, coordinando servicios de dominio de forma asíncrona por flujos de eventos y persistiendo el estado de la saga para recuperación y escalabilidad horizontal.
 
-```mermaid
-flowchart LR
-    subgraph Client Layer
-        Mobile[Mobile App]
-    end
-
-    subgraph Edge Layer
-        API[API Gateway / BFF]
-    end
-
-    subgraph Orchestration Layer
-        Orchestrator[SAGA Orchestrator<br/>State Machine Service]
-    end
-
-    subgraph Domain Services
-        Auth[Authorization Service]
-        Risk[Risk Engine]
-        Account[Account Service]
-        Notification[Notification Service]
-    end
-
-    subgraph Event Backbone
-        Kafka[(Apache Kafka)]
-        DLQ[(Dead Letter Queue)]
-    end
-
-    subgraph Persistence
-        Cassandra[(Cassandra<br/>Saga State Store)]
-    end
-
-    subgraph Observability
-        Logs[Centralized Logs]
-        Grafana[Grafana Dashboards]
-    end
-
-    Mobile --> API
-    API --> Orchestrator
-
-    Orchestrator --> Auth
-    Orchestrator --> Risk
-    Orchestrator --> Account
-    Orchestrator --> Notification
-
-    Orchestrator <--> Kafka
-    Kafka --> DLQ
-
-    Orchestrator --> Cassandra
-
-    Orchestrator --> Logs
-    Logs --> Grafana
-```
+![diagram](/content/diagrams/impact-2-es-0.svg)
 
 Infraestructura de soporte:
 
@@ -103,52 +53,9 @@ Cada solicitud de inscripción se modela como una máquina de estados determinis
 
 Las transiciones están guiadas por snapshot y son monótonas: una vez la saga avanza a un estado más reciente, eventos antiguos o duplicados no pueden sobrescribirlo.
 
-### Diagrama de Secuencia – Inscripción en Descubierto Event-Driven (Kafka)
+### Diagrama de Secuencia - Inscripción en Descubierto Event-Driven (Kafka)
 
-```mermaid
-sequenceDiagram
-    participant Mobile
-    participant BFF
-    participant Saga
-    participant Kafka
-    participant Services
-    participant DLQ
-
-    Mobile->>BFF: Submit Enrollment
-    BFF->>Saga: Start Saga (HTTP)
-
-    Saga->>Kafka: Publish Authorization Requested
-    Kafka->>Services: Authorization Service Consumes
-    Services->>Kafka: Authorization Result Event
-    Kafka->>Saga: Consume Authorization Result
-
-    alt Authorization Approved
-        Saga->>Kafka: Publish Risk Check Requested
-        Kafka->>Services: Risk Service Consumes
-        Services->>Kafka: Risk Result Event
-        Kafka->>Saga: Consume Risk Result
-
-        alt Risk Approved
-            Saga->>Kafka: Publish Account Update Requested
-            Kafka->>Services: Account Service Consumes
-            Services->>Kafka: Account Update Result
-            Kafka->>Saga: Consume Account Result
-
-            alt Update Success
-                Saga->>Saga: Transition -> COMPLETED
-            else Failure
-                Saga->>Kafka: Publish Failure Event
-                Kafka->>DLQ: Route to Support
-            end
-        else Risk Failure
-            Saga->>Kafka: Publish Failure Event
-            Kafka->>DLQ: Route to Support
-        end
-    else Authorization Failure (3 retries or TTL exceeded)
-        Saga->>Kafka: Publish Failure Event
-        Kafka->>DLQ: Route to Support
-    end
-```
+![diagram](/content/diagrams/impact-2-es-1.svg)
 
 ### Flujo de Inscripción y Tratamiento de Fallos
 

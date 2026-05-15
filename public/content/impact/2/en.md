@@ -16,57 +16,7 @@ The solution coordinates multiple backend domains (authorization, risk, account 
 
 The orchestration service operates as a centralized workflow engine coordinating domain services asynchronously through event streams while persisting saga state for recoverability and horizontal scalability.
 
-```mermaid
-flowchart LR
-    subgraph Client Layer
-        Mobile[Mobile App]
-    end
-
-    subgraph Edge Layer
-        API[API Gateway / BFF]
-    end
-
-    subgraph Orchestration Layer
-        Orchestrator[SAGA Orchestrator<br/>State Machine Service]
-    end
-
-    subgraph Domain Services
-        Auth[Authorization Service]
-        Risk[Risk Engine]
-        Account[Account Service]
-        Notification[Notification Service]
-    end
-
-    subgraph Event Backbone
-        Kafka[(Apache Kafka)]
-        DLQ[(Dead Letter Queue)]
-    end
-
-    subgraph Persistence
-        Cassandra[(Cassandra<br/>Saga State Store)]
-    end
-
-    subgraph Observability
-        Logs[Centralized Logs]
-        Grafana[Grafana Dashboards]
-    end
-
-    Mobile --> API
-    API --> Orchestrator
-
-    Orchestrator --> Auth
-    Orchestrator --> Risk
-    Orchestrator --> Account
-    Orchestrator --> Notification
-
-    Orchestrator <--> Kafka
-    Kafka --> DLQ
-
-    Orchestrator --> Cassandra
-
-    Orchestrator --> Logs
-    Logs --> Grafana
-```
+![diagram](/content/diagrams/impact-2-en-0.svg)
 
 Supporting Infrastructure:
 
@@ -79,7 +29,7 @@ Supporting Infrastructure:
 
 #### Architectural Characteristics
 
-- State-machine–driven SAGA orchestration
+- State-machine-driven SAGA orchestration
 - Event-driven communication between services
 - Persistent saga snapshots enabling crash recovery
 - Stateless worker instances for horizontal scalability
@@ -103,52 +53,9 @@ Each enrollment request is modeled as a deterministic state machine with forward
 
 State transitions are snapshot-driven and monotonic: once a saga advances to a newer state, older or duplicated events cannot override it.
 
-### Sequence Diagram – Event-Driven Overdraft Enrollment (Kafka-Based)
+### Sequence Diagram - Event-Driven Overdraft Enrollment (Kafka-Based)
 
-```mermaid
-sequenceDiagram
-    participant Mobile
-    participant BFF
-    participant Saga
-    participant Kafka
-    participant Services
-    participant DLQ
-
-    Mobile->>BFF: Submit Enrollment
-    BFF->>Saga: Start Saga (HTTP)
-
-    Saga->>Kafka: Publish Authorization Requested
-    Kafka->>Services: Authorization Service Consumes
-    Services->>Kafka: Authorization Result Event
-    Kafka->>Saga: Consume Authorization Result
-
-    alt Authorization Approved
-        Saga->>Kafka: Publish Risk Check Requested
-        Kafka->>Services: Risk Service Consumes
-        Services->>Kafka: Risk Result Event
-        Kafka->>Saga: Consume Risk Result
-
-        alt Risk Approved
-            Saga->>Kafka: Publish Account Update Requested
-            Kafka->>Services: Account Service Consumes
-            Services->>Kafka: Account Update Result
-            Kafka->>Saga: Consume Account Result
-
-            alt Update Success
-                Saga->>Saga: Transition -> COMPLETED
-            else Failure
-                Saga->>Kafka: Publish Failure Event
-                Kafka->>DLQ: Route to Support
-            end
-        else Risk Failure
-            Saga->>Kafka: Publish Failure Event
-            Kafka->>DLQ: Route to Support
-        end
-    else Authorization Failure (3 retries or TTL exceeded)
-        Saga->>Kafka: Publish Failure Event
-        Kafka->>DLQ: Route to Support
-    end
-```
+![diagram](/content/diagrams/impact-2-en-1.svg)
 
 ### Enrollment Flow & Failure Handling
 
