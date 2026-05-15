@@ -7,8 +7,10 @@ import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { createPortfolioDeepLinkMarkdownComponents } from "../lib/createPortfolioDeepLinkMarkdownComponents";
+import type { ChartData } from "../lib/chart-data-types";
 import { splitPitchAndReferencesMarkdown } from "../lib/split-briefing-markdown";
 import { AssistantCollapsiblePanel } from "./AssistantCollapsiblePanel";
+import { AssistantMatchProfile } from "./AssistantMatchProfile";
 
 const BRIEFING_REMARK_PLUGINS = [remarkGfm];
 
@@ -34,6 +36,8 @@ type AssistantBriefingBodyProps = {
   readonly locale: string;
   /** Panel title for the post-stream `## References` block when present. */
   readonly referencesPanelTitle: string;
+  /** Validated match profile from chart marker block; omitted when skipped or streaming. */
+  readonly chartData?: ChartData | null;
 };
 
 /** Strips the first `## Title` line so the collapsible panel supplies the title. */
@@ -46,6 +50,7 @@ export function AssistantBriefingBody({
   contentSx,
   locale,
   referencesPanelTitle,
+  chartData = null,
 }: AssistantBriefingBodyProps) {
   const markdownLinkComponents = useMemo(
     () => createPortfolioDeepLinkMarkdownComponents(locale),
@@ -54,25 +59,28 @@ export function AssistantBriefingBody({
 
   const [referencesOpen, setReferencesOpen] = useState(false);
 
-  if (!markdown.trim()) {
+  const hasPitchMarkdown = markdown.trim().length > 0;
+  if (!hasPitchMarkdown && !chartData) {
     return null;
   }
 
-  const { pitchMarkdown, referencesMarkdown } = splitPitchAndReferencesMarkdown(
-    markdown,
-    locale
-  );
+  const { pitchMarkdown, referencesMarkdown } = hasPitchMarkdown
+    ? splitPitchAndReferencesMarkdown(markdown, locale)
+    : { pitchMarkdown: "", referencesMarkdown: "" };
 
   return (
     <Stack spacing={1.5}>
-      <Box sx={contentSx}>
-        <ReactMarkdown
-          remarkPlugins={BRIEFING_REMARK_PLUGINS}
-          components={markdownLinkComponents}
-        >
-          {pitchMarkdown}
-        </ReactMarkdown>
-      </Box>
+      {chartData ? <AssistantMatchProfile chartData={chartData} /> : null}
+      {pitchMarkdown.trim() ? (
+        <Box sx={contentSx}>
+          <ReactMarkdown
+            remarkPlugins={BRIEFING_REMARK_PLUGINS}
+            components={markdownLinkComponents}
+          >
+            {pitchMarkdown}
+          </ReactMarkdown>
+        </Box>
+      ) : null}
       {referencesMarkdown ? (
         <AssistantCollapsiblePanel
           title={referencesPanelTitle}

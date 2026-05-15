@@ -103,6 +103,12 @@ describe("buildEvidenceEvaluatorSystemPrompt", () => {
     expect(EVIDENCE_EVALUATOR_HARD_CAP_RULES_EN).toContain(
       "Exception — stack band vs general role shape"
     );
+    expect(EVIDENCE_EVALUATOR_HARD_CAP_RULES_EN).toContain(
+      "Two or more role-defining hard gates"
+    );
+    expect(EVIDENCE_EVALUATOR_HARD_CAP_RULES_EN).toContain(
+      "required spoken language fluency"
+    );
   });
 
   it("evidence confidence rubric allows Medium when strong evidence exists for some must-haves", () => {
@@ -370,6 +376,39 @@ describe("buildRecruiterPitchSystemPrompt", () => {
     const s = buildRecruiterPitchSystemPrompt("brief", "excerpts", "Spanish");
     expect(s).toContain("**Spanish**");
     expect(s).toContain("Do not switch languages");
+  });
+
+  it("includes hard must-have override for transferability vs role viability", () => {
+    const s = buildRecruiterPitchSystemPrompt("brief", "excerpts");
+    expect(s).toContain("HARD MUST-HAVE OVERRIDE");
+    expect(s).toContain("technical transferability");
+    expect(s).toContain("role viability");
+    expect(s).toContain("spoken language fluency");
+    expect(s).toContain("named primary production language");
+  });
+
+  it("caps technical fit when multiple hard gates are missing", () => {
+    const s = buildRecruiterPitchSystemPrompt("brief", "excerpts");
+    expect(s).toContain("≤ 5/10");
+    expect(s).toContain("≤ 6/10");
+    expect(s).toContain("4/10 or lower");
+    expect(s).toContain("German + Golang");
+  });
+
+  it("forbids Pursue when multiple hard gates or language plus stack are missing", () => {
+    const s = buildRecruiterPitchSystemPrompt("brief", "excerpts");
+    expect(s).toContain(
+      "Do **not** output **Strong pursue** or **Pursue** when **multiple**"
+    );
+    expect(s).toContain("required spoken language or other practical gate");
+    expect(s).toContain("not** a strong match for the role **as written**");
+  });
+
+  it("labels mandatory language and stack gaps as Major in Main Risks", () => {
+    const s = buildRecruiterPitchSystemPrompt("brief", "excerpts");
+    expect(s).toContain("required spoken language fluency");
+    expect(s).toContain("primary production stack");
+    expect(s).toContain("do **not** soften these into **Moderate:**");
   });
 });
 

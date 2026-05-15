@@ -10,6 +10,19 @@ export const CHAT_HERO_TOPBAR_OFFSET_MD_PX = 64;
 /** Max width for the recruiter chat column (common assistant UI width). */
 export const RECRUITER_CHAT_MAX_WIDTH_PX = 768;
 
+/** Keep in sync with API `MAX_CHAT_HISTORY_JSON_CHARS`. */
+export const RECRUITER_MAX_CHAT_HISTORY_JSON_CHARS = 32_768;
+
+/** API / fetch error code when serialized `messages` exceeds the history cap. */
+export const RECRUITER_PAYLOAD_TOO_LARGE_ERROR = "payload_too_large" as const;
+
+/** Height of the capability radar chart in the match profile (px). */
+export const RECRUITER_MATCH_PROFILE_CHART_HEIGHT_PX = 260;
+
+/** Keep in sync with API `chartDataSchema` capability dimension limits. */
+export const RECRUITER_CHART_DIMENSION_LABEL_MAX_LENGTH = 56;
+export const RECRUITER_CHART_DIMENSION_RATIONALE_MAX_LENGTH = 120;
+
 /**
  * Max height of the evidence-review markdown body while the stream is active.
  * Inner scroll keeps the chat log from growing and avoids constant auto-scroll jumps.

@@ -4,12 +4,20 @@ import {
   createDataStreamResponse,
   embed,
   formatDataStreamPart,
+  generateObject,
   generateText,
   streamText,
   type Message,
 } from "ai";
 import {
+  BRIEFING_PREP_CLOSE_MARKER,
+  BRIEFING_PREP_OPEN_MARKER,
+  BRIEFING_PREP_STATUS_MAX_TOKENS,
+  CHART_DATA_CLOSE_MARKER,
+  CHART_DATA_OPEN_MARKER,
   CHAT_MODEL,
+  DIMENSION_SCORING_COMPACT_MAX_TOKENS,
+  DIMENSION_SCORING_MAX_TOKENS,
   EMBEDDING_MODEL,
   EVIDENCE_BRIEF_MAX_TOKENS,
   EVIDENCE_EVALUATOR_MAX_TOKENS,
@@ -59,7 +67,20 @@ import {
   buildRecruiterPitchSystemPrompt,
   formatPortfolioChunks,
 } from "./rag/prompt.js";
+import {
+  buildBriefingPrepStatusSystemPrompt,
+  buildBriefingPrepStatusUserPrompt,
+} from "./rag/briefingPrepStatusPrompt.js";
+import {
+  buildChartProjectionSystemPrompt,
+  buildChartProjectionUserPrompt,
+} from "./rag/chartProjectionPrompt.js";
+import { type ChartData, chartDataSchema } from "./rag/chartDataSchema.js";
 import { buildReferencesMarkdown } from "./rag/references.js";
+import {
+  normalizeChartEvidenceScorePairings,
+  validateChartData,
+} from "./rag/validateChartData.js";
 import {
   filterChunksByNavigationLocale,
   retrieveTopK,
@@ -67,7 +88,7 @@ import {
 import { getOpenAiApiKey } from "./secrets/openaiKey.js";
 import { runIntentGate } from "./security/intentGate.js";
 import { runInputGuard } from "./security/inputGuard.js";
-import { logInfo } from "./logging/logger.js";
+import { logError, logInfo, logWarn } from "./logging/logger.js";
 import { checkRateLimit } from "./security/rateLimit.js";
 
 /**
@@ -273,15 +294,178 @@ export async function handleChatRequest(
         });
         const evidenceAnalystText = (await briefResult.text).trim();
 
+        dataStream.write(
+          formatDataStreamPart("text", `\n${THINKING_CLOSE_MARKER}\n\n`)
+        );
+
         const evidenceBriefParts = [
           evaluationMarkdown || "(No evaluator output.)",
           evidenceAnalystText || "(No analyst brief produced.)",
         ];
         const evidenceBriefForPitch = evidenceBriefParts.join("\n\n---\n\n");
 
-        dataStream.write(
-          formatDataStreamPart("text", `\n${THINKING_CLOSE_MARKER}\n\n`)
-        );
+        const isOffTopicEvaluation =
+          isRecruiterOffTopicBriefMarkdown(evaluationMarkdown);
+        let validatedChartData: ChartData | null = null;
+
+        if (isOffTopicEvaluation) {
+          logInfo("matchProfile", "chart skipped: evaluator off-topic", {
+            navLocale,
+          });
+        } else {
+          dataStream.write(
+            formatDataStreamPart("text", BRIEFING_PREP_OPEN_MARKER)
+          );
+
+          const chartProjectionPrompt = buildChartProjectionUserPrompt(
+            guarded.text,
+            evaluationMarkdown,
+            evidenceAnalystText
+          );
+          const chartAttempts = [
+            {
+              compact: false,
+              maxTokens: DIMENSION_SCORING_MAX_TOKENS,
+            },
+            {
+              compact: true,
+              maxTokens: DIMENSION_SCORING_COMPACT_MAX_TOKENS,
+            },
+          ] as const;
+
+          const runChartProjection = async (): Promise<ChartData | null> => {
+            logInfo("matchProfile", "chart projection starting", { navLocale });
+            for (const [attemptIndex, attempt] of chartAttempts.entries()) {
+              try {
+                const { object: rawChart } = await generateObject({
+                  model: openai(CHAT_MODEL),
+                  schema: chartDataSchema,
+                  maxTokens: attempt.maxTokens,
+                  system: buildChartProjectionSystemPrompt(attempt.compact),
+                  prompt: chartProjectionPrompt,
+                });
+                const { chart: chartForValidation, adjustments } =
+                  normalizeChartEvidenceScorePairings(rawChart);
+                if (adjustments.length > 0) {
+                  logWarn(
+                    "matchProfile",
+                    "chart evidence-score pairings normalized",
+                    {
+                      navLocale,
+                      attempt: attemptIndex + 1,
+                      adjustments: adjustments.join(", "),
+                    }
+                  );
+                }
+                const validationOutcome = validateChartData(
+                  chartForValidation,
+                  evaluationMarkdown,
+                  navLocale
+                );
+                if (validationOutcome.ok) {
+                  logInfo(
+                    "matchProfile",
+                    "chart validated; will emit markers",
+                    {
+                      navLocale,
+                      attempt: attemptIndex + 1,
+                      dimensionCount:
+                        validationOutcome.chart.capabilityDimensions.length,
+                      technicalFit:
+                        validationOutcome.chart.assessmentSummary.technicalFit,
+                      evidenceConfidence:
+                        validationOutcome.chart.assessmentSummary
+                          .evidenceConfidence,
+                      recommendation:
+                        validationOutcome.chart.assessmentSummary
+                          .recommendation,
+                    }
+                  );
+                  return validationOutcome.chart;
+                }
+                logWarn("matchProfile", "chart validation failed", {
+                  navLocale,
+                  attempt: attemptIndex + 1,
+                  reason: validationOutcome.reason,
+                  detail: validationOutcome.detail,
+                  rawTechnicalFit:
+                    typeof rawChart === "object" &&
+                    rawChart !== null &&
+                    "assessmentSummary" in rawChart &&
+                    typeof (rawChart as { assessmentSummary?: unknown })
+                      .assessmentSummary === "object" &&
+                    (
+                      rawChart as {
+                        assessmentSummary: { technicalFit?: unknown };
+                      }
+                    ).assessmentSummary?.technicalFit,
+                });
+              } catch (err) {
+                const finishReason =
+                  typeof err === "object" &&
+                  err !== null &&
+                  "finishReason" in err &&
+                  typeof (err as { finishReason?: unknown }).finishReason ===
+                    "string"
+                    ? (err as { finishReason: string }).finishReason
+                    : "";
+                const isTruncated = finishReason === "length";
+                logError("matchProfile", "chart generateObject failed", err, {
+                  navLocale,
+                  attempt: attemptIndex + 1,
+                  finishReason: finishReason || undefined,
+                });
+                if (!isTruncated || attemptIndex === chartAttempts.length - 1) {
+                  return null;
+                }
+                logWarn("matchProfile", "chart projection retrying compact", {
+                  navLocale,
+                });
+              }
+            }
+            return null;
+          };
+
+          const prepStatusResult = streamText({
+            model: openai(CHAT_MODEL),
+            system: buildBriefingPrepStatusSystemPrompt(navLocale),
+            prompt: buildBriefingPrepStatusUserPrompt(
+              evaluationMarkdown,
+              evidenceAnalystText
+            ),
+            maxTokens: BRIEFING_PREP_STATUS_MAX_TOKENS,
+            experimental_transform: recruiterStreamTextSmoothTransform,
+          });
+          prepStatusResult.mergeIntoDataStream(dataStream, {
+            experimental_sendFinish: false,
+          });
+
+          const [, chartFromProjection] = await Promise.all([
+            prepStatusResult.text,
+            runChartProjection(),
+          ]);
+          validatedChartData = chartFromProjection;
+
+          dataStream.write(
+            formatDataStreamPart("text", BRIEFING_PREP_CLOSE_MARKER)
+          );
+        }
+
+        if (validatedChartData) {
+          const chartJson = JSON.stringify(validatedChartData);
+          logInfo("matchProfile", "emitting chart marker block", {
+            navLocale,
+            jsonChars: chartJson.length,
+          });
+          dataStream.write(
+            formatDataStreamPart(
+              "text",
+              `${CHART_DATA_OPEN_MARKER}${chartJson}${CHART_DATA_CLOSE_MARKER}\n\n`
+            )
+          );
+        } else if (!isOffTopicEvaluation) {
+          logInfo("matchProfile", "no chart markers emitted", { navLocale });
+        }
 
         const pitchResult = streamText({
           model: openai(CHAT_MODEL),
