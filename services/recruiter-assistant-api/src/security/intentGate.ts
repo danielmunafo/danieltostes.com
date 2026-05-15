@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { CHAT_MODEL, INTENT_GATE_MAX_TOKENS } from "../constants.js";
+import { logError, logInfo } from "../logging/logger.js";
 
 type OpenAiClient = ReturnType<typeof createOpenAI>;
 
@@ -66,16 +67,26 @@ export async function runIntentGate(
   userText: string
 ): Promise<IntentGateResult> {
   if (matchesObviousOffTopicHeuristic(userText)) {
+    logInfo("intentGate", "off_topic heuristic", {
+      userTextChars: userText.length,
+    });
     return { ok: false, reason: "off_topic" };
   }
 
   try {
     const label = await classifyWithStructuredModel(openai, userText);
     if (label === "OFF_TOPIC") {
+      logInfo("intentGate", "off_topic classifier", {
+        userTextChars: userText.length,
+      });
       return { ok: false, reason: "off_topic" };
     }
     return { ok: true };
-  } catch {
+  } catch (err) {
+    logError("intentGate", "classifier failed", err, {
+      model: CHAT_MODEL,
+      userTextChars: userText.length,
+    });
     return { ok: false, reason: "intent_unclear" };
   }
 }

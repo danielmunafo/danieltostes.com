@@ -32,9 +32,11 @@ import {
 import { recruiterChatBodySchema } from "./http/chatBodySchema.js";
 import { corsHeadersFor, isOriginAllowed } from "./http/cors.js";
 import {
+  clientErrorResponse,
   internalErrorResponse,
   logInternalServerError,
-} from "./http/internalError.js";
+  logStreamError,
+} from "./http/errors.js";
 import {
   decodeLambdaHttpBody,
   getClientIp,
@@ -65,6 +67,7 @@ import {
 import { getOpenAiApiKey } from "./secrets/openaiKey.js";
 import { runIntentGate } from "./security/intentGate.js";
 import { runInputGuard } from "./security/inputGuard.js";
+import { logInfo } from "./logging/logger.js";
 import { checkRateLimit } from "./security/rateLimit.js";
 
 /**
@@ -81,65 +84,53 @@ export async function handleChatRequest(
   }
 
   if (method !== "POST") {
-    return new Response(JSON.stringify({ error: "method_not_allowed" }), {
-      status: 405,
-      headers: {
-        "content-type": "application/json",
-        ...corsHeadersFor(origin),
-      },
+    return clientErrorResponse(405, "method_not_allowed", origin, {
+      scope: "handleChatRequest",
+      fields: { method },
     });
   }
 
   if (!isOriginAllowed(origin)) {
-    return new Response(JSON.stringify({ error: "forbidden_origin" }), {
-      status: 403,
-      headers: { "content-type": "application/json" },
+    return clientErrorResponse(403, "forbidden_origin", origin, {
+      scope: "handleChatRequest",
+      fields: { origin: origin ?? "(missing)" },
     });
   }
 
   const clientIp = getClientIp(event);
   const nowMs = Date.now();
   if (!checkRateLimit(clientIp, nowMs)) {
-    return new Response(JSON.stringify({ error: "rate_limited" }), {
-      status: 429,
-      headers: {
-        "content-type": "application/json",
-        ...corsHeadersFor(origin),
-      },
+    return clientErrorResponse(429, "rate_limited", origin, {
+      scope: "handleChatRequest",
+      fields: { clientIp },
     });
   }
 
   let parsedBody: unknown;
   try {
     parsedBody = JSON.parse(decodeLambdaHttpBody(event));
-  } catch {
-    return new Response(JSON.stringify({ error: "invalid_json" }), {
-      status: 400,
-      headers: {
-        "content-type": "application/json",
-        ...corsHeadersFor(origin),
-      },
+  } catch (err) {
+    return clientErrorResponse(400, "invalid_json", origin, {
+      scope: "handleChatRequest",
+      err,
     });
   }
 
   const parsed = recruiterChatBodySchema.safeParse(parsedBody);
   if (!parsed.success) {
-    return new Response(JSON.stringify({ error: "invalid_body" }), {
-      status: 400,
-      headers: {
-        "content-type": "application/json",
-        ...corsHeadersFor(origin),
-      },
+    return clientErrorResponse(400, "invalid_body", origin, {
+      scope: "handleChatRequest",
+      fields: { issues: parsed.error.flatten() },
     });
   }
 
   const messagesJsonLength = JSON.stringify(parsed.data.messages).length;
   if (messagesJsonLength > MAX_CHAT_HISTORY_JSON_CHARS) {
-    return new Response(JSON.stringify({ error: "payload_too_large" }), {
-      status: 413,
-      headers: {
-        "content-type": "application/json",
-        ...corsHeadersFor(origin),
+    return clientErrorResponse(413, "payload_too_large", origin, {
+      scope: "handleChatRequest",
+      fields: {
+        messagesJsonLength,
+        maxChars: MAX_CHAT_HISTORY_JSON_CHARS,
       },
     });
   }
@@ -152,38 +143,29 @@ export async function handleChatRequest(
   let uiMessages: Message[];
   try {
     uiMessages = parsed.data.messages as unknown as Message[];
-  } catch {
-    return new Response(JSON.stringify({ error: "invalid_messages" }), {
-      status: 400,
-      headers: {
-        "content-type": "application/json",
-        ...corsHeadersFor(origin),
-      },
+  } catch (err) {
+    return clientErrorResponse(400, "invalid_messages", origin, {
+      scope: "handleChatRequest",
+      err,
     });
   }
 
   const lastUser = getLastUserText(uiMessages);
   const guarded = runInputGuard(lastUser);
   if (!guarded.ok) {
-    return new Response(JSON.stringify({ error: guarded.reason }), {
-      status: 400,
-      headers: {
-        "content-type": "application/json",
-        ...corsHeadersFor(origin),
-      },
+    return clientErrorResponse(400, guarded.reason, origin, {
+      scope: "handleChatRequest",
+      fields: { userTextChars: lastUser.length },
     });
   }
 
   let coreMessages;
   try {
     coreMessages = convertToCoreMessages(uiMessages);
-  } catch {
-    return new Response(JSON.stringify({ error: "invalid_message_shape" }), {
-      status: 400,
-      headers: {
-        "content-type": "application/json",
-        ...corsHeadersFor(origin),
-      },
+  } catch (err) {
+    return clientErrorResponse(400, "invalid_message_shape", origin, {
+      scope: "handleChatRequest",
+      err,
     });
   }
 
@@ -193,18 +175,15 @@ export async function handleChatRequest(
 
     const intent = await runIntentGate(openai, guarded.text);
     if (!intent.ok) {
-      return new Response(JSON.stringify({ error: intent.reason }), {
-        status: 400,
-        headers: {
-          "content-type": "application/json",
-          ...corsHeadersFor(origin),
-        },
-      });
+      return clientErrorResponse(400, intent.reason, origin);
     }
 
     return createDataStreamResponse({
       headers: corsHeadersFor(origin),
-      onError: () => "stream_error",
+      onError: (err) => {
+        logStreamError("handleChatRequest.stream", err);
+        return "stream_error";
+      },
       execute: async (dataStream) => {
         dataStream.write(
           formatDataStreamPart("text", `${THINKING_OPEN_MARKER}\n`)
@@ -264,11 +243,13 @@ export async function handleChatRequest(
           });
           const trimmedInterests = rawInterests.trim();
           if (!shouldOmitInterestsOutputMarkdown(trimmedInterests)) {
-            console.log(
-              "[recruiter-interests-not-in-response] navLocale=%s chars=%s\n%s",
-              navLocale,
-              String(trimmedInterests.length),
-              trimmedInterests
+            logInfo(
+              "interestsEvaluator",
+              "interests output omitted from client response",
+              {
+                navLocale,
+                chars: trimmedInterests.length,
+              }
             );
           }
         }

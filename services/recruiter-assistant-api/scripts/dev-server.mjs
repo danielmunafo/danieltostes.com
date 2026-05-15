@@ -51,7 +51,17 @@ createServer(async (req, res) => {
     }
     res.end();
   } catch (err) {
-    console.error("[recruiter-api] dev-server", err);
+    console.error(
+      JSON.stringify({
+        level: "error",
+        scope: "dev-server",
+        msg: "request failed",
+        err:
+          err instanceof Error
+            ? { message: err.message, stack: err.stack }
+            : err,
+      })
+    );
     if (!res.headersSent) {
       res.writeHead(500, { "content-type": "application/json" });
     }

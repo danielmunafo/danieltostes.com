@@ -13,6 +13,7 @@ import {
   REFERENCE_MATCH_THRESHOLD,
   REFERENCE_MAX_CLAIMS,
 } from "../constants.js";
+import { logWarn } from "../logging/logger.js";
 import { cosineSimilarity, type EmbeddingChunk } from "./retrieve.js";
 
 type OpenAiClient = ReturnType<typeof createOpenAI>;
@@ -130,7 +131,8 @@ export async function buildReferencesMarkdown(
       .map((g) => g.trim())
       .filter((g) => g.length > 0)
       .slice(0, REFERENCE_MAX_CLAIMS);
-  } catch {
+  } catch (err) {
+    logWarn("references", "claim extraction failed", { err });
     return "";
   }
   if (claims.length === 0 && gaps.length === 0) return "";
@@ -142,7 +144,8 @@ export async function buildReferencesMarkdown(
       values: [...claims],
     });
     embeddings = res.embeddings;
-  } catch {
+  } catch (err) {
+    logWarn("references", "claim embedding failed", { err });
     return "";
   }
 

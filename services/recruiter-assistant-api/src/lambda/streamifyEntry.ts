@@ -4,7 +4,8 @@ import { handleChatRequest } from "../handleChatRequest.js";
 import {
   internalErrorJsonBody,
   logInternalServerError,
-} from "../http/internalError.js";
+} from "../http/errors.js";
+import { logWarn } from "../logging/logger.js";
 import type { LambdaHttpEvent } from "../http/lambdaHttpEvent.js";
 
 type AwslambdaGlobal = {
@@ -99,8 +100,9 @@ async function streamifyHandler(
 
 const awslambdaRuntime = getAwslambda();
 if (!awslambdaRuntime) {
-  console.warn(
-    "[recruiter-api] awslambda global missing; exporting raw streamify handler (local dev only)"
+  logWarn(
+    "streamifyEntry",
+    "awslambda global missing; exporting raw streamify handler (local dev only)"
   );
 }
 export const handler = awslambdaRuntime

@@ -1,3 +1,5 @@
+import { logWarn } from "../logging/logger.js";
+
 let hasLoggedMissingAllowedOrigin = false;
 
 function isProductionLambda(): boolean {
@@ -18,8 +20,9 @@ export function isOriginAllowed(origin: string | undefined): boolean {
     if (isProductionLambda()) {
       if (!hasLoggedMissingAllowedOrigin) {
         hasLoggedMissingAllowedOrigin = true;
-        console.warn(
-          "[recruiter-api] ALLOWED_ORIGIN is unset in Lambda; denying cross-origin requests"
+        logWarn(
+          "cors",
+          "ALLOWED_ORIGIN is unset in Lambda; denying cross-origin requests"
         );
       }
       return false;

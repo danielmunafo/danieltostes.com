@@ -6,6 +6,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { z } from "zod";
 import { INTERESTS_OUTPUT_SKIP_SENTINEL } from "../constants.js";
+import { logError } from "../logging/logger.js";
 
 const s3 = new S3Client({});
 
@@ -27,8 +28,8 @@ function parseS3Uri(uri: string): { bucket: string; key: string } | null {
   return { bucket: match[1], key: match[2] };
 }
 
-function logInterestsLoadError(message: string): void {
-  console.error(`[interests-pack] ${message}`);
+function logInterestsLoadError(message: string, err?: unknown): void {
+  logError("interestsPack", message, err);
 }
 
 /**
@@ -70,8 +71,7 @@ export async function loadInterestsPack(): Promise<InterestsPack | null> {
     }
     return null;
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "unknown_error";
-    logInterestsLoadError(`load failed: ${msg}`);
+    logInterestsLoadError("load failed", err);
     return null;
   }
 }
@@ -105,8 +105,7 @@ async function loadInterestsPackFromS3(
     const raw = await body.transformToString();
     return parseValidateAndCache(raw, cacheKey);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "unknown_error";
-    logInterestsLoadError(`load failed: ${msg}`);
+    logInterestsLoadError("S3 load failed", err);
     return null;
   }
 }
