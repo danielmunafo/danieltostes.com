@@ -1,17 +1,15 @@
 name: Recruiter API
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "services/recruiter-assistant-api/**"
   pull_request:
+    types: [opened, synchronize, reopened]
     paths:
       - "services/recruiter-assistant-api/**"
-  workflow_dispatch:
-
-env:
-  LAMBDA_FUNCTION_NAME: recruiter-assistant-api
+  push:
+    branches:
+      - main
+    paths:
+      - "services/recruiter-assistant-api/**"
 
 jobs:
   test-and-build:
@@ -49,14 +47,15 @@ jobs:
 
   deploy:
     needs: test-and-build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    environment: production
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    environment: ${{ github.event_name == 'pull_request' && 'dev' || 'production' }}
     permissions:
       id-token: write
       contents: read
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download Lambda zip
+        uses: actions/download-artifact@v4
         with:
           name: recruiter-lambda-zip
 
@@ -69,13 +68,15 @@ jobs:
       - name: Update Lambda code
         run: |
           aws lambda update-function-code \
-            --function-name "${LAMBDA_FUNCTION_NAME}" \
+            --function-name "${{ secrets.LAMBDA_FUNCTION_NAME }}" \
             --zip-file fileb://function.zip \
             --publish
 
   embeddings:
-    if: github.event_name == 'workflow_dispatch'
+    needs: test-and-build
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    environment: ${{ github.event_name == 'pull_request' && 'dev' || 'production' }}
     permissions:
       id-token: write
       contents: read
@@ -107,13 +108,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Upload embeddings to S3
-        env:
-          EMBEDDINGS_BUCKET: ${{ secrets.RECRUITER_EMBEDDINGS_BUCKET }}
         run: |
-          if [ -z "$EMBEDDINGS_BUCKET" ]; then
-            echo "Set RECRUITER_EMBEDDINGS_BUCKET secret to the embeddings bucket name"
-            exit 1
-          fi
           for f in embeddings/embeddings.v*.json; do
-            aws s3 cp "$f" "s3://${EMBEDDINGS_BUCKET}/$(basename "$f")"
+            aws s3 cp "$f" "s3://${{ secrets.RECRUITER_EMBEDDINGS_BUCKET }}/$(basename "$f")"
           done
