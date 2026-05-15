@@ -21,7 +21,7 @@ Private JD-vs-preferences rubric for the optional interests evaluator (not in gi
 
 1. Copy `private.example/interests.source.example.md` to `private/interests.source.md` (gitignored) and edit.
 2. From `services/recruiter-assistant-api`: `npm run build:interests-pack` — writes `private/interests-pack.<hash>.json`.
-3. Upload the JSON to S3 if running in Lambda; set `INTERESTS_PACK_S3_URI` or `INTERESTS_PACK_S3_BUCKET` + `INTERESTS_PACK_S3_KEY`. Locally, set `INTERESTS_PACK_JSON_PATH` to the file path.
+3. Upload to S3 if running in Lambda: publish to **`interests-pack.json`** (stable key; CI overwrites when `private/interests.source.md` is present). Set `INTERESTS_PACK_S3_URI` to `s3://YOUR_EMBEDDINGS_BUCKET/interests-pack.json` once. Locally, set `INTERESTS_PACK_JSON_PATH` to the versioned file under `private/`.
 
 For the **JSON shape only** (placeholder criteria, safe to commit), see `private.example/interests-pack.example.json` — you can point `INTERESTS_PACK_JSON_PATH` at it for a smoke test, then switch to your own built pack under `private/`.
 
@@ -84,8 +84,8 @@ Add **inline policy** (tighten ARNs to your account):
 | Name                    | Example                                                                                                                                                                           |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OPENAI_SECRET_ARN`     | Secret ARN from step 3                                                                                                                                                            |
-| `EMBEDDINGS_S3_URI`     | `s3://YOUR_EMBEDDINGS_BUCKET/embeddings.vYOURVERSION.json`                                                                                                                        |
-| `INTERESTS_PACK_S3_URI` | Optional: `s3://YOUR_EMBEDDINGS_BUCKET/interests-pack.HASH.json` (see §1b)                                                                                                        |
+| `EMBEDDINGS_S3_URI`     | `s3://YOUR_EMBEDDINGS_BUCKET/embeddings.json` (stable key; CI overwrites this object — see §9)                                                                                    |
+| `INTERESTS_PACK_S3_URI` | Optional: `s3://YOUR_EMBEDDINGS_BUCKET/interests-pack.json` (see §1b)                                                                                                             |
 | `ALLOWED_ORIGIN`        | Comma-separated, **exact** `Origin` match: prod `https://…` hosts plus local dev `http://localhost:3000` **and** `http://127.0.0.1:3000` if you ever open Next on the loopback IP |
 
 Do **not** set `OPENAI_API_KEY` in Lambda env (use the secret only).
@@ -178,19 +178,19 @@ export OPENAI_API_KEY=sk-...
 node scripts/build-embeddings.mjs
 ```
 
-This writes `services/recruiter-assistant-api/embeddings/embeddings.v<sha>.json`.
+This writes `services/recruiter-assistant-api/embeddings/embeddings.v<sha>.json` (the `<sha>` changes when corpus text changes).
 
-Upload to S3:
+**Lambda / CI:** set `EMBEDDINGS_S3_URI` once to `s3://YOUR_EMBEDDINGS_BUCKET/embeddings.json`. CI uploads the built file to that **stable** key (and also keeps a versioned copy `embeddings.v<sha>.json` in the bucket for history). You do **not** need to change Lambda env when the corpus changes.
+
+Manual upload (same stable key):
 
 ```bash
-aws s3 cp embeddings/embeddings.v<sha>.json s3://YOUR_EMBEDDINGS_BUCKET/
+aws s3 cp embeddings/embeddings.v<sha>.json s3://YOUR_EMBEDDINGS_BUCKET/embeddings.json
 ```
 
-Update the Lambda env var `EMBEDDINGS_S3_URI` to `s3://YOUR_EMBEDDINGS_BUCKET/embeddings.v<sha>.json` (or use `EMBEDDINGS_S3_BUCKET` + `EMBEDDINGS_S3_KEY` instead; the handler supports both styles).
+Re-run whenever portfolio content under `src/messages/**` or `public/content/**` changes.
 
-Re-run this whenever portfolio content under `src/messages/**` or `public/content/**` changes.
-
-**Optional interests pack:** after editing `private/interests.source.md`, run `npm run build:interests-pack`, then `aws s3 cp private/interests-pack.<hash>.json s3://YOUR_EMBEDDINGS_BUCKET/` and set `INTERESTS_PACK_S3_URI` on the Lambda. Never commit real rubric text.
+**Optional interests pack:** after editing `private/interests.source.md`, run `npm run build:interests-pack`, then `aws s3 cp private/interests-pack.<hash>.json s3://YOUR_EMBEDDINGS_BUCKET/interests-pack.json` (Lambda `INTERESTS_PACK_S3_URI` stays fixed). Never commit real rubric text.
 
 ---
 
@@ -219,8 +219,9 @@ npm run dev
 
 ## CI
 
-- **`.github/workflows/recruiter-api.yml`** — on changes under `services/recruiter-assistant-api/**`: test, bundle, and on `main` push update Lambda code via `aws lambda update-function-code`.
-- **`OPENAI_API_KEY`** for the embeddings job should be stored as a GitHub **Actions secret** if you automate `build-embeddings` in CI (optional `workflow_dispatch` job).
+- **`.github/workflows/recruiter-api.yml`** — on changes under `services/recruiter-assistant-api/**`: test, bundle; **deploy** and **embeddings** on same-repo PRs (`dev` environment) and `main` (`production`), matching `.github/workflows/ci.yml`.
+- Embeddings CI publishes to **`embeddings.json`** (stable) plus a versioned `embeddings.v<sha>.json` in `RECRUITER_EMBEDDINGS_BUCKET` per environment. Interests pack uses **`interests-pack.json`** when `private/interests.source.md` exists in the runner (typically manual upload only; source is gitignored).
+- Repository secret **`OPENAI_API_KEY`**; per-environment secrets **`LAMBDA_FUNCTION_NAME`**, **`RECRUITER_EMBEDDINGS_BUCKET`**; repository secret **`AWS_RECRUITER_API_ROLE_ARN`**.
 
 ---
 

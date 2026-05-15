@@ -158,3 +158,9 @@ export const RATE_LIMIT_MAX_ENTRIES = 500;
  */
 export const THINKING_OPEN_MARKER = "[[THINKING_START]]";
 export const THINKING_CLOSE_MARKER = "[[THINKING_END]]";
+
+/** Stable S3 object key CI overwrites; Lambda `EMBEDDINGS_S3_URI` should point here. */
+export const EMBEDDINGS_S3_PUBLISH_KEY = "embeddings.json";
+
+/** Stable S3 object key for optional interests pack; Lambda `INTERESTS_PACK_S3_URI` should point here. */
+export const INTERESTS_PACK_S3_PUBLISH_KEY = "interests-pack.json";

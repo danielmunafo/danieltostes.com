@@ -109,6 +109,27 @@ jobs:
 
       - name: Upload embeddings to S3
         run: |
-          for f in embeddings/embeddings.v*.json; do
-            aws s3 cp "$f" "s3://${{ secrets.RECRUITER_EMBEDDINGS_BUCKET }}/$(basename "$f")"
-          done
+          EMB_FILE=$(ls embeddings/embeddings.v*.json | head -1)
+          if [ -z "$EMB_FILE" ]; then
+            echo "No embeddings/embeddings.v*.json produced by build"
+            exit 1
+          fi
+          BUCKET="${{ secrets.RECRUITER_EMBEDDINGS_BUCKET }}"
+          aws s3 cp "$EMB_FILE" "s3://${BUCKET}/embeddings.json"
+          aws s3 cp "$EMB_FILE" "s3://${BUCKET}/$(basename "$EMB_FILE")"
+
+      - name: Build and upload interests pack
+        run: |
+          if [ ! -f private/interests.source.md ]; then
+            echo "Skipping interests pack (no private/interests.source.md in CI)"
+            exit 0
+          fi
+          node scripts/build-interests-pack.mjs
+          PACK_FILE=$(ls private/interests-pack.*.json | head -1)
+          if [ -z "$PACK_FILE" ]; then
+            echo "interests-pack build produced no JSON"
+            exit 1
+          fi
+          BUCKET="${{ secrets.RECRUITER_EMBEDDINGS_BUCKET }}"
+          aws s3 cp "$PACK_FILE" "s3://${BUCKET}/interests-pack.json"
+          aws s3 cp "$PACK_FILE" "s3://${BUCKET}/$(basename "$PACK_FILE")"
