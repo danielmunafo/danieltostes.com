@@ -46,7 +46,8 @@ export function buildEvidenceAnalystUserPrompt(
   navLocale: RecruiterNavLocale,
   jobDescriptionText: string,
   sourceExcerpts: string,
-  evaluationMarkdown: string
+  evaluationMarkdown: string,
+  hardGateBlock: string = ""
 ): string {
   const L = RECRUITER_EVIDENCE_BRIEF_LABELS[navLocale];
   const Ev = RECRUITER_EVIDENCE_EVALUATOR_LABELS[navLocale];
@@ -65,7 +66,7 @@ Authoritative requirement evaluation (do **not** contradict, upgrade evidence le
 ---
 ${evaluationMarkdown.trim() || "(Evaluator produced no text.)"}
 ---
-
+${hardGateBlock.trim() ? `\nBackend-enforced hard gate assessment (do **not** contradict; treat missing gates as headline concerns):\n---\n${hardGateBlock.trim()}\n---\n` : ""}
 Job description / recruiter message:
 ${jobDescriptionText}
 
@@ -96,6 +97,7 @@ You receive:
 2) The same job description or recruiter message
 3) Portfolio excerpts retrieved from Daniel's portfolio knowledge base
 The excerpts are authoritative. The evaluator is authoritative for **which requirements are must-have vs nice-to-have**, **evidence level per requirement**, and **recommended match strength / caps**.
+When a **backend-enforced hard gate assessment** block is present in the user turn, it overrides numeric ceilings and recommendation labels — do not contradict it.
 
 Your job is to extract the strongest evidence-backed themes, map them to hiring risk and scope, and surface interview validation angles — **without** re-stating the requirement coverage table (that table already exists in the evaluator block the user sees).
 
@@ -198,7 +200,9 @@ export function buildRecruiterPitchSystemPrompt(
   evidenceBrief: string,
   sourceExcerpts: string,
   portfolioWritingLanguage: string = "English",
-  navLocale: RecruiterNavLocale = "en"
+  navLocale: RecruiterNavLocale = "en",
+  hardGateBlock: string = "",
+  effectiveMaxTechnicalFit: number = 10
 ): string {
   const bl = RECRUITER_EVIDENCE_BRIEF_LABELS[navLocale];
   const Ev = RECRUITER_EVIDENCE_EVALUATOR_LABELS[navLocale];
@@ -247,7 +251,9 @@ OFF-TOPIC:
 - If the brief begins with \`# ${bl.headingOffTopicInput}\` as its first heading, still emit the heading structure below in order; use brief placeholder bodies (e.g. scores unsupported) — do not invent role fit from excerpts alone.
 
 SCORES AND CAPS (critical):
-- The evaluator \`# ${Ev.headingMatchScoreGuidance}\` includes **${Ev.recommendedMatchStrengthLabel}:** X/10 — treat X as a **hard ceiling** for **Technical fit** in \`# ${H.scores}\`. You may score lower; never higher.
+- **Effective max technical fit (backend-enforced): ${effectiveMaxTechnicalFit}/10** — **Technical fit** Y in \`# ${H.scores}\` must be an integer with **Y ≤ ${effectiveMaxTechnicalFit}**. You may score lower; never higher. If you believe fit is stronger, explain in **Reason** that the score is capped by hard gates — do not increase Y.
+${hardGateBlock.trim() ? `- The deterministic hard gate block below is **binding** for Recommendation allowed/blocked lists and the technical fit ceiling.\n\n${hardGateBlock.trim()}\n` : ""}- The evaluator \`# ${Ev.headingMatchScoreGuidance}\` **${Ev.recommendedMatchStrengthLabel}:** is advisory when a hard gate block is present; never exceed **${effectiveMaxTechnicalFit}/10**.
+- **Recommendation:** you **MUST** choose exactly one label from the **Allowed recommendations** list in the hard gate block when present; **NEVER** use a **Blocked** label.
 - Copy **verbatim** into \`# ${H.scores}\` the evaluator lines for **${Ev.evidenceConfidenceLabel}** and **${Ev.evidenceConfidenceReasonLabel}** (same tokens: **${conf.high}**, **${conf.medium}**, **${conf.low}**). If those lines are missing, infer confidence from the requirement table; never contradict the table.
 - In \`# ${H.scores}\`, include **Technical fit:** Y/10 (Y must respect the ceiling) and **Evidence confidence:** (same token as evaluator: **${conf.high}** when most major claims are directly supported; **${conf.medium}** when several areas are strong but important gaps remain; **${conf.low}** only when most core must-haves are adjacent, inferred, or missing — mirror the evaluator rubric, never contradict it).
 - **Recommendation:** choose exactly one label (exact wording):\n${recommendationList}
@@ -288,6 +294,7 @@ TONE BY FIT (critical):
 - When **Technical fit** is **6 or 7** and the brief flags **${Sev.major}:** on a **role-defining expert stack band** while broad platform ownership is still strongly **${Ev.termDirectTable}**: **${H.verdict}** must **split lenses** in one or two sentences — strong match for the role's **general** senior full-stack/platform ownership shape (name the evidenced themes), **then** partial / incomplete match for the JD's **specific** legacy or specialist stack profile. Do **not** open with an unqualified "Daniel is a strong match" (that reads as full-stack + stack fit); do **not** imply the legacy band is covered when it is not.
 - When **Technical fit** is **4 or 5** because **two or more** hard gates are **${Ev.termNotEvidencedTable}** / **${Ev.termAdjacentTable}** (e.g. required German **and** production Golang): **${H.verdict}** must state this is **not** a strong match **as written** (see **HARD MUST-HAVE OVERRIDE**). Lead with transferable strengths **only** as context — the headline is **role viability**, not seniority alone.
 - When fit is weak (**${rec.maybeValidate}**, **${rec.weakFit}**, **${rec.skip}**): stay intellectually honest; do not inflate the recommendation; **${Sev.major}:** risks are appropriate when core must-haves or mandatory practical gates are missing.
+- When **effective max technical fit ≤ 5**: do **not** open **${H.verdict}** with an unqualified strong match; name missing hard gates plainly.
 
 EVIDENCE DISCIPLINE:
 - Follow evaluator classifications (${Ev.termDirectTable}, ${Ev.termAdjacentTable}, ${Ev.termNotEvidencedTable}, ${Ev.termContradictoryTable}). Never upgrade ${Ev.termAdjacentTable} to ${Ev.termDirectTable}.

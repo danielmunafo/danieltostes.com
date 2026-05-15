@@ -58,3 +58,39 @@ export function retrieveTopK(
   scored.sort((a, b) => b.score - a.score);
   return scored.slice(0, topK).map((s) => s.chunk);
 }
+
+/**
+ * Merges top-K results from multiple query embeddings, keeping the best score per chunk id.
+ */
+export function retrieveMergedTopK(
+  chunks: readonly EmbeddingChunk[],
+  queryEmbeddings: readonly number[][],
+  topK: number
+): EmbeddingChunk[] {
+  if (queryEmbeddings.length === 0) return [];
+  if (queryEmbeddings.length === 1) {
+    return retrieveTopK(chunks, queryEmbeddings[0], topK);
+  }
+
+  const perQueryK = Math.max(1, Math.ceil(topK / queryEmbeddings.length));
+  const byId = new Map<string, { chunk: EmbeddingChunk; score: number }>();
+
+  for (const queryEmbedding of queryEmbeddings) {
+    const scored = chunks.map((chunk) => ({
+      chunk,
+      score: cosineSimilarity(chunk.embedding, queryEmbedding),
+    }));
+    scored.sort((a, b) => b.score - a.score);
+    for (const { chunk, score } of scored.slice(0, perQueryK)) {
+      const existing = byId.get(chunk.id);
+      if (!existing || score > existing.score) {
+        byId.set(chunk.id, { chunk, score });
+      }
+    }
+  }
+
+  return [...byId.values()]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topK)
+    .map((entry) => entry.chunk);
+}

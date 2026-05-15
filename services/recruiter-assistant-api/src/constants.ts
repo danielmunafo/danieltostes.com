@@ -84,7 +84,10 @@ export const MAX_USER_MESSAGE_CHARS = 8192;
 /** Max chat turns accepted in one request (abuse guard). */
 export const MAX_CHAT_MESSAGES = 50;
 
-/** Max serialized size of the `messages` array in the request body (bytes). */
+/**
+ * Max serialized size of the `messages` array in the request body (chars).
+ * v1 sends a single user turn per request; cap is an abuse guard.
+ */
 export const MAX_CHAT_HISTORY_JSON_CHARS = 32_768;
 
 /** OpenAI chat model for recruiter matching (`RECRUITER_CHAT_MODEL` overrides). */
@@ -130,6 +133,9 @@ export const CLAIM_EXTRACTION_MAX_TOKENS = 512;
 /** Max tokens for pre-RAG intent check (single-line RECRUITER vs OFF_TOPIC). */
 /** Intent-gate token cap (`maxTokens` on `ai@^4.3`). */
 export const INTENT_GATE_MAX_TOKENS = 24;
+
+/** Max tokens for structured hard-gate row extraction (`generateObject`). */
+export const HARD_GATE_EXTRACTION_MAX_TOKENS = 768;
 
 /** Max tokens for the evidence evaluator (`streamText` before the analyst). */
 export const EVIDENCE_EVALUATOR_MAX_TOKENS = 1600;

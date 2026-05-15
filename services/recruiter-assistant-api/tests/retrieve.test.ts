@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   filterChunksByNavigationLocale,
+  retrieveMergedTopK,
   retrieveTopK,
   type EmbeddingChunk,
 } from "../src/rag/retrieve.js";
@@ -37,5 +38,24 @@ describe("retrieveTopK", () => {
     const q = [0.9, 0.1, 0];
     const top = retrieveTopK(chunks, q, 2);
     expect(top.map((c) => c.id)).toEqual(["a", "b"]);
+  });
+});
+
+describe("retrieveMergedTopK", () => {
+  const chunks: EmbeddingChunk[] = [
+    { id: "a", text: "TypeScript React", embedding: [1, 0, 0] },
+    { id: "b", text: "Ruby on Rails", embedding: [0, 1, 0] },
+    { id: "c", text: "Python ML", embedding: [0, 0, 1] },
+    { id: "d", text: "Languages German", embedding: [0.5, 0.5, 0] },
+  ];
+
+  it("merges per-query hits and dedupes by chunk id", () => {
+    const qTs = [1, 0, 0];
+    const qLang = [0.5, 0.5, 0];
+    const top = retrieveMergedTopK(chunks, [qTs, qLang], 3);
+    const ids = top.map((c) => c.id);
+    expect(ids).toContain("a");
+    expect(ids).toContain("d");
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });
