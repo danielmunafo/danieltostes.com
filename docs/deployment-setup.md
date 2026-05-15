@@ -49,9 +49,11 @@ Navigate to **Settings → Secrets and variables → Actions → Repository secr
 
 Add a **repository variable** (Settings → Secrets and variables → Actions → Variables):
 
-| Variable Name       | Description                                                                                         |
-| ------------------- | --------------------------------------------------------------------------------------------------- |
-| `RECRUITER_API_URL` | Lambda Function URL (no trailing slash). Passed to `next build` as `NEXT_PUBLIC_RECRUITER_API_URL`. |
+| Variable Name       | Description                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| `RECRUITER_API_URL` | Lambda Function URL (no trailing slash). Baked into static `out/` as `NEXT_PUBLIC_RECRUITER_API_URL`. |
+
+After adding or changing it, re-run the **CI** workflow (site build + deploy), not only Recruiter API.
 
 For the API deploy workflow and embeddings upload secrets, see [services/recruiter-assistant-api/SETUP.md](../services/recruiter-assistant-api/SETUP.md).
 

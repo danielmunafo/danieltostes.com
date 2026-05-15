@@ -31,11 +31,10 @@ jobs:
       - name: Unit tests
         run: npm run test
 
-      - name: Check recruiter API URL on main
-        if: github.ref == 'refs/heads/main'
+      - name: Check recruiter API URL
         run: |
           if [ -z "${{ vars.RECRUITER_API_URL }}" ]; then
-            echo "::warning::RECRUITER_API_URL is unset; production builds will ship without a recruiter API endpoint"
+            echo "::warning::RECRUITER_API_URL is unset; builds will ship without a recruiter API endpoint"
           fi
 
       - name: Build
