@@ -6,7 +6,6 @@ import { keyframes } from "@mui/material/styles";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { RECRUITER_EVIDENCE_REVIEW_STREAMING_MAX_HEIGHT_PX } from "../constants/recruiter-assistant";
 import { createPortfolioDeepLinkMarkdownComponents } from "../lib/createPortfolioDeepLinkMarkdownComponents";
 import { AssistantCollapsiblePanel } from "./AssistantCollapsiblePanel";
 
@@ -68,8 +67,8 @@ function AssistantEvidenceReviewInner({
   streamingLabel,
   locale: localeProp,
 }: AssistantEvidenceReviewProps) {
-  const [open, setOpen] = useState(isStreaming);
-  const wasStreamingRef = useRef(isStreaming);
+  /** Default open so mounted-after-stream still shows evidence; user may collapse. */
+  const [open, setOpen] = useState(true);
   const streamingBodyScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,10 +79,10 @@ function AssistantEvidenceReviewInner({
   }, [content, isStreaming]);
 
   useEffect(() => {
-    if (wasStreamingRef.current && !isStreaming) {
-      setOpen(false);
-    }
-    wasStreamingRef.current = isStreaming;
+    if (!isStreaming) return;
+    queueMicrotask(() => {
+      setOpen(true);
+    });
   }, [isStreaming]);
 
   const headerLabel = isStreaming ? streamingLabel : label;
@@ -118,8 +117,6 @@ function AssistantEvidenceReviewInner({
         ...(isStreaming
           ? [
               {
-                maxHeight: `min(40dvh, ${RECRUITER_EVIDENCE_REVIEW_STREAMING_MAX_HEIGHT_PX}px)`,
-                overflowY: "auto",
                 overscrollBehavior: "contain",
                 WebkitOverflowScrolling: "touch",
               },

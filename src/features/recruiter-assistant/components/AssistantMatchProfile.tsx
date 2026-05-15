@@ -25,6 +25,8 @@ const AssistantMatchProfileRadar = dynamic(
 
 type AssistantMatchProfileProps = {
   readonly chartData: ChartData;
+  /** Narrative from pitch `# Scores` when chart UI already shows numeric summary. */
+  readonly scoresReason?: string | null;
 };
 
 function localizedConfidence(
@@ -108,6 +110,7 @@ function SummaryCard({ label, value, scoreForColor }: SummaryCardProps) {
 
 export function AssistantMatchProfile({
   chartData,
+  scoresReason = null,
 }: AssistantMatchProfileProps) {
   const t = useTranslations("RecruiterAssistant");
   const theme = useTheme();
@@ -203,6 +206,31 @@ export function AssistantMatchProfile({
           </Paper>
         </Box>
       </Stack>
+      {scoresReason ? (
+        <Stack spacing={0.5} sx={{ pt: 0.25 }}>
+          <Typography
+            variant="caption"
+            component="p"
+            sx={{
+              m: 0,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "text.secondary",
+              fontSize: "0.65rem",
+            }}
+          >
+            {t("scoresRationaleLabel")}
+          </Typography>
+          <Typography
+            variant="body2"
+            component="p"
+            sx={{ m: 0, color: "text.secondary" }}
+          >
+            {scoresReason}
+          </Typography>
+        </Stack>
+      ) : null}
       <Typography
         variant="caption"
         component="p"
