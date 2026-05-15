@@ -108,7 +108,7 @@ flowchart LR
 
 ## AWS enablement (manual)
 
-See **[services/recruiter-assistant-api/SETUP.md](../../services/recruiter-assistant-api/SETUP.md)** for numbered steps: embeddings bucket, log group, execution role, secret, Lambda + Function URL, GitHub OIDC deploy role, `AWS_RECRUITER_API_ROLE_ARN` + `RECRUITER_API_URL` / `NEXT_PUBLIC_RECRUITER_API_URL`.
+See **[services/recruiter-assistant-api/SETUP.md](../../services/recruiter-assistant-api/SETUP.md)** for numbered steps: embeddings bucket, log group, execution role, secret, Lambda + Function URL, extend `AWS_ROLE_ARN` IAM policy for recruiter CI, `RECRUITER_API_URL` / `NEXT_PUBLIC_RECRUITER_API_URL`.
 
 ---
 

@@ -102,34 +102,11 @@ Copy the **Function URL** (e.g. `https://xxxx.lambda-url.us-east-1.on.aws/`).
 
 ---
 
-## 7. GitHub Actions deploy role (`RecruiterApiDeployRole`)
+## 7. GitHub Actions role (same as site deploy)
 
-Trust policy (replace `OWNER/REPO`):
+Recruiter CI uses the repository secret **`AWS_ROLE_ARN`** (same OIDC role as `.github/workflows/ci.yml`). If that role already exists for S3/CloudFront deploy, **add** the statements below to its inline policy — no second role or GitHub secret.
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Federated": "arn:aws:iam::ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
-      },
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {
-        "StringEquals": {
-          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
-        },
-        "StringLike": {
-          "token.actions.githubusercontent.com:sub": "repo:OWNER/REPO:*"
-        }
-      }
-    }
-  ]
-}
-```
-
-Inline policy (adjust ARNs):
+Adjust ARNs (both Lambda functions if you use dev + prod, both embeddings buckets):
 
 ```json
 {
@@ -142,21 +119,26 @@ Inline policy (adjust ARNs):
         "lambda:UpdateFunctionConfiguration",
         "lambda:GetFunction"
       ],
-      "Resource": "arn:aws:lambda:REGION:ACCOUNT:function:recruiter-assistant-api"
+      "Resource": [
+        "arn:aws:lambda:REGION:ACCOUNT:function:recruiter-assistant-api",
+        "arn:aws:lambda:REGION:ACCOUNT:function:recruiter-assistant-api-dev"
+      ]
     },
     {
       "Effect": "Allow",
       "Action": ["s3:PutObject", "s3:DeleteObject", "s3:ListBucket"],
       "Resource": [
-        "arn:aws:s3:::YOUR_EMBEDDINGS_BUCKET",
-        "arn:aws:s3:::YOUR_EMBEDDINGS_BUCKET/*"
+        "arn:aws:s3:::danieltostes-recruiter-embeddings",
+        "arn:aws:s3:::danieltostes-recruiter-embeddings/*",
+        "arn:aws:s3:::dev.danieltostes-recruiter-embeddings",
+        "arn:aws:s3:::dev.danieltostes-recruiter-embeddings/*"
       ]
     }
   ]
 }
 ```
 
-Add GitHub secret **`AWS_RECRUITER_API_ROLE_ARN`** with this role’s ARN.
+OIDC trust for the repo is unchanged; see [docs/deployment-setup.md](../../docs/deployment-setup.md).
 
 ---
 
@@ -221,7 +203,7 @@ npm run dev
 
 - **`.github/workflows/recruiter-api.yml`** — on changes under `services/recruiter-assistant-api/**`: test, bundle; **deploy** and **embeddings** on same-repo PRs (`dev` environment) and `main` (`production`), matching `.github/workflows/ci.yml`.
 - Embeddings CI publishes to **`embeddings.json`** (stable) plus a versioned `embeddings.v<sha>.json` in `RECRUITER_EMBEDDINGS_BUCKET` per environment. Interests pack uses **`interests-pack.json`** when `private/interests.source.md` exists in the runner (typically manual upload only; source is gitignored).
-- Repository secret **`OPENAI_API_KEY`**; per-environment secrets **`LAMBDA_FUNCTION_NAME`**, **`RECRUITER_EMBEDDINGS_BUCKET`**; repository secret **`AWS_RECRUITER_API_ROLE_ARN`**.
+- Repository secrets **`AWS_ROLE_ARN`** (shared with site CI), **`OPENAI_API_KEY`**; per-environment secrets **`LAMBDA_FUNCTION_NAME`**, **`RECRUITER_EMBEDDINGS_BUCKET`**.
 
 ---
 
