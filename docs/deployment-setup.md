@@ -45,6 +45,16 @@ Navigate to **Settings → Secrets and variables → Actions → Repository secr
 
 > **Note:** The `AWS_ROLE_ARN` is shared across both environments. If you need separate roles per environment, you can also configure this as an environment secret instead.
 
+### Recruiter assistant (optional)
+
+Add a **repository variable** (Settings → Secrets and variables → Actions → Variables):
+
+| Variable Name       | Description                                                                                         |
+| ------------------- | --------------------------------------------------------------------------------------------------- |
+| `RECRUITER_API_URL` | Lambda Function URL (no trailing slash). Passed to `next build` as `NEXT_PUBLIC_RECRUITER_API_URL`. |
+
+For the API deploy workflow and embeddings upload secrets, see [services/recruiter-assistant-api/SETUP.md](../services/recruiter-assistant-api/SETUP.md).
+
 ## AWS Infrastructure Requirements
 
 ### S3 Buckets
