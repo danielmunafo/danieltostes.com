@@ -52,6 +52,7 @@ jobs:
 
       - name: E2E tests
         run: npm run test:e2e:ci
+        # smoke project only; recruiter match e2e runs in recruiter-api.yml
 
       - name: Upload static output
         uses: actions/upload-artifact@v4

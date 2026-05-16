@@ -18,6 +18,14 @@ const { handleChatRequest } = require(join(__dirname, "../dist/index.cjs"));
 const port = Number(process.env.PORT ?? 3001);
 
 createServer(async (req, res) => {
+  const method = req.method ?? "GET";
+  const url = req.url ?? "/";
+  if (method === "GET" && (url === "/health" || url === "/health/")) {
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
   try {
     const chunks = [];
     for await (const c of req) chunks.push(c);
