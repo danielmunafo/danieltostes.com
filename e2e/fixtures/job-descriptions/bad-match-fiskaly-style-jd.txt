@@ -1,0 +1,22 @@
+Senior / Staff Backend Engineer (Go) — fiskaly-style sample JD
+
+Location: Vienna / hybrid. Language: German fluent required for stakeholder work.
+
+We build regulated fiscal compliance APIs at scale. You will own services in Go, harden distributed workflows, and improve latency and reliability under audit pressure.
+
+Must-have:
+- Strong production Golang (services, concurrency, performance tuning)
+- Deep experience with database locking, transaction isolation, and runtime tuning under load
+- Distributed systems design and operational excellence (SLOs, on-call, incident response)
+- Event-driven architecture (Kafka or equivalent) in production
+- German language: fluent spoken and written
+
+Nice-to-have:
+- Company-wide AI enablement and developer tooling strategy for 50+ engineers
+- Formal RFC design review and architecture governance ownership
+
+Employment:
+- Full-time employee only; we do not hire freelancers or contractors for this role.
+- Hybrid presence in Vienna several days per week; core hours CET.
+
+You will partner with product and compliance; security reviews are part of the job.

@@ -37,6 +37,7 @@ services/recruiter-assistant-api/embeddings/*.json
 # env files (opt-in to commit if needed)
 .env*
 !.env.example
+!.env.test.example
 !**/.env.example
 
 # debug
