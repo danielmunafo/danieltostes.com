@@ -55,6 +55,7 @@ export const RECRUITER_MATCH_EXPECTATIONS = {
     technicalFitMin: 2,
     technicalFitMax: 5,
     evidenceConfidences: [
+      RECRUITER_E2E_CONFIDENCE_LABELS.high,
       RECRUITER_E2E_CONFIDENCE_LABELS.medium,
       RECRUITER_E2E_CONFIDENCE_LABELS.low,
     ],
@@ -63,6 +64,7 @@ export const RECRUITER_MATCH_EXPECTATIONS = {
     recommendations: [
       RECRUITER_E2E_RECOMMENDATION_LABELS.skip,
       RECRUITER_E2E_RECOMMENDATION_LABELS.weakFit,
+      RECRUITER_E2E_RECOMMENDATION_LABELS.maybe,
     ],
     technicalFitMin: 0,
     technicalFitMax: 4,
