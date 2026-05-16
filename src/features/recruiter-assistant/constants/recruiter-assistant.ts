@@ -13,6 +13,10 @@ export const RECRUITER_CHAT_MAX_WIDTH_PX = 768;
 /** Height of the capability radar chart in the match profile (px). */
 export const RECRUITER_MATCH_PROFILE_CHART_HEIGHT_PX = 260;
 
+/** Radar radius scale; keep in sync with API `chartDataSchema` score bounds. */
+export const RECRUITER_MATCH_PROFILE_SCORE_MIN = 0;
+export const RECRUITER_MATCH_PROFILE_SCORE_MAX = 10;
+
 /** Keep in sync with API `chartDataSchema` capability dimension limits. */
 export const RECRUITER_CHART_DIMENSION_LABEL_MAX_LENGTH = 56;
 export const RECRUITER_CHART_DIMENSION_RATIONALE_MAX_LENGTH = 120;
@@ -106,6 +110,10 @@ export const RECRUITER_COMPOSER_EXIT_DURATION_MS = 100;
 
 /** Vertical offset for the composer exit motion (px). */
 export const RECRUITER_COMPOSER_EXIT_TRANSLATE_Y_PX = 16;
+
+/** Approximate reCAPTCHA v2 checkbox widget size (px) for loading placeholders. */
+export const RECRUITER_CHECKBOX_RECAPTCHA_WIDTH_PX = 304;
+export const RECRUITER_CHECKBOX_RECAPTCHA_HEIGHT_PX = 78;
 
 /** Pixels of window scroll over which the “scroll for more” cue fades out. */
 export const ASSISTANT_SCROLL_CUE_FADE_DISTANCE_PX = 160;
