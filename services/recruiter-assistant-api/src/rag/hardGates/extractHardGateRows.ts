@@ -27,7 +27,7 @@ Use English enum values only for category, evidenceLevel, requirementImportance.
 Map evidence from the evaluator table — do not invent direct evidence.
 Treat Adjacent like Not evidenced for hard gates.
 Set jdSuggestsFlexibility true only when the JD wording is clearly optional (preferred, ideally, plus, nice to have) for that specific requirement.
-Include sourceRequirementText when available from the JD.`;
+Always include sourceRequirementText for every row. Use the exact JD wording when available; otherwise use an empty string.`;
 
 function buildExtractionPrompt(
   jobDescriptionText: string,
@@ -70,7 +70,7 @@ export async function extractHardGateRows(
     const rows = object.rows
       .filter((row) => row.isHardGate)
       .map((row) => {
-        const trimmed = row.sourceRequirementText.trim();
+        const trimmed = (row.sourceRequirementText ?? "").trim();
         if (trimmed.length < 2) {
           const { sourceRequirementText: _unused, ...rest } = row;
           void _unused;

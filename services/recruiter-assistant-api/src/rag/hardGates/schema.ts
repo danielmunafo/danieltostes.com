@@ -75,11 +75,8 @@ export const hardGateRequirementRowSchema = z.object({
   severity: severitySchema,
   jdSuggestsFlexibility: z.boolean(),
   rationale: z.string().min(2),
-  /**
-   * OpenAI `strict` JSON schemas require every property in `required`; use empty
-   * string when the JD has no quotable span for this row.
-   */
-  sourceRequirementText: z.string().max(600).default(""),
+  /** JD wording for this row; use empty string when no quotable span exists. */
+  sourceRequirementText: z.string().max(600),
 });
 
 export const hardGateExtractionSchema = z.object({
