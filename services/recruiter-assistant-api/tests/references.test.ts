@@ -274,6 +274,14 @@ describe("buildClaimExtractionPromptForTest", () => {
     expect(prompt).toContain("German fluency");
     expect(prompt).toContain("Formal Staff-level RFC");
   });
+
+  it("requires both claims and gaps arrays in structured output", () => {
+    const prompt = buildClaimExtractionPromptForTest("some assessment text");
+    expect(prompt).toContain("Always return both top-level arrays");
+    expect(prompt).toContain(
+      "Use an empty array when there are no important gaps"
+    );
+  });
 });
 
 describe("renderReferencesMarkdown with gaps", () => {

@@ -34,7 +34,7 @@ const claimsSchema = z.object({
         .string()
         .min(4)
         .describe(
-          "A short, specific, evidence-style claim the assessment made about the candidate (e.g. 'production fintech engineering at Klarna', 'cross-functional collaboration with product and infrastructure teams'). Avoid generic praise or restated job description text."
+          "A short, specific, evidence-style claim the assessment made about the candidate. Avoid generic praise or restated job description text."
         )
     )
     .max(REFERENCE_MAX_CLAIMS),
@@ -44,11 +44,10 @@ const claimsSchema = z.object({
         .string()
         .min(4)
         .describe(
-          "A short label for an important skill, experience, or constraint the assessment identified as missing or not evidenced in the portfolio (e.g. 'Production Golang ownership', 'German fluency')."
+          "A short label for an important skill, experience, or constraint the assessment identified as missing or not evidenced in the portfolio."
         )
     )
-    .max(REFERENCE_MAX_CLAIMS)
-    .default([]),
+    .max(REFERENCE_MAX_CLAIMS),
 });
 
 /** Editorial / thematic chunks excluded from recruiter-facing reference links. */
@@ -127,7 +126,7 @@ export async function buildReferencesMarkdown(
       .map((c) => c.trim())
       .filter((c) => c.length > 0)
       .slice(0, REFERENCE_MAX_CLAIMS);
-    gaps = object.gaps
+    gaps = (object.gaps ?? [])
       .map((g) => g.trim())
       .filter((g) => g.length > 0)
       .slice(0, REFERENCE_MAX_CLAIMS);
@@ -205,6 +204,7 @@ Do NOT put in gaps:
 - Generic weaknesses not specific to this assessment.
 
 Constraints:
+- Always return both top-level arrays: \`claims\` and \`gaps\`. Use an empty array when there are no important gaps.
 - Return at most ${REFERENCE_MAX_CLAIMS} claims and at most ${REFERENCE_MAX_CLAIMS} gaps.
 - One factual unit per entry, short and self-contained.
 - Use the language of the assessment.
