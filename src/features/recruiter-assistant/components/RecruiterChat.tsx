@@ -33,6 +33,7 @@ import {
 import { isValidLocale, type Locale } from "@/i18n/request";
 import {
   RECRUITER_ASSISTANT_BOTTOM_DOCK_MIN_HEIGHT_PX,
+  RECRUITER_ASSISTANT_SECTION_BLOCK_GAP,
   RECRUITER_BAD_PROMPT_MAX_STRIKES,
   RECRUITER_CHAT_MAX_WIDTH_PX,
   RECRUITER_COMPOSER_BORDER_RADIUS_PX,
@@ -52,10 +53,18 @@ import { shouldRequestJobContextCollapse } from "../lib/should-request-job-conte
 import { getRecruiterAssistantMessagePlainText } from "../lib/getRecruiterAssistantMessagePlainText";
 import { stripMatchScoreGuidanceFromEvidenceReview } from "../lib/strip-match-score-guidance-from-evidence-review";
 import {
+  mergedThinkingMarkdownForEvidence,
+  shouldMountEvidenceReviewPanel,
+} from "../lib/sync-recruiter-assistant-thinking-cache";
+import {
   CHART_DATA_CLOSE_MARKER,
   CHART_DATA_OPEN_MARKER,
   splitThinkingFromBody,
 } from "../lib/split-thinking-from-body";
+import {
+  recruiterAssistantBriefingMarkdownH1Sx,
+  recruiterAssistantBriefingSectionHeadingSx,
+} from "../lib/recruiter-assistant-briefing-heading-sx";
 import { logMatchProfileClientDebug } from "../lib/match-profile-debug";
 import { AssistantBriefingBody } from "./AssistantBriefingBody";
 import { AssistantBriefingProgress } from "./AssistantBriefingProgress";
@@ -128,19 +137,7 @@ const markdownSx = {
   "& p": { mb: 1.5, "&:last-child": { mb: 0 } },
   "& ul, & ol": { pl: 2.5, my: 1 },
   "& li": { mb: 0.5 },
-  "& h1": {
-    mt: 2.75,
-    mb: 1.25,
-    pb: 0.75,
-    fontWeight: 700,
-    fontSize: "0.9375rem",
-    letterSpacing: "0.04em",
-    textTransform: "uppercase",
-    color: "text.secondary",
-    borderBottom: 1,
-    borderColor: "divider",
-    "&:first-of-type": { mt: 0 },
-  },
+  "& h1": recruiterAssistantBriefingMarkdownH1Sx,
   "& h2, & h3": { mt: 2, mb: 1, fontWeight: 600, fontSize: "1rem" },
   "& code": {
     fontFamily:
@@ -175,6 +172,11 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   const [termsFromStorage, setTermsFromStorage] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [latestEvidencePanelOpen, setLatestEvidencePanelOpen] = useState(true);
+  const [
+    thinkingEvidenceMarkdownByMessageId,
+    setThinkingEvidenceMarkdownByMessageId,
+  ] = useState(() => new Map<string, string>());
 
   const { messages, input, handleInputChange, handleSubmit, status } = useChat({
     api: apiBaseUrl,
@@ -185,6 +187,28 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   });
 
   const isBusy = status === "submitted" || status === "streaming";
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setThinkingEvidenceMarkdownByMessageId((prev) => {
+        const next = new Map(prev);
+        let changed = false;
+        for (const msg of messages) {
+          if (msg.role !== "assistant") continue;
+          const split = splitThinkingFromBody(
+            getRecruiterAssistantMessagePlainText(msg)
+          );
+          if (!split.thinking.trim()) continue;
+          const prior = next.get(msg.id);
+          if (prior !== split.thinking) {
+            next.set(msg.id, split.thinking);
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    });
+  }, [messages]);
 
   const isAssistantEvidenceStreaming = useMemo(() => {
     if (!isBusy) return false;
@@ -210,6 +234,9 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   useEffect(() => {
     queueMicrotask(() => {
       setIsLatestJobContextPanelOpen(true);
+      if (latestUserMessageId !== null) {
+        setLatestEvidencePanelOpen(true);
+      }
     });
   }, [latestUserMessageId]);
 
@@ -281,6 +308,8 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     (!isAssistantEvidenceStreaming &&
       isLatestJobContextPanelOpen &&
       !briefingComposerDismissed);
+
+  const showComposerJobDescriptionHeading = input.trim().length > 0;
 
   const reserveTallBottomDock = messages.length > 0 && showComposerChrome;
 
@@ -467,20 +496,6 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
       ? alpha(theme.palette.common.white, 0.04)
       : alpha(theme.palette.common.black, 0.03);
 
-  const briefingSectionLabelSx = {
-    fontSize: "0.65rem",
-    fontWeight: 700,
-    letterSpacing: "0.12em",
-    textTransform: "uppercase" as const,
-    color: "text.secondary",
-    lineHeight: 1.2,
-  };
-
-  const jobDescriptionSectionLabelSx = {
-    ...briefingSectionLabelSx,
-    textAlign: "right" as const,
-  };
-
   return (
     <Box
       sx={{
@@ -513,8 +528,8 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
         <Stack
           spacing={3}
           sx={{
-            flex: "1 1 auto",
-            minHeight: "100%",
+            flex: "1 1 0",
+            minHeight: 0,
             width: "100%",
             boxSizing: "border-box",
             display: "flex",
@@ -534,8 +549,25 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
             const isStreamingThisMessage =
               isBusy && isLastMessage && m.role === "assistant";
             const split = isUser ? null : splitThinkingFromBody(rawBody);
+            const mergedThinkingMarkdown =
+              !isUser && split
+                ? mergedThinkingMarkdownForEvidence(
+                    m.id,
+                    split,
+                    thinkingEvidenceMarkdownByMessageId
+                  )
+                : "";
+            const showEvidenceReview =
+              !isUser && split !== null
+                ? shouldMountEvidenceReviewPanel(split, mergedThinkingMarkdown)
+                : false;
+            const evidenceReviewDisplayMarkdown =
+              mergedThinkingMarkdown.trim() === ""
+                ? ""
+                : stripMatchScoreGuidanceFromEvidenceReview(
+                    mergedThinkingMarkdown
+                  );
             const mainBody = split?.body ?? rawBody;
-            const showEvidenceReview = split?.hasThinking ?? false;
             const isEvidenceReviewStreaming =
               split?.isThinkingStreaming ?? false;
             const isBriefingPipelineActive =
@@ -557,6 +589,18 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
               isStreamingThisMessage &&
               mainBody.trim() === "" &&
               !showEvidenceReview;
+            const hasBriefingRenderableBelowEvidence =
+              Boolean(split?.chartData) ||
+              (mainBody.trim() !== "" &&
+                !showBodySkeleton &&
+                !showMatchProfileSkeleton);
+            const evidenceStretchRemainingColumn =
+              isLastMessage &&
+              showEvidenceReview &&
+              latestEvidencePanelOpen &&
+              !hasBriefingRenderableBelowEvidence;
+            const assistantBriefingCompactHeight =
+              isLastMessage && showEvidenceReview && !latestEvidencePanelOpen;
             const showStreamedPrepThinking =
               isPostEvidenceBriefingPhase && !showMatchProfileSkeleton;
             const hasBriefingToCopy =
@@ -571,35 +615,70 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                   display: "flex",
                   justifyContent: isUser ? "flex-end" : "flex-start",
                   width: "100%",
-                  flexShrink: 0,
+                  ...(isLastMessage
+                    ? {
+                        flexGrow: 1,
+                        minHeight: 0,
+                      }
+                    : { flexShrink: 0 }),
                 }}
               >
                 {isUser ? (
                   <Stack
-                    spacing={1}
+                    spacing={0}
                     sx={{
                       width: "100%",
                       maxWidth: `${RECRUITER_JOB_CONTEXT_PANEL_MAX_WIDTH_PERCENT}%`,
+                      ...(isLastMessage
+                        ? {
+                            flex: "1 1 0",
+                            minHeight: 0,
+                            minWidth: 0,
+                          }
+                        : {}),
                     }}
                   >
-                    <Typography component="p" sx={jobDescriptionSectionLabelSx}>
-                      {t("jobDescriptionSectionLabel")}
-                    </Typography>
-                    <AssistantJobContextPanel
-                      content={rawBody}
-                      label={t("jobContextLabel")}
-                      collapseRequested={shouldRequestJobContextCollapse(
-                        messages,
-                        m.id,
-                        status,
-                        followingAssistantPlainText
-                      )}
-                      onOpenChange={
-                        m.id === latestUserMessageId
-                          ? handleLatestJobContextOpenChange
-                          : undefined
+                    {rawBody.trim().length > 0 ? (
+                      <Typography
+                        component="h1"
+                        variant="body1"
+                        sx={{
+                          ...recruiterAssistantBriefingSectionHeadingSx,
+                          mt: 0,
+                        }}
+                      >
+                        {t("jobDescriptionSectionLabel")}
+                      </Typography>
+                    ) : null}
+                    <Box
+                      sx={
+                        isLastMessage
+                          ? {
+                              flex: "1 1 0",
+                              minHeight: 0,
+                              minWidth: 0,
+                              display: "flex",
+                              flexDirection: "column",
+                            }
+                          : {}
                       }
-                    />
+                    >
+                      <AssistantJobContextPanel
+                        content={rawBody}
+                        label={t("jobContextLabel")}
+                        collapseRequested={shouldRequestJobContextCollapse(
+                          messages,
+                          m.id,
+                          status,
+                          followingAssistantPlainText
+                        )}
+                        onOpenChange={
+                          m.id === latestUserMessageId
+                            ? handleLatestJobContextOpenChange
+                            : undefined
+                        }
+                      />
+                    </Box>
                   </Stack>
                 ) : (
                   <Stack
@@ -607,6 +686,13 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                     sx={{
                       width: "100%",
                       maxWidth: "100%",
+                      ...(isLastMessage
+                        ? {
+                            flex: "1 1 0",
+                            minHeight: 0,
+                            minWidth: 0,
+                          }
+                        : {}),
                     }}
                   >
                     <Box
@@ -614,30 +700,65 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                         width: "100%",
                         display: "flex",
                         flexDirection: "column",
-                        gap: 1,
+                        gap: 0,
+                        ...(isLastMessage
+                          ? assistantBriefingCompactHeight
+                            ? {
+                                flex: "0 0 auto",
+                                minWidth: 0,
+                              }
+                            : {
+                                flex: "1 1 0",
+                                minHeight: 0,
+                                minWidth: 0,
+                              }
+                          : {}),
                       }}
                     >
                       <Typography
-                        component="p"
-                        sx={{ ...briefingSectionLabelSx, flexShrink: 0 }}
+                        component="h1"
+                        variant="body1"
+                        sx={{
+                          ...recruiterAssistantBriefingSectionHeadingSx,
+                          mt: 0,
+                          flexShrink: 0,
+                        }}
                       >
                         {t("briefingLabel")}
                       </Typography>
                       {showEvidenceReview ? (
-                        <AssistantEvidenceReview
-                          content={stripMatchScoreGuidanceFromEvidenceReview(
-                            split!.thinking
-                          )}
-                          isStreaming={split!.isThinkingStreaming}
-                          collapseRequested={
-                            isStreamingThisMessage &&
-                            showEvidenceReview &&
-                            !isEvidenceReviewStreaming
-                          }
-                          label={t("evidenceReviewLabel")}
-                          streamingLabel={t("evidenceReviewStreamingLabel")}
-                          locale={locale}
-                        />
+                        <Box
+                          sx={{
+                            flex: evidenceStretchRemainingColumn
+                              ? "1 1 0"
+                              : "0 0 auto",
+                            minHeight: evidenceStretchRemainingColumn
+                              ? 0
+                              : undefined,
+                            minWidth: 0,
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
+                        >
+                          <AssistantEvidenceReview
+                            content={evidenceReviewDisplayMarkdown}
+                            isStreaming={split!.isThinkingStreaming}
+                            collapseRequested={
+                              isStreamingThisMessage &&
+                              showEvidenceReview &&
+                              !isEvidenceReviewStreaming
+                            }
+                            label={t("evidenceReviewLabel")}
+                            streamingLabel={t("evidenceReviewStreamingLabel")}
+                            locale={locale}
+                            onOpenChange={
+                              isLastMessage
+                                ? setLatestEvidencePanelOpen
+                                : undefined
+                            }
+                            fillColumn={evidenceStretchRemainingColumn}
+                          />
+                        </Box>
                       ) : null}
                       <Box
                         component="div"
@@ -646,6 +767,9 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                           color: "text.primary",
                           lineHeight: 1.72,
                           flexShrink: 0,
+                          ...(showEvidenceReview
+                            ? { mt: RECRUITER_ASSISTANT_SECTION_BLOCK_GAP }
+                            : {}),
                         }}
                       >
                         {showStreamedPrepThinking ? (
@@ -745,7 +869,11 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
               }}
             >
               <Stack spacing={1} sx={{ width: "100%", maxWidth: "100%" }}>
-                <Typography component="p" sx={briefingSectionLabelSx}>
+                <Typography
+                  component="p"
+                  variant="body2"
+                  color="text.secondary"
+                >
                   {t("briefingPreparingLabel")}
                 </Typography>
                 <AssistantThinkingIndicator />
@@ -798,7 +926,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
           ) : null}
           {showComposerChrome ? (
             <Stack
-              spacing={1}
+              spacing={0}
               sx={{
                 flexShrink: 0,
                 opacity: isComposerInteractive ? 1 : 0,
@@ -812,9 +940,18 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                 pointerEvents: isComposerInteractive ? "auto" : "none",
               }}
             >
-              <Typography component="p" sx={jobDescriptionSectionLabelSx}>
-                {t("jobDescriptionSectionLabel")}
-              </Typography>
+              {showComposerJobDescriptionHeading ? (
+                <Typography
+                  component="h1"
+                  variant="body1"
+                  sx={{
+                    ...recruiterAssistantBriefingSectionHeadingSx,
+                    mt: 0,
+                  }}
+                >
+                  {t("jobDescriptionSectionLabel")}
+                </Typography>
+              ) : null}
               <Box
                 component="form"
                 onSubmit={onFormSubmit}

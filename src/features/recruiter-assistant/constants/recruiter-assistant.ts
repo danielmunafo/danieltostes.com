@@ -20,11 +20,17 @@ export const RECRUITER_CHART_DIMENSION_RATIONALE_MAX_LENGTH = 120;
 /** Max width of a submitted job-context panel (% of the chat column). */
 export const RECRUITER_JOB_CONTEXT_PANEL_MAX_WIDTH_PERCENT = 88;
 
-/** Collapse animation when a submitted job description folds shut (ms). */
-export const RECRUITER_JOB_CONTEXT_COLLAPSE_DURATION_MS = 320;
+/**
+ * Shared collapsible body max height (job context + evidence review); content
+ * scrolls inside so panel height matches across the two panels.
+ */
+export const RECRUITER_ASSISTANT_COLLAPSIBLE_BODY_MAX_HEIGHT_PX = 420;
 
-/** Minimum header height for collapsed job-context panel (tap target). */
-export const RECRUITER_JOB_CONTEXT_HEADER_MIN_HEIGHT_PX = 44;
+/**
+ * Body copy scale for collapsible panels — aligned with evidence review markdown.
+ */
+export const RECRUITER_ASSISTANT_PANEL_BODY_FONT_REM = 0.8125;
+export const RECRUITER_ASSISTANT_PANEL_BODY_LINE_HEIGHT = 1.55;
 
 /**
  * sessionStorage key: user accepted feature terms for the recruiter assistant
@@ -59,6 +65,18 @@ export const RECRUITER_BAD_PROMPT_STRIKE_EVENT =
 
 /** Minimum height of the bottom dock while a conversation exists (composer / loading slot). */
 export const RECRUITER_ASSISTANT_BOTTOM_DOCK_MIN_HEIGHT_PX = 228;
+
+/**
+ * Theme spacing units (`sx`): distance from a briefing section label to the control
+ * or body directly beneath it (collapsible header, cards, markdown block).
+ */
+export const RECRUITER_ASSISTANT_SECTION_TITLE_TO_CONTENT_SPACING = 1.5;
+
+/**
+ * Theme spacing units: vertical gap between major briefing blocks (e.g. after a
+ * collapsible panel, before pitch markdown; subsequent `# …` pitch headings).
+ */
+export const RECRUITER_ASSISTANT_SECTION_BLOCK_GAP = 2.75;
 
 /** Max width for the prompt composer (matches chat column on GPT-style layouts). */
 export const RECRUITER_COMPOSER_MAX_WIDTH_PX = 768;

@@ -175,14 +175,25 @@ export function AssistantCollapsiblePanel({
                 },
               }
             : fillColumn && !open
-              ? { flex: "0 0 auto" }
-              : undefined
+              ? { flex: "0 0 auto", minHeight: 0, flexShrink: 0 }
+              : {
+                  flex: "none",
+                  flexGrow: 0,
+                  flexShrink: 0,
+                  minHeight: 0,
+                  alignSelf: "stretch",
+                }
         }
       >
         <Box
           ref={bodyRef}
           sx={[
-            { px: 1.5, pb: 1.25, pt: 0.25, color: "text.secondary" },
+            {
+              px: 1.5,
+              pb: 1.25,
+              pt: 1,
+              color: "text.secondary",
+            },
             ...(fillColumn && open
               ? [
                   {

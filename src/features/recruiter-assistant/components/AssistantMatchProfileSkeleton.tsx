@@ -7,7 +7,11 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { alpha, keyframes, useTheme } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
-import { RECRUITER_MATCH_PROFILE_CHART_HEIGHT_PX } from "../constants/recruiter-assistant";
+import {
+  RECRUITER_ASSISTANT_SECTION_BLOCK_GAP,
+  RECRUITER_MATCH_PROFILE_CHART_HEIGHT_PX,
+} from "../constants/recruiter-assistant";
+import { recruiterAssistantBriefingSectionHeadingSx } from "../lib/recruiter-assistant-briefing-heading-sx";
 
 const RADAR_SKELETON_VERTEX_COUNT = 8;
 const RADAR_SKELETON_RADIUS_PCT = 42;
@@ -165,23 +169,18 @@ export function AssistantMatchProfileSkeleton() {
 
   return (
     <Stack
-      spacing={1.5}
-      sx={{ mb: 0.5 }}
+      spacing={0}
       role="status"
       aria-live="polite"
       aria-busy="true"
       aria-label={t("briefingMatchProfileLabel")}
     >
       <Typography
-        variant="caption"
-        component="p"
+        variant="body1"
+        component="h1"
         sx={{
-          m: 0,
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          color: "text.secondary",
-          fontSize: "0.65rem",
+          ...recruiterAssistantBriefingSectionHeadingSx,
+          mt: 0,
         }}
       >
         {t("assessmentSummary")}
@@ -192,16 +191,11 @@ export function AssistantMatchProfileSkeleton() {
         <SummaryCardSkeleton />
       </Stack>
       <Typography
-        variant="caption"
-        component="p"
+        variant="body1"
+        component="h1"
         sx={{
-          m: 0,
-          pt: 0.5,
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          color: "text.secondary",
-          fontSize: "0.65rem",
+          ...recruiterAssistantBriefingSectionHeadingSx,
+          mt: RECRUITER_ASSISTANT_SECTION_BLOCK_GAP,
         }}
       >
         {t("capabilityMatchProfile")}

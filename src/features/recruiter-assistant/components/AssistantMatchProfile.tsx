@@ -8,12 +8,14 @@ import Typography from "@mui/material/Typography";
 import { alpha, useTheme } from "@mui/material/styles";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
+import { RECRUITER_ASSISTANT_SECTION_BLOCK_GAP } from "../constants/recruiter-assistant";
 import type {
   ChartData,
   ChartEvidenceConfidence,
   ChartRecommendation,
 } from "../lib/chart-data-types";
 import { scoreToChartColor } from "../lib/chart-colors";
+import { recruiterAssistantBriefingSectionHeadingSx } from "../lib/recruiter-assistant-briefing-heading-sx";
 
 const AssistantMatchProfileRadar = dynamic(
   () =>
@@ -121,17 +123,13 @@ export function AssistantMatchProfile({
   );
 
   return (
-    <Stack spacing={1.5} sx={{ mb: 0.5 }}>
+    <Stack spacing={0}>
       <Typography
-        variant="caption"
-        component="p"
+        variant="body1"
+        component="h1"
         sx={{
-          m: 0,
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          color: "text.secondary",
-          fontSize: "0.65rem",
+          ...recruiterAssistantBriefingSectionHeadingSx,
+          mt: 0,
         }}
       >
         {t("assessmentSummary")}
@@ -207,17 +205,13 @@ export function AssistantMatchProfile({
         </Box>
       </Stack>
       {scoresReason ? (
-        <Stack spacing={0.5} sx={{ pt: 0.25 }}>
+        <Stack spacing={0} sx={{ mt: RECRUITER_ASSISTANT_SECTION_BLOCK_GAP }}>
           <Typography
-            variant="caption"
-            component="p"
+            variant="body1"
+            component="h1"
             sx={{
-              m: 0,
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "text.secondary",
-              fontSize: "0.65rem",
+              ...recruiterAssistantBriefingSectionHeadingSx,
+              mt: 0,
             }}
           >
             {t("scoresRationaleLabel")}
@@ -232,16 +226,11 @@ export function AssistantMatchProfile({
         </Stack>
       ) : null}
       <Typography
-        variant="caption"
-        component="p"
+        variant="body1"
+        component="h1"
         sx={{
-          m: 0,
-          pt: 0.5,
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          color: "text.secondary",
-          fontSize: "0.65rem",
+          ...recruiterAssistantBriefingSectionHeadingSx,
+          mt: RECRUITER_ASSISTANT_SECTION_BLOCK_GAP,
         }}
       >
         {t("capabilityMatchProfile")}

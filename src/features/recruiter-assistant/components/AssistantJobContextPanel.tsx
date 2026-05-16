@@ -1,12 +1,8 @@
 "use client";
 
 import Typography from "@mui/material/Typography";
-import { alpha, useTheme } from "@mui/material/styles";
-import { memo, useEffect, useRef, useState } from "react";
-import {
-  RECRUITER_JOB_CONTEXT_COLLAPSE_DURATION_MS,
-  RECRUITER_JOB_CONTEXT_HEADER_MIN_HEIGHT_PX,
-} from "../constants/recruiter-assistant";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { recruiterAssistantPanelBodyScrollSx } from "../lib/recruiter-assistant-panel-body-sx";
 import { AssistantCollapsiblePanel } from "./AssistantCollapsiblePanel";
 
 interface AssistantJobContextPanelProps {
@@ -27,9 +23,10 @@ function AssistantJobContextPanelInner({
   collapseRequested,
   onOpenChange,
 }: AssistantJobContextPanelProps) {
-  const theme = useTheme();
   const [open, setOpen] = useState(() => !collapseRequested);
   const didAutoCollapseRef = useRef(collapseRequested);
+  /** User expanded after mount; do not override when evidence streaming begins. */
+  const userExpandedRef = useRef(false);
 
   useEffect(() => {
     onOpenChange?.(open);
@@ -38,43 +35,35 @@ function AssistantJobContextPanelInner({
   useEffect(() => {
     if (!collapseRequested || didAutoCollapseRef.current) return;
     didAutoCollapseRef.current = true;
+    if (userExpandedRef.current) return;
     setOpen(false);
   }, [collapseRequested]);
 
-  const isDarkMode = theme.palette.mode === "dark";
-  const userSurfaceBorder = isDarkMode
-    ? alpha(theme.palette.primary.light, 0.38)
-    : alpha(theme.palette.primary.main, 0.22);
-  const userSurfaceBg = isDarkMode
-    ? alpha(theme.palette.common.white, 0.11)
-    : alpha(theme.palette.primary.main, 0.07);
+  const handleToggle = useCallback(() => {
+    setOpen((previousOpen) => {
+      const nextOpen = !previousOpen;
+      if (nextOpen) {
+        userExpandedRef.current = true;
+      }
+      return nextOpen;
+    });
+  }, []);
 
   return (
     <AssistantCollapsiblePanel
       title={label}
       open={open}
-      onToggle={() => setOpen((v) => !v)}
-      alignTitleEnd
-      headerButtonSx={{
-        minHeight: RECRUITER_JOB_CONTEXT_HEADER_MIN_HEIGHT_PX,
-        boxSizing: "border-box",
-      }}
-      collapseTimeout={{
-        enter: RECRUITER_JOB_CONTEXT_COLLAPSE_DURATION_MS,
-        exit: RECRUITER_JOB_CONTEXT_COLLAPSE_DURATION_MS,
-      }}
-      rootSx={{
-        borderColor: userSurfaceBorder,
-        bgcolor: userSurfaceBg,
-        boxShadow: isDarkMode
-          ? `0 1px 0 ${alpha(theme.palette.common.white, 0.06)} inset`
-          : `0 1px 2px ${alpha(theme.palette.common.black, 0.05)}`,
-      }}
-      bodySx={{ color: "text.primary", pt: 0.5 }}
+      onToggle={handleToggle}
+      bodySx={[recruiterAssistantPanelBodyScrollSx]}
     >
       <Typography
-        variant="body2"
-        sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+        component="div"
+        sx={{
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
+          fontSize: "inherit",
+          lineHeight: "inherit",
+        }}
       >
         {content}
       </Typography>

@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { createPortfolioDeepLinkMarkdownComponents } from "../lib/createPortfolioDeepLinkMarkdownComponents";
+import { RECRUITER_ASSISTANT_SECTION_BLOCK_GAP } from "../constants/recruiter-assistant";
 import type { ChartData } from "../lib/chart-data-types";
 import { extractScoresReasonAndStripScoresSection } from "../lib/extractScoresReasonFromPitchMarkdown";
 import { splitPitchAndReferencesMarkdown } from "../lib/split-briefing-markdown";
@@ -95,7 +96,7 @@ export function AssistantBriefingBody({
   }
 
   return (
-    <Stack spacing={1.5}>
+    <Stack spacing={RECRUITER_ASSISTANT_SECTION_BLOCK_GAP}>
       {chartData ? (
         <AssistantMatchProfile
           chartData={chartData}
