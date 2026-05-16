@@ -30,6 +30,7 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 import { isValidLocale, type Locale } from "@/i18n/request";
 import {
   RECRUITER_ASSISTANT_BOTTOM_DOCK_MIN_HEIGHT_PX,
@@ -47,9 +48,18 @@ import {
   RECRUITER_TERMS_ACCEPTANCE_STORAGE_KEY,
 } from "../constants/recruiter-assistant";
 import { useRecruiterAssistantUi } from "../context/RecruiterAssistantUiContext";
-import { recordBadIntentRejection } from "../lib/bad-prompt-strikes";
 import { getRecruiterApiBaseUrl } from "../lib/api-url";
+import { recruiterAssistantFetch } from "../lib/recruiter-assistant-fetch";
+import {
+  recruiterRecaptchaTokenSlot,
+  setRecruiterCaptchaFailedHandler,
+} from "../lib/recruiter-assistant-fetch-session";
+import {
+  getRecruiterRecaptchaSiteKey,
+  isRecruiterRecaptchaConfigured,
+} from "../lib/recaptcha-site-key";
 import { shouldRequestJobContextCollapse } from "../lib/should-request-job-context-collapse";
+import { shouldRetryRecruiterChatAfterFailedTurn } from "../lib/should-retry-recruiter-chat-after-failed-turn";
 import { getRecruiterAssistantMessagePlainText } from "../lib/getRecruiterAssistantMessagePlainText";
 import { stripMatchScoreGuidanceFromEvidenceReview } from "../lib/strip-match-score-guidance-from-evidence-review";
 import {
@@ -66,6 +76,7 @@ import {
   recruiterAssistantBriefingSectionHeadingSx,
 } from "../lib/recruiter-assistant-briefing-heading-sx";
 import { logMatchProfileClientDebug } from "../lib/match-profile-debug";
+import { AssistantCheckboxRecaptcha } from "./AssistantCheckboxRecaptcha";
 import { AssistantBriefingBody } from "./AssistantBriefingBody";
 import { AssistantBriefingProgress } from "./AssistantBriefingProgress";
 import { AssistantBriefingStreamingLine } from "./AssistantBriefingStreamingLine";
@@ -73,40 +84,6 @@ import { AssistantEvidenceReview } from "./AssistantEvidenceReview";
 import { AssistantJobContextPanel } from "./AssistantJobContextPanel";
 import { AssistantMatchProfileSkeleton } from "./AssistantMatchProfileSkeleton";
 import { AssistantThinkingIndicator } from "./AssistantThinkingIndicator";
-
-function parseRecruiterApiErrorCode(res: Response, body: unknown): string {
-  if (
-    typeof body === "object" &&
-    body !== null &&
-    "error" in body &&
-    typeof (body as { error: unknown }).error === "string"
-  ) {
-    return (body as { error: string }).error;
-  }
-  return "";
-}
-
-async function recruiterAssistantFetch(
-  input: RequestInfo | URL,
-  init?: RequestInit
-): Promise<Response> {
-  const res = await fetch(input, init);
-  if (res.status !== 400 && res.status !== 413) {
-    return res;
-  }
-  let body: unknown;
-  try {
-    body = await res.clone().json();
-  } catch {
-    return res;
-  }
-  const errorCode = parseRecruiterApiErrorCode(res, body);
-  if (errorCode === "off_topic" || errorCode === "intent_unclear") {
-    recordBadIntentRejection();
-    throw new Error(errorCode);
-  }
-  return res;
-}
 
 async function copyTextToClipboard(text: string): Promise<boolean> {
   try {
@@ -166,11 +143,24 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   const t = useTranslations("RecruiterAssistant");
   const { setHasConversation, badPromptStrikeCount } =
     useRecruiterAssistantUi();
+  const recaptchaSiteKey = getRecruiterRecaptchaSiteKey();
+  const isRecaptchaEnabled = isRecruiterRecaptchaConfigured();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const wasChatBusyRef = useRef(false);
+  const modalRecaptchaRef = useRef<ReCAPTCHA | null>(null);
+  const captchaModalRecaptchaRef = useRef<ReCAPTCHA | null>(null);
+  const pendingSubmitRef = useRef<
+    { event?: FormEvent<HTMLFormElement> } | undefined
+  >(undefined);
   const [termsHydrated, setTermsHydrated] = useState(false);
   const [termsFromStorage, setTermsFromStorage] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [captchaModalOpen, setCaptchaModalOpen] = useState(false);
+  const [captchaModalRecaptchaKey, setCaptchaModalRecaptchaKey] = useState(0);
+  const [modalRecaptchaToken, setModalRecaptchaToken] = useState<string | null>(
+    null
+  );
+  const [captchaFailedVisible, setCaptchaFailedVisible] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [latestEvidencePanelOpen, setLatestEvidencePanelOpen] = useState(true);
   const [
@@ -178,7 +168,42 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     setThinkingEvidenceMarkdownByMessageId,
   ] = useState(() => new Map<string, string>());
 
-  const { messages, input, handleInputChange, handleSubmit, status } = useChat({
+  const resetModalRecaptcha = useCallback(() => {
+    setModalRecaptchaToken(null);
+    modalRecaptchaRef.current?.reset();
+    captchaModalRecaptchaRef.current?.reset();
+  }, []);
+
+  const openCaptchaModal = useCallback(() => {
+    resetModalRecaptcha();
+    setCaptchaModalRecaptchaKey((currentKey) => currentKey + 1);
+    setCaptchaModalOpen(true);
+  }, [resetModalRecaptcha]);
+
+  const closeCaptchaModal = useCallback(() => {
+    setCaptchaModalOpen(false);
+    resetModalRecaptcha();
+    pendingSubmitRef.current = undefined;
+  }, [resetModalRecaptcha]);
+
+  useEffect(() => {
+    setRecruiterCaptchaFailedHandler(() => {
+      setCaptchaFailedVisible(true);
+      openCaptchaModal();
+    });
+    return () => setRecruiterCaptchaFailedHandler(undefined);
+  }, [openCaptchaModal]);
+
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    status,
+    setInput,
+    setMessages,
+    reload,
+  } = useChat({
     api: apiBaseUrl,
     maxSteps: 1,
     fetch: recruiterAssistantFetch,
@@ -187,6 +212,11 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   });
 
   const isBusy = status === "submitted" || status === "streaming";
+
+  const isLatestTurnAwaitingAssistant = useMemo(() => {
+    const lastMessage = messages[messages.length - 1];
+    return lastMessage?.role === "user";
+  }, [messages]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -300,11 +330,32 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     };
   }, [composerExitPhase]);
 
+  useEffect(() => {
+    if (status !== "error" || !isLatestTurnAwaitingAssistant) {
+      return;
+    }
+    const lastUserMessage = messages[messages.length - 1];
+    if (lastUserMessage?.role !== "user") {
+      return;
+    }
+    const draft = getRecruiterAssistantMessagePlainText(lastUserMessage);
+    queueMicrotask(() => {
+      setIsLatestJobContextPanelOpen(true);
+      if (composerExitTimeoutRef.current) {
+        clearTimeout(composerExitTimeoutRef.current);
+        composerExitTimeoutRef.current = null;
+      }
+      setComposerExitPhase("visible");
+      setInput((current) => (current.trim() ? current : draft));
+    });
+  }, [isLatestTurnAwaitingAssistant, messages, setInput, status]);
+
   const isComposerInteractive = composerExitPhase === "visible";
   const briefingComposerDismissed =
     shouldHideComposer && composerExitPhase === "hidden";
   const showComposerChrome =
     messages.length === 0 ||
+    isLatestTurnAwaitingAssistant ||
     (!isAssistantEvidenceStreaming &&
       isLatestJobContextPanelOpen &&
       !briefingComposerDismissed);
@@ -365,10 +416,11 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   }, []);
 
   const openTermsModal = useCallback(() => {
+    resetModalRecaptcha();
     setTermsModalOpen(true);
-  }, []);
+  }, [resetModalRecaptcha]);
 
-  const persistTermsAcceptance = useCallback(() => {
+  const persistTermsAcceptance = () => {
     try {
       window.sessionStorage.setItem(
         RECRUITER_TERMS_ACCEPTANCE_STORAGE_KEY,
@@ -378,7 +430,92 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
       /* private mode / quota */
     }
     setTermsFromStorage(true);
-  }, []);
+  };
+
+  const submitChatRequest = useCallback(
+    async (event?: FormEvent<HTMLFormElement>) => {
+      const trimmedInput = input.trim();
+      if (
+        shouldRetryRecruiterChatAfterFailedTurn(status, messages, trimmedInput)
+      ) {
+        setMessages((current) => {
+          const lastIndex = current.length - 1;
+          const last = current[lastIndex];
+          if (last?.role !== "user") {
+            return current;
+          }
+          return [
+            ...current.slice(0, lastIndex),
+            {
+              ...last,
+              content: trimmedInput,
+              parts: [{ type: "text", text: trimmedInput }],
+            },
+          ];
+        });
+        await reload();
+        return;
+      }
+
+      if (event) {
+        await handleSubmit(event);
+      } else {
+        await handleSubmit();
+      }
+    },
+    [handleSubmit, input, messages, reload, setMessages, status]
+  );
+
+  const submitWithRecaptchaFromModal = useCallback(
+    async (e?: FormEvent<HTMLFormElement>) => {
+      const token = isRecaptchaEnabled ? modalRecaptchaToken : null;
+      if (isRecaptchaEnabled && !token) {
+        return;
+      }
+      setCaptchaFailedVisible(false);
+      pendingSubmitRef.current = undefined;
+      recruiterRecaptchaTokenSlot.current = token;
+      try {
+        await submitChatRequest(e);
+      } finally {
+        recruiterRecaptchaTokenSlot.current = null;
+        resetModalRecaptcha();
+      }
+    },
+    [
+      isRecaptchaEnabled,
+      modalRecaptchaToken,
+      resetModalRecaptcha,
+      submitChatRequest,
+    ]
+  );
+
+  const requestComposerSubmit = useCallback(
+    (event?: FormEvent<HTMLFormElement>) => {
+      if (termsModalOpen || captchaModalOpen) {
+        return;
+      }
+      if (!termsFromStorage) {
+        openTermsModal();
+        return;
+      }
+      if (isRecaptchaEnabled) {
+        pendingSubmitRef.current = { event };
+        openCaptchaModal();
+        return;
+      }
+      void submitChatRequest(event);
+    },
+    [
+      captchaModalOpen,
+      isRecaptchaEnabled,
+      openCaptchaModal,
+      openTermsModal,
+      submitChatRequest,
+      termsFromStorage,
+      termsModalOpen,
+    ]
+  );
 
   const onFormSubmit = (e: FormEvent<HTMLFormElement>) => {
     if (!termsHydrated) {
@@ -389,35 +526,63 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
       e.preventDefault();
       return;
     }
-    if (!termsFromStorage) {
-      e.preventDefault();
-      openTermsModal();
-      return;
-    }
-    void handleSubmit(e);
+    e.preventDefault();
+    requestComposerSubmit(e);
   };
 
-  const onTermsModalAccept = useCallback(() => {
+  const onTermsModalAccept = () => {
+    if (isRecaptchaEnabled && !modalRecaptchaToken) {
+      return;
+    }
     persistTermsAcceptance();
     setTermsModalOpen(false);
-    void handleSubmit();
-  }, [handleSubmit, persistTermsAcceptance]);
+    void submitWithRecaptchaFromModal();
+  };
 
-  const onTermsModalClose = useCallback(() => {
+  const onTermsModalClose = () => {
     setTermsModalOpen(false);
-  }, []);
+    resetModalRecaptcha();
+  };
 
-  const handleTermsDialogKeyDownCapture = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
-      const target = e.target as HTMLElement | null;
-      if (target?.closest("a[href]")) return;
-      e.preventDefault();
-      e.stopPropagation();
-      onTermsModalAccept();
-    },
-    [onTermsModalAccept]
-  );
+  const onCaptchaModalContinue = () => {
+    if (isRecaptchaEnabled && !modalRecaptchaToken) {
+      return;
+    }
+    setCaptchaModalOpen(false);
+    void submitWithRecaptchaFromModal(pendingSubmitRef.current?.event);
+  };
+
+  const onCaptchaModalClose = () => {
+    closeCaptchaModal();
+  };
+
+  const isCaptchaModalContinueDisabled =
+    isRecaptchaEnabled && modalRecaptchaToken === null;
+
+  const onModalRecaptchaChange = (token: string | null) => {
+    setModalRecaptchaToken(token);
+  };
+
+  const isTermsAcceptDisabled =
+    isRecaptchaEnabled && modalRecaptchaToken === null;
+
+  const handleTermsDialogKeyDownCapture = (e: React.KeyboardEvent) => {
+    if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest("a[href]")) return;
+    if (isTermsAcceptDisabled) return;
+    e.preventDefault();
+    e.stopPropagation();
+    onTermsModalAccept();
+  };
+
+  const handleCaptchaDialogKeyDownCapture = (e: React.KeyboardEvent) => {
+    if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+    if (isCaptchaModalContinueDisabled) return;
+    e.preventDefault();
+    e.stopPropagation();
+    onCaptchaModalContinue();
+  };
 
   useLayoutEffect(() => {
     const el = messagesScrollRef.current;
@@ -469,21 +634,9 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
       )
         return;
       e.preventDefault();
-      if (!termsFromStorage) {
-        openTermsModal();
-        return;
-      }
-      handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+      requestComposerSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
     },
-    [
-      handleSubmit,
-      input,
-      isBusy,
-      isComposerInteractive,
-      openTermsModal,
-      termsFromStorage,
-      termsHydrated,
-    ]
+    [input, isBusy, isComposerInteractive, requestComposerSubmit, termsHydrated]
   );
 
   const composerBorder =
@@ -1146,16 +1299,81 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                 ),
               })}
             </Typography>
+            {isRecaptchaEnabled ? (
+              <Box sx={{ mt: 2 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1.5 }}
+                >
+                  {t("termsModalCaptchaHint")}
+                </Typography>
+                <ReCAPTCHA
+                  ref={modalRecaptchaRef}
+                  sitekey={recaptchaSiteKey}
+                  onChange={onModalRecaptchaChange}
+                  onExpired={() => setModalRecaptchaToken(null)}
+                />
+              </Box>
+            ) : null}
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button onClick={onTermsModalClose} color="inherit">
               {t("termsModalCancel")}
             </Button>
-            <Button onClick={onTermsModalAccept} variant="contained">
+            <Button
+              onClick={onTermsModalAccept}
+              variant="contained"
+              disabled={isTermsAcceptDisabled}
+            >
               {t("termsModalAccept")}
             </Button>
           </DialogActions>
         </Dialog>
+        <Dialog
+          open={captchaModalOpen}
+          onClose={onCaptchaModalClose}
+          maxWidth="sm"
+          fullWidth
+          aria-labelledby="recruiter-assistant-captcha-dialog-title"
+          onKeyDownCapture={handleCaptchaDialogKeyDownCapture}
+        >
+          <DialogTitle id="recruiter-assistant-captcha-dialog-title">
+            {t("captchaModalTitle")}
+          </DialogTitle>
+          <DialogContent sx={{ pt: 1, pb: 2 }}>
+            {isRecaptchaEnabled ? (
+              <AssistantCheckboxRecaptcha
+                key={captchaModalRecaptchaKey}
+                recaptchaRef={captchaModalRecaptchaRef}
+                sitekey={recaptchaSiteKey}
+                onChange={onModalRecaptchaChange}
+                onExpired={() => setModalRecaptchaToken(null)}
+              />
+            ) : null}
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={onCaptchaModalClose} color="inherit">
+              {t("termsModalCancel")}
+            </Button>
+            <Button
+              onClick={onCaptchaModalContinue}
+              variant="contained"
+              disabled={isCaptchaModalContinueDisabled}
+            >
+              {t("captchaModalContinue")}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {captchaFailedVisible && !captchaModalOpen ? (
+          <Alert
+            severity="warning"
+            onClose={() => setCaptchaFailedVisible(false)}
+            sx={{ flexShrink: 0, mt: 1 }}
+          >
+            {t("captchaFailed")}
+          </Alert>
+        ) : null}
         <Typography
           variant="caption"
           color="text.secondary"

@@ -60,11 +60,18 @@ describe("shouldRequestJobContextCollapse", () => {
     ).toBe(true);
   });
 
-  it("requests collapse when the request ends (ready)", () => {
+  it("keeps expanded when the request ends without an assistant row", () => {
     const messages = [{ id: USER_ID, role: "user" }];
     expect(
       shouldRequestJobContextCollapse(messages, USER_ID, "ready", null)
-    ).toBe(true);
+    ).toBe(false);
+  });
+
+  it("keeps expanded after a client error with no assistant row", () => {
+    const messages = [{ id: USER_ID, role: "user" }];
+    expect(
+      shouldRequestJobContextCollapse(messages, USER_ID, "error", null)
+    ).toBe(false);
   });
 
   it("requests collapse when assistant exists and status is ready", () => {

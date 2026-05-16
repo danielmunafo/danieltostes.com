@@ -38,4 +38,29 @@ describe("handleChatRequest", () => {
       else process.env.ALLOWED_ORIGIN = prev;
     }
   });
+
+  it("returns 403 captcha_failed when RECAPTCHA_SECRET_KEY is set and token is missing", async () => {
+    const prevOrigin = process.env.ALLOWED_ORIGIN;
+    const prevCaptcha = process.env.RECAPTCHA_SECRET_KEY;
+    process.env.ALLOWED_ORIGIN = "";
+    process.env.RECAPTCHA_SECRET_KEY = "test-secret";
+    try {
+      const res = await handleChatRequest({
+        requestContext: { http: { method: "POST", sourceIp: "127.0.0.1" } },
+        headers: {},
+        body: JSON.stringify({
+          messages: [{ role: "user", content: "Senior engineer role" }],
+        }),
+        isBase64Encoded: false,
+      });
+      expect(res.status).toBe(403);
+      const json = (await res.json()) as { error: string };
+      expect(json.error).toBe("captcha_failed");
+    } finally {
+      if (prevOrigin === undefined) delete process.env.ALLOWED_ORIGIN;
+      else process.env.ALLOWED_ORIGIN = prevOrigin;
+      if (prevCaptcha === undefined) delete process.env.RECAPTCHA_SECRET_KEY;
+      else process.env.RECAPTCHA_SECRET_KEY = prevCaptcha;
+    }
+  });
 });

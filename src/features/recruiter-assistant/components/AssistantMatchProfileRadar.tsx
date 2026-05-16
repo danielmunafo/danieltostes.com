@@ -5,12 +5,17 @@ import { useTheme } from "@mui/material/styles";
 import {
   PolarAngleAxis,
   PolarGrid,
+  PolarRadiusAxis,
   Radar,
   RadarChart,
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { RECRUITER_MATCH_PROFILE_CHART_HEIGHT_PX } from "../constants/recruiter-assistant";
+import {
+  RECRUITER_MATCH_PROFILE_CHART_HEIGHT_PX,
+  RECRUITER_MATCH_PROFILE_SCORE_MAX,
+  RECRUITER_MATCH_PROFILE_SCORE_MIN,
+} from "../constants/recruiter-assistant";
 import type { CapabilityDimension } from "../lib/chart-data-types";
 import { scoreToChartColor } from "../lib/chart-colors";
 
@@ -49,7 +54,7 @@ function ChartTooltip({
       }}
     >
       <Box component="p" sx={{ m: 0, fontWeight: 600, fontSize: "0.8125rem" }}>
-        {row.label} — {row.score}/10
+        {row.label} — {row.score}/{RECRUITER_MATCH_PROFILE_SCORE_MAX}
       </Box>
       <Box
         component="p"
@@ -97,6 +102,15 @@ export function AssistantMatchProfileRadar({
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart cx="50%" cy="50%" outerRadius="72%" data={data}>
           <PolarGrid stroke={theme.palette.divider} />
+          <PolarRadiusAxis
+            angle={90}
+            domain={[
+              RECRUITER_MATCH_PROFILE_SCORE_MIN,
+              RECRUITER_MATCH_PROFILE_SCORE_MAX,
+            ]}
+            tick={false}
+            axisLine={false}
+          />
           <PolarAngleAxis
             dataKey="label"
             tick={{

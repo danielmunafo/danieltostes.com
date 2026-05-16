@@ -45,6 +45,7 @@ jobs:
       - name: Build
         env:
           NEXT_PUBLIC_RECRUITER_API_URL: ${{ secrets.RECRUITER_API_URL || vars.RECRUITER_API_URL }}
+          NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY || vars.RECAPTCHA_SITE_KEY }}
         run: npm run build
 
       - name: Install Playwright browsers

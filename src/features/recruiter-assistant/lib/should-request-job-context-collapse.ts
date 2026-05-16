@@ -44,9 +44,8 @@ export function shouldRequestJobContextCollapse(
     messages[index + 1]?.role === "assistant";
 
   if (!hasAssistantImmediatelyAfter) {
-    if (chatStatus === "submitted") return false;
-    if (chatStatus === "streaming") return false;
-    return true;
+    // Keep expanded while waiting on the API or after a failed turn (no assistant row).
+    return false;
   }
 
   if (chatStatus !== "streaming" && chatStatus !== "submitted") {
