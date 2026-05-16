@@ -92,7 +92,7 @@ export const MAX_CHAT_HISTORY_JSON_CHARS = 32_768;
 
 /** OpenAI chat model for recruiter matching (`RECRUITER_CHAT_MODEL` overrides). */
 export const CHAT_MODEL =
-  process.env.RECRUITER_CHAT_MODEL?.trim() || "gpt-4.1-mini";
+  process.env.RECRUITER_CHAT_MODEL?.trim() || "gpt-5.4-mini";
 
 /**
  * Re-chunks each provider `text-delta` into words (per AI SDK `smoothStream`)
