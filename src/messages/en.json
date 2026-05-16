@@ -144,12 +144,10 @@
         "position": "Senior Software Engineer",
         "sectionTitle": "Experience",
         "desc": [
-          "Designed and delivered an AI-driven warranty claim automation platform, replacing manual support workflows with a scalable JSON-based decision engine integrated with image evaluation models.",
-          "Implemented asynchronous processing with bounded retries and escalation safeguards, integrated Salesforce case management updates and chatbot automations, and enabled dynamic business rule evolution without disrupting production—coordinating dependencies across cross-functional integration owners and vendor timelines.",
-          "Orchestrated complex scenarios in a multi-phase state machine—resilient and fault-tolerant coordination across async workers, external systems, and escalation paths so long-running flows recover cleanly.",
-          "Led end-to-end cross-functional delivery in a remote-first setting: acted as the engineering link between business, client, infrastructure, security, support, and internal product and engineering teams—running joint planning, shared risk reviews, and integration checkpoints so diverse stakeholder groups stayed aligned from discovery through launch with tight handoffs.",
-          "Owned the E2E testing layer end to end: defined coverage for business-critical journeys, built and maintained automated E2E suites, and integrated them into CI to protect releases.",
-          "Ran cross-functional rituals that kept scope visible to every discipline: ticket-backed traceability, multi-discipline workshops with product, support, engineering, and compliance peers, collaborative solution design, and specs plus decision logs—often AI-assisted drafts, then human-reviewed—so trade-offs were explicit and reviewable."
+          "Designed and delivered an AI-driven warranty claim automation platform that replaced manual support workflows with a scalable JSON-based decision engine integrated with image evaluation models, Salesforce case updates, and chatbot automation.",
+          "Architected asynchronous processing around BullMQ and Redis workers, using bounded retries, escalation safeguards, and multi-phase state-machine coordination so long-running warranty flows could recover cleanly across external systems and support handoffs.",
+          "Owned the engineering link between business, client, infrastructure, security, support, product, and engineering stakeholders in a remote-first delivery model, keeping scope, risks, and integration checkpoints visible through tickets, specs, workshops, and decision logs.",
+          "Defined and maintained the E2E testing layer for business-critical journeys, integrating automated suites into CI to protect releases while allowing business rules to evolve without disrupting production."
         ],
         "tech": "TypeScript, Node.js, GraphQL (Apollo Federation), BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture, E2E Testing",
         "context": {
@@ -162,10 +160,16 @@
       },
       {
         "company": "danieltostes.com",
-        "period": "2026 - Present",
+        "period": "Feb/2026 - Present",
         "position": "Software Engineer (Personal Project)",
         "detailBodyPath": "experience/danieltostes-com",
         "cardDescription": "The production portfolio and recruiter-assistant experience ship from 100% AI-generated application code—authored in Cursor with Copilot in the review loop—while I own architecture, threat modeling, prompts, tests, CI/CD, and AWS operations end to end.\n\nClick this card for the build plan, scope, and what is in production today.",
+        "desc": [
+          "Built and operate my portfolio as a production-grade AI-native software project, using it as both a recruiter-facing profile and a live demonstration of architecture, prompt design, CI/CD, testing, and cloud delivery practices.",
+          "Designed an AI Recruiter Assistant that evaluates job descriptions against portfolio evidence using retrieval-grounded workflows, staged evaluator → analyst → pitch generation, streamed responses, capability scoring, and public portfolio content as the source of truth.",
+          "Own the full stack: Next.js static export, React, TypeScript, MUI, OpenAI integration, Lambda APIs, S3/CloudFront hosting, GitHub Actions, Playwright, Vitest, accessibility, metadata, and recruiter-facing UX polish.",
+          "Use Cursor and Copilot as AI development partners while keeping human ownership over system design, review quality, threat modeling, prompts, test strategy, and production operations."
+        ],
         "chips": [
           "Code: 100% AI-generated (Cursor)",
           "Review: Human-in-the-loop (Copilot)",
@@ -184,17 +188,19 @@
         "period": "Jul/2024 - Jun/2025",
         "position": "Senior Software Engineer",
         "desc": [
-          "Built and maintained core functionality for invoicing and banking products serving small businesses across Europe, clarifying scope and trade-offs with product and engineering through tickets, written briefs, and design discussions.",
-          "Implemented company-level technical decisions, helping standardize engineering practices and improve long-term maintainability with documented guidelines and ADR-style rationale shared across teams.",
-          "Led initiatives to improve observability and monitoring, enabling data-driven product and operational decisions, communicated with dashboards, written playbooks, and stakeholder updates."
+          "Led architecture and delivery for BKYC enterprise onboarding, building a performant React Native application, companion web portal, and backend services that enabled the company to onboard large corporate customers and support enterprise subscription use cases for the first time.",
+          "Collaborated with UX, product, backend, compliance, and banking integration teams to define scalable onboarding flows for corporate entity data, KYC documents, authority permissions, and real-time validation against Solaris and third-party APIs.",
+          "Implemented shared product flows across React Native, React web, and backend services, applying clean architecture, reusable business logic, testing, and CI/CD practices to keep the platform maintainable as requirements evolved.",
+          "Built an event-driven billing-invoicing bridge with AWS Lambda, SQS, Node.js, REST APIs, schema validation, idempotency keys, retry handling, CloudWatch dashboards, and alarms—reducing billing-to-invoicing sync latency from hours to under 500ms while keeping processing costs low.",
+          "Improved observability across onboarding and financial product workflows with Datadog APM, RUM, custom dashboards, product analytics, and operational playbooks so teams could detect validation errors, integration failures, latency regressions, and user journey friction."
         ],
-        "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS, Terraform, Docker, PostgreSQL, Datadog, Sentry",
+        "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS Lambda, SQS, Terraform, Docker, PostgreSQL, Datadog, Sentry, Jest, REST APIs",
         "context": {
           "teamSize": "8",
           "companySize": "Up to 100",
           "sector": "Banking & Fintech",
-          "domain": "Banking & Invoicing",
-          "compliance": "PII, GDPR"
+          "domain": "Banking, Invoicing & Enterprise Onboarding",
+          "compliance": "PII, GDPR, KYC"
         }
       },
       {
@@ -202,16 +208,19 @@
         "period": "Mar/2022 - Jun/2024",
         "position": "Software Engineer",
         "desc": [
-          "Developed and evolved Klarna's transactional email and marketing campaign platform, supporting high-volume, multi-market communication.",
-          "Implemented a new marketing decision-engine model enabling personalized content delivery using machine-learning content + vector search + AI recommendations matching.",
-          "Operated inside cross-functional initiatives across data platform, incentives, content, marketing, analytics, and platform engineering—negotiating priorities across teams with different goals and cadences—using shared design docs, async RFC-style write-ups, and live planning sessions; mentored new joiners on the codebase and release practices and resolved disagreements with evidence-based discussion."
+          "Developed and evolved Klarna's transactional email and marketing campaign platform, supporting high-volume, multi-market communication in revenue-critical purchase and lifecycle flows.",
+          "Designed and led implementation of a real-time vector decision engine that transformed customer interaction data into embeddings, matched profiles against live campaigns, and retrieved personalized content inside the transactional email pipeline within a ~200ms response window at ~100 RPS.",
+          "Built the engine as a containerized Node.js/TypeScript microservice with REST endpoints for on-the-fly content retrieval in purchase-confirmation flows, integrating peer-based recommendation logic through Power User Profiles and live campaign feeds.",
+          "Delivered discount-driven campaign integrations by connecting external discount-management systems into the email platform through resilient microservice connectors, Kafka events, personalization rules, and A/B test variants so customers could activate relevant offers directly from their inbox.",
+          "Instrumented end-to-end observability with Datadog tracing, custom metrics, latency/error SLOs, and on-call practices for critical communication systems, helping detect integration failures, optimize retry strategies, and protect campaign delivery reliability.",
+          "Collaborated across data platform, incentives, content, marketing, analytics, UX, and platform engineering teams through design docs, async RFC-style write-ups, planning sessions, and evidence-based technical discussions."
         ],
-        "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Datadog, OpsGenie",
+        "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Kafka, REST APIs, Datadog, OpsGenie, Jest, Vector Search, Embeddings",
         "context": {
           "teamSize": "6",
           "companySize": "5,000+",
           "sector": "Banking/Fintech & E-commerce",
-          "domain": "Marketing",
+          "domain": "Marketing, Transactional Messaging & Personalization",
           "compliance": "PII, PCI, GDPR"
         }
       },
@@ -220,15 +229,22 @@
         "period": "Oct/2020 - Feb/2022",
         "position": "Senior Software Engineer",
         "desc": [
-          "Drove a cross-functional program to migrate from the prior tax-experience ownership model to a new tax experience—aligning product, tax policy, UX, backend, and regional market teams who disagreed on implementation philosophy—and standardized async patterns the whole cross-functional coalition could adopt so releases stayed unblocked.",
-          "Founded and led a cross-functional engineering organization from scratch—hiring across disciplines, pairing engineering with product and operations partners, and owning back-office systems for tax exemption management and refund processing—while onboarding engineers, giving direct feedback, and resolving priority conflicts with partners outside engineering."
+          "Led architecture and delivery across Brazil and Latin America tax experience initiatives, modernizing seller-facing and backoffice tax workflows across MercadoLivre and MercadoPago with Node.js, React, TypeScript, REST services, observability, and reusable frontend architecture.",
+          "Architected and proposed asynchronous system improvements with taxes and billing teams, designing a BFF cached view for seller tax reports that reduced perceived response latency from 1–2s to up to ~200ms while preserving clear cross-team ownership boundaries.",
+          "Drove a cross-functional migration from the prior tax-experience ownership model to a new unified tax experience, aligning product, tax policy, UX, backend, mobile, billing, and regional market teams around implementation trade-offs, async patterns, release sequencing, and supportability.",
+          "Designed and launched a unified tax-presentation service for Argentine and Uruguayan sellers, exposing REST APIs for React frontends and mobile apps, improving tax transparency, maintaining sub-150ms API response times at peak load, and supporting 99.98% uptime targets.",
+          "Built tax exemption and tax breakdown flows for Argentina sellers, including Node.js services, React dashboards, MySQL-backed documentation workflows, lightweight caching, real-time status checks, and compliance-aware collaboration with legal, tax, and UX stakeholders.",
+          "Led the design of a unified backoffice experience platform that consolidated multiple internal tools into a single-pane interface, using a React core library, Node.js orchestration layer, shared UI components, service connectors, standardized SCSS theming, and E2E testing to reduce context switching and support errors.",
+          "Spearheaded frontend platform foundations for the Brazil Tax Experience team, including a reusable project scaffold, DDD folder guidelines, Webpack/Express development setup, ESLint/TypeScript configuration, Jest and Cypress test templates, Docsify documentation, and Storybook examples that reduced new-project bootstrap time from days to under an hour.",
+          "Designed and rolled out a Lerna-managed monorepo for shared UI components, service clients, middleware, and internal tooling, with package boundaries, versioning workflows, Webpack/Rollup builds, TypeScript typings, Jest tests, and documentation that accelerated shared component integration from days to hours.",
+          "Led migration of core services, databases, and infrastructure from legacy hosting to the company-standard Fury platform, mapping dependencies, planning cutovers, migrating Java/Groovy/Node.js services, MySQL/Oracle databases, NGINX routing, Elasticsearch clusters, monitoring, logging, and security practices with zero user-facing downtime."
         ],
-        "tech": "Java, React, Node.js, TypeScript, Express, Sass, Datadog, New Relic",
+        "tech": "Java, Groovy, React, Node.js, TypeScript, Express, Sass, REST APIs, MySQL, Oracle, Elasticsearch, NGINX, Fury, Lerna, Webpack, Rollup, Jest, Cypress, Datadog, New Relic",
         "context": {
           "teamSize": "10",
           "companySize": "5,000+",
           "sector": "Taxes & E-commerce",
-          "domain": "User Experience"
+          "domain": "Seller Tax Experience, Backoffice & Platform Engineering"
         }
       },
       {
@@ -236,15 +252,17 @@
         "period": "Jun/2020 - Oct/2020",
         "position": "Software Engineer",
         "desc": [
-          "Migrated critical legacy mainframe functionality to modern cloud-based and containerized solutions, coordinating dependencies through written cutover plans and technical walkthroughs with architecture and operations partners.",
-          "Developed internal portals and workflow state machines for overdraft and financial operations, translating business rules into written specifications reviewed with analysts and documenting behavior for compliance reviewers."
+          "Designed and developed a distributed SAGA-based orchestration service for mobile overdraft enrollment, enabling customers to subscribe to the product from mobile channels while coordinating authorization, risk checks, account updates, notifications, and failure handling across backend systems.",
+          "Implemented a state-machine-driven orchestration layer with Spring Boot State Machine, Kafka event streams, Avro schemas, Cassandra saga state snapshots, asynchronous retry policies, compensation paths, and observability so long-running financial workflows could recover after partial failures.",
+          "Built high-throughput batch tooling for interest-free overdraft promotions, including an Angular upload interface, Java backend batch workers, Cassandra event storage, OpenShift deployment, IBM MQ integration with legacy mainframe systems, idempotent messaging, retries, and audit-friendly processing.",
+          "Coordinated dependencies with architecture, SRE, operations, analysts, and compliance stakeholders through written specifications, cutover plans, technical walkthroughs, and validation evidence for regulated banking workflows."
         ],
-        "tech": "Java, Spring State Machine, AngularJS, Kafka, Cassandra, AWS, OpenShift, Grafana",
+        "tech": "Java, Spring Boot, Spring State Machine, AngularJS, Kafka, Avro, Cassandra, AWS, OpenShift, IBM MQ, Spring Batch, Grafana, JUnit, Docker",
         "context": {
           "teamSize": "15",
           "companySize": "5,000+",
           "sector": "Banking",
-          "domain": "Overdraft",
+          "domain": "Overdraft, Mobile Enrollment & Batch Operations",
           "compliance": "PII, PCI"
         }
       },
@@ -253,15 +271,17 @@
         "period": "Nov/2019 - Jun/2020",
         "position": "Systems Developer",
         "desc": [
-          "Built internal tools to reduce incident response time and improve troubleshooting for application support teams, using clear ticket workflows, handoff notes, and written troubleshooting guides.",
-          "Implemented CI/CD pipelines and containerized services while adhering to strict security and compliance requirements, documenting pipeline changes and rollout rationale for operations and security stakeholders."
+          "Designed and delivered an internal diagnostics and troubleshooting platform for Level 2 and Level 3 support teams, aggregating data from multiple internal and external APIs into a unified diagnostic model that surfaced root-cause hints and workflow health in real time.",
+          "Built Node.js/TypeScript services, health-status endpoints, Dockerized deployments, Mesos-based runtime configuration, and Jenkins CI/CD pipelines to automate testing, builds, and releases in a strict operational environment.",
+          "Partnered with SRE, application support, and support leadership to refine alert thresholds, document troubleshooting workflows, onboard users, and increase ticket throughput by helping engineers diagnose incidents faster.",
+          "Implemented CI/CD and containerized services while adhering to security and compliance requirements, keeping rollout rationale, operational handoffs, and troubleshooting guides clear for support and operations teams."
         ],
-        "tech": "Node.js, Java, Docker, Jenkins, Mesos/Marathon, Splunk, New Relic",
+        "tech": "Node.js, TypeScript, Express.js, Java, Docker, Jenkins, Mesos/Marathon, Splunk, New Relic, REST APIs, Internal Monitoring Tools",
         "context": {
           "teamSize": "4",
           "companySize": "1,000+",
           "sector": "Banking & Fintech",
-          "domain": "Customer Support",
+          "domain": "Customer Support, Diagnostics & Incident Response",
           "compliance": "PII, PCI"
         }
       },
@@ -270,16 +290,18 @@
         "period": "Mar/2017 - Nov/2019",
         "position": "Full Stack Systems Developer",
         "desc": [
-          "Designed and delivered regulated validation software in a cross-functional, founder-led context—working directly with the CEO and sales, QA, and field leads on requirements elicitation, planning, and analysis—reducing operational overhead and manual effort.",
-          "Scaled technical practices ensuring code quality, written documentation standards, and controlled release processes—with evidence packs and review notes suitable for regulated audits.",
-          "Coordinated cross-functional delivery with validation specialists, QA, sales operations, and business stakeholders—translating requirements into audit-ready documentation and keeping non-technical and technical partners aligned through every release."
+          "Built Go!Five from the ground up in a founder-led startup environment, turning a manual pharmaceutical system-validation process into a cloud-hosted platform for consultants to execute validation workflows, generate evidence, and manage QA sign-off online.",
+          "Collaborated directly with leadership, consultants, QA, sales, and field specialists to elicit requirements, document validation criteria, model workflows, and translate regulated business processes into full-stack product features.",
+          "Implemented backend services in Java/Spring Boot, React frontends, PostgreSQL schema design, SonarQube quality gates, unit and integration tests, Jenkins CI/CD, AWS deployment, CloudWatch monitoring, backups, and performance tuning.",
+          "Automated validation libraries and scripts, established controlled release practices, maintained audit-ready documentation and evidence packs, and reduced manual validation effort while improving consistency across projects.",
+          "Built earlier internal systems for IT asset management and extension lookup during the start of my career, using Java, SQL Server, LAN-based deployment, searchable UIs, automated backups, and documentation to replace spreadsheet-driven and manual support processes."
         ],
-        "tech": "Java, PostgreSQL, React, AWS CodeBuild, S3, CloudFront, RDS, Route53, Jenkins, SonarQube",
+        "tech": "Java, Spring Boot, PostgreSQL, React, AWS EC2, S3, CloudFront, RDS, CloudWatch, CodeBuild, Jenkins, SonarQube, SQL Server, Java SE",
         "context": {
           "teamSize": "5",
           "companySize": "Up to 30",
           "sector": "Pharmaceutical Industry",
-          "domain": "Sales",
+          "domain": "System Validation, QA Automation & Internal Tools",
           "compliance": "GAMP & FDA Systems Regulations"
         }
       }
