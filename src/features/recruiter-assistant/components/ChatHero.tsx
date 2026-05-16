@@ -19,12 +19,8 @@ import { RecruiterChat } from "./RecruiterChat";
 
 function ChatHeroInner() {
   const t = useTranslations("RecruiterAssistant");
-  const {
-    hasConversation,
-    assistantLocked,
-    badPromptStrikeCount,
-    immersiveEvidenceStreamActive,
-  } = useRecruiterAssistantUi();
+  const { hasConversation, assistantLocked, badPromptStrikeCount } =
+    useRecruiterAssistantUi();
   const { opacity, translateY } = useChatFade();
 
   if (assistantLocked) {
@@ -71,7 +67,7 @@ function ChatHeroInner() {
         zIndex: 1,
         px: 2,
         pt: hasConversation ? { xs: 1.5, md: 2 } : { xs: 2.5, md: 3.5 },
-        pb: immersiveEvidenceStreamActive ? { xs: 0.5, md: 0.75 } : 3,
+        pb: 3,
         boxSizing: "border-box",
         opacity,
         transform: `translateY(${translateY}px)`,

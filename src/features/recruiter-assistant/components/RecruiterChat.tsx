@@ -167,11 +167,8 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   const localeRaw = useLocale();
   const locale = (isValidLocale(localeRaw) ? localeRaw : "en") as Locale;
   const t = useTranslations("RecruiterAssistant");
-  const {
-    setHasConversation,
-    badPromptStrikeCount,
-    setImmersiveEvidenceStreamActive,
-  } = useRecruiterAssistantUi();
+  const { setHasConversation, badPromptStrikeCount } =
+    useRecruiterAssistantUi();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const wasChatBusyRef = useRef(false);
   const [termsHydrated, setTermsHydrated] = useState(false);
@@ -197,13 +194,6 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     const split = splitThinkingFromBody(raw);
     return split.hasThinking && split.isThinkingStreaming;
   }, [isBusy, messages]);
-
-  useEffect(() => {
-    setImmersiveEvidenceStreamActive(isAssistantEvidenceStreaming);
-    return () => {
-      setImmersiveEvidenceStreamActive(false);
-    };
-  }, [isAssistantEvidenceStreaming, setImmersiveEvidenceStreamActive]);
 
   const latestUserMessageId = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -292,21 +282,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
       isLatestJobContextPanelOpen &&
       !briefingComposerDismissed);
 
-  const showBottomChartLoadingProgress = useMemo(() => {
-    if (!isBusy) return false;
-    const last = messages[messages.length - 1];
-    if (last?.role !== "assistant") return false;
-    const raw = getRecruiterAssistantMessagePlainText(last);
-    const split = splitThinkingFromBody(raw);
-    return (
-      split.hasThinking &&
-      !split.isThinkingStreaming &&
-      split.chartData === null
-    );
-  }, [isBusy, messages]);
-
-  const reserveBottomComposerSlot =
-    showComposerChrome || showBottomChartLoadingProgress;
+  const reserveTallBottomDock = messages.length > 0 && showComposerChrome;
 
   const termsHref = `/${locale}/recruiter-assistant/terms`;
 
@@ -799,17 +775,17 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
             flexDirection: "column",
             justifyContent: "flex-end",
             gap: 1.5,
-            ...(messages.length > 0 && reserveBottomComposerSlot
+            ...(reserveTallBottomDock
               ? {
                   minHeight: RECRUITER_ASSISTANT_BOTTOM_DOCK_MIN_HEIGHT_PX,
                 }
               : {}),
           }}
         >
-          {showBottomChartLoadingProgress ? (
+          {isAssistantEvidenceStreaming ? (
             <LinearProgress
               aria-busy
-              aria-label={t("briefingMatchProfileLabel")}
+              aria-label={t("evidenceReviewStreamingLabel")}
               sx={{
                 width: "100%",
                 height: 3,
