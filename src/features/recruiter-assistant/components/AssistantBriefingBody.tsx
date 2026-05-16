@@ -7,7 +7,9 @@ import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { createPortfolioDeepLinkMarkdownComponents } from "../lib/createPortfolioDeepLinkMarkdownComponents";
+import { RECRUITER_ASSISTANT_SECTION_BLOCK_GAP } from "../constants/recruiter-assistant";
 import type { ChartData } from "../lib/chart-data-types";
+import { extractScoresReasonAndStripScoresSection } from "../lib/extractScoresReasonFromPitchMarkdown";
 import { splitPitchAndReferencesMarkdown } from "../lib/split-briefing-markdown";
 import { AssistantCollapsiblePanel } from "./AssistantCollapsiblePanel";
 import { AssistantMatchProfile } from "./AssistantMatchProfile";
@@ -59,25 +61,55 @@ export function AssistantBriefingBody({
 
   const [referencesOpen, setReferencesOpen] = useState(false);
 
-  const hasPitchMarkdown = markdown.trim().length > 0;
-  if (!hasPitchMarkdown && !chartData) {
+  const {
+    pitchForRender,
+    referencesMarkdown,
+    scoresReasonForProfile,
+    hasPitchContent,
+  } = useMemo(() => {
+    const hasContent = markdown.trim().length > 0;
+    const split = hasContent
+      ? splitPitchAndReferencesMarkdown(markdown, locale)
+      : { pitchMarkdown: "", referencesMarkdown: null as string | null };
+
+    let pitchForRender = split.pitchMarkdown;
+    let scoresReasonForProfile: string | null = null;
+    if (chartData && split.pitchMarkdown.trim()) {
+      const extracted = extractScoresReasonAndStripScoresSection(
+        split.pitchMarkdown,
+        locale
+      );
+      pitchForRender = extracted.pitchMarkdown;
+      scoresReasonForProfile = extracted.scoresReason;
+    }
+
+    return {
+      pitchForRender,
+      referencesMarkdown: split.referencesMarkdown,
+      scoresReasonForProfile,
+      hasPitchContent: hasContent,
+    };
+  }, [chartData, markdown, locale]);
+
+  if (!hasPitchContent && !chartData) {
     return null;
   }
 
-  const { pitchMarkdown, referencesMarkdown } = hasPitchMarkdown
-    ? splitPitchAndReferencesMarkdown(markdown, locale)
-    : { pitchMarkdown: "", referencesMarkdown: "" };
-
   return (
-    <Stack spacing={1.5}>
-      {chartData ? <AssistantMatchProfile chartData={chartData} /> : null}
-      {pitchMarkdown.trim() ? (
+    <Stack spacing={RECRUITER_ASSISTANT_SECTION_BLOCK_GAP}>
+      {chartData ? (
+        <AssistantMatchProfile
+          chartData={chartData}
+          scoresReason={scoresReasonForProfile}
+        />
+      ) : null}
+      {pitchForRender.trim() ? (
         <Box sx={contentSx}>
           <ReactMarkdown
             remarkPlugins={BRIEFING_REMARK_PLUGINS}
             components={markdownLinkComponents}
           >
-            {pitchMarkdown}
+            {pitchForRender}
           </ReactMarkdown>
         </Box>
       ) : null}

@@ -227,7 +227,7 @@ describe("buildRecruiterPitchSystemPrompt", () => {
     expect(s).toContain("# Main Risks");
     expect(s).toContain("# Recommended Interview Focus");
     expect(s).toContain("# Best Positioning Angle");
-    expect(s).toContain("hard ceiling");
+    expect(s).toContain("Effective max technical fit");
     expect(s).toContain("Maybe / validate first");
     expect(s).toContain("AI-assisted **technical candidate evaluation**");
     expect(s).not.toContain("## Match Strength");

@@ -48,7 +48,7 @@ const claimsSchema = z.object({
         )
     )
     .max(REFERENCE_MAX_CLAIMS)
-    .optional(),
+    .default([]),
 });
 
 /** Editorial / thematic chunks excluded from recruiter-facing reference links. */
@@ -127,7 +127,7 @@ export async function buildReferencesMarkdown(
       .map((c) => c.trim())
       .filter((c) => c.length > 0)
       .slice(0, REFERENCE_MAX_CLAIMS);
-    gaps = (object.gaps ?? [])
+    gaps = object.gaps
       .map((g) => g.trim())
       .filter((g) => g.length > 0)
       .slice(0, REFERENCE_MAX_CLAIMS);

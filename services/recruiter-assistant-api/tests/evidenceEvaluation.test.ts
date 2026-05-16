@@ -2,6 +2,9 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { assessHardGates } from "../src/rag/hardGates/assessHardGates.js";
+import { formatHardGateAssessmentBlock } from "../src/rag/hardGates/formatHardGateBlock.js";
+import { parseEvaluatorTable } from "../src/rag/hardGates/parseEvaluatorTable.js";
 import {
   buildEvidenceAnalystUserPrompt,
   buildRecruiterPitchSystemPrompt,
@@ -45,14 +48,20 @@ describe("evidence evaluation scaffolding (fixtures)", () => {
     const jd = readFixture("staff-fullstack-jd.txt");
     const fakeEval =
       "# Requirement Coverage\n| Req | Must-have | Direct | ok |\n|---|---|---|---|\n";
+    const hardGateBlock = formatHardGateAssessmentBlock(
+      assessHardGates([], fakeEval, "en"),
+      "en"
+    );
     const analystUser = buildEvidenceAnalystUserPrompt(
       "en",
       jd,
       fakeExcerpts,
-      fakeEval
+      fakeEval,
+      hardGateBlock
     );
     expect(analystUser).toContain(fakeEval);
     expect(analystUser).toContain("TypeScript");
+    expect(analystUser).toContain("Backend-enforced hard gate assessment");
   });
 
   it("pitch prompt for composed brief includes match cap ceiling and executive headings", () => {
@@ -61,7 +70,7 @@ describe("evidence evaluation scaffolding (fixtures)", () => {
       "# Candidate Alignment Summary\n- bullet",
     ].join("\n\n---\n\n");
     const pitch = buildRecruiterPitchSystemPrompt(composed, fakeExcerpts);
-    expect(pitch).toContain("hard ceiling");
+    expect(pitch).toContain("Effective max technical fit");
     expect(pitch).toContain("Recommended match strength");
     expect(pitch).toContain("# Verdict");
     expect(pitch).toContain("Practical Fit Risks");
@@ -75,16 +84,40 @@ describe("evidence evaluation scaffolding (fixtures)", () => {
     const evalSystem = buildEvidenceEvaluatorSystemPrompt("en");
     expect(evalSystem).toContain("Two or more role-defining hard gates");
     expect(evalSystem).toContain("Practical hard gate + another missing gate");
+    const fiskalyEval = `# Requirement Coverage
+| Requirement | Importance | Evidence Level | Notes |
+|---|---|---|---|
+| German fluent | Must-have | Not evidenced | JD requires German |
+| Production Golang | Must-have | Not evidenced | No Go excerpts |
+# Match Score Guidance
+**Recommended match strength:** 6/10
+Evidence confidence: Medium
+Evidence confidence reason: Go-heavy role; excerpts show TypeScript systems.
+Reason: adjacent fit
+Score caps applied: None`;
+    const rows = parseEvaluatorTable(fiskalyEval, "en");
+    const assessment = assessHardGates(rows, fiskalyEval, "en");
+    const hardGateBlock = formatHardGateAssessmentBlock(assessment, "en");
     const pitch = buildRecruiterPitchSystemPrompt(
-      `# Requirement Coverage\n| German fluent | Must-have | Not evidenced | JD requires German |\n| Production Golang | Must-have | Not evidenced | No Go excerpts |\n|---|---|---|---|\n# Match Score Guidance\nRecommended match strength: 5/10\nEvidence confidence: Medium\nEvidence confidence reason: Go-heavy role; excerpts show TypeScript systems.\nReason: adjacent fit\nScore caps applied: Two or more role-defining hard gates`,
-      fakeExcerpts
+      fiskalyEval,
+      fakeExcerpts,
+      "English",
+      "en",
+      hardGateBlock,
+      assessment.effectiveMaxTechnicalFit
     );
     expect(pitch).toContain("HARD MUST-HAVE OVERRIDE");
+    expect(pitch).toContain("Deterministic hard gate assessment");
+    expect(pitch).toContain("Blocked recommendations");
+    expect(pitch).toContain("Allowed recommendations");
     expect(pitch).toContain("Weak fit");
-    expect(pitch).toContain("German fluent");
+    expect(pitch).toContain("German");
     expect(pitch).toContain("German + Golang");
     expect(pitch).toContain(
       "Do **not** output **Strong pursue** or **Pursue** when **multiple**"
+    );
+    expect(pitch).not.toContain(
+      "effective max technical fit (backend-enforced): 10"
     );
   });
 

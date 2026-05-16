@@ -143,4 +143,42 @@ describe("splitThinkingFromBody", () => {
     expect(out.briefingPrep).toBe("Scoring backend and");
     expect(out.body).toBe("");
   });
+
+  it("parses chart when open marker arrives before json (streaming chart build)", () => {
+    const text = `${THINKING_OPEN_MARKER}\nbrief\n${THINKING_CLOSE_MARKER}\n\n${CHART_DATA_OPEN_MARKER}${BRIEFING_PREP_OPEN_MARKER}Scoring axes${BRIEFING_PREP_CLOSE_MARKER}`;
+    const partial = splitThinkingFromBody(text);
+    expect(partial.hasChartMarkerOpen).toBe(true);
+    expect(partial.chartData).toBeNull();
+
+    const complete = `${text}${sampleChartJson}${CHART_DATA_CLOSE_MARKER}\n\n# Verdict\nok`;
+    const out = splitThinkingFromBody(complete);
+    expect(out.chartData?.assessmentSummary.technicalFit).toBe(8);
+    expect(out.hasChartMarkerOpen).toBe(false);
+    expect(out.body).toBe("# Verdict\nok");
+  });
+
+  it("parses orphan chart json when start marker was stripped from prep block", () => {
+    const text = `${THINKING_OPEN_MARKER}\nbrief\n${THINKING_CLOSE_MARKER}\n\n${BRIEFING_PREP_OPEN_MARKER}prep${BRIEFING_PREP_CLOSE_MARKER}\n\n${sampleChartJson}${CHART_DATA_CLOSE_MARKER}\n\n# Verdict\nok`;
+    const out = splitThinkingFromBody(text);
+    expect(out.chartData?.assessmentSummary.technicalFit).toBe(8);
+    expect(out.body).toBe("# Verdict\nok");
+    expect(out.body).not.toContain("assessmentSummary");
+  });
+
+  it("parses chart after pitch markdown and uses the last chart block", () => {
+    const firstChart = JSON.stringify({
+      assessmentSummary: {
+        technicalFit: 6,
+        evidenceConfidence: "Medium",
+        recommendation: "Pursue",
+      },
+      capabilityDimensions: JSON.parse(sampleChartJson).capabilityDimensions,
+    });
+    const secondChart = sampleChartJson;
+    const text = `${THINKING_OPEN_MARKER}\nbrief\n${THINKING_CLOSE_MARKER}\n\n${CHART_DATA_OPEN_MARKER}${firstChart}${CHART_DATA_CLOSE_MARKER}\n\n# Verdict\nok\n\n# Scores\n- **Technical fit:** 8/10\n\n${CHART_DATA_OPEN_MARKER}${secondChart}${CHART_DATA_CLOSE_MARKER}`;
+    const out = splitThinkingFromBody(text);
+    expect(out.chartData?.assessmentSummary.technicalFit).toBe(8);
+    expect(out.body).toContain("# Verdict");
+    expect(out.body).not.toContain(CHART_DATA_OPEN_MARKER);
+  });
 });

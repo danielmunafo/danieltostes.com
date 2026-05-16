@@ -9,6 +9,11 @@ import {
   RECRUITER_CHART_DIMENSION_RATIONALE_MAX_LENGTH,
 } from "../constants/recruiter-assistant";
 
+/** Keep aligned with API `chartDataSchema` alias map. */
+const CAPABILITY_DIMENSION_KEY_ALIASES: Readonly<Record<string, string>> = {
+  developerExperience: "integrations",
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -76,11 +81,11 @@ export function parseChartDataJson(jsonText: string): ChartData | null {
 
     for (const item of dimsRaw) {
       if (!isRecord(item)) return null;
-      const key = item.key;
-      if (
-        typeof key !== "string" ||
-        !(CAPABILITY_DIMENSION_KEYS as readonly string[]).includes(key)
-      ) {
+      const rawKey = item.key;
+      if (typeof rawKey !== "string") return null;
+      const aliased = CAPABILITY_DIMENSION_KEY_ALIASES[rawKey];
+      const key = aliased !== undefined ? aliased : rawKey;
+      if (!(CAPABILITY_DIMENSION_KEYS as readonly string[]).includes(key)) {
         return null;
       }
       if (seenKeys.has(key)) return null;

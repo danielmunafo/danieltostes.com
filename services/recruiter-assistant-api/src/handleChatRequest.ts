@@ -2,7 +2,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import {
   convertToCoreMessages,
   createDataStreamResponse,
-  embed,
+  embedMany,
   formatDataStreamPart,
   generateObject,
   generateText,
@@ -75,15 +75,31 @@ import {
   buildChartProjectionSystemPrompt,
   buildChartProjectionUserPrompt,
 } from "./rag/chartProjectionPrompt.js";
-import { type ChartData, chartDataSchema } from "./rag/chartDataSchema.js";
+import {
+  type ChartData,
+  chartDataSchemaForModelOutput,
+} from "./rag/chartDataSchema.js";
 import { buildReferencesMarkdown } from "./rag/references.js";
+import { buildJdHardGateRetrievalQueries } from "./rag/hardGates/buildJdHardGateRetrievalQueries.js";
+import {
+  assessHardGates,
+  extractHardGateRows,
+  formatHardGateAssessmentBlock,
+  validateAndClampPitchHardGates,
+  type HardGateAssessment,
+} from "./rag/hardGates/index.js";
+import {
+  alignChartAssessmentWithHardGates,
+  alignChartAssessmentWithPitch,
+  logChartAssessmentAlignment,
+} from "./rag/alignChartAssessment.js";
 import {
   normalizeChartEvidenceScorePairings,
   validateChartData,
 } from "./rag/validateChartData.js";
 import {
   filterChunksByNavigationLocale,
-  retrieveTopK,
+  retrieveMergedTopK,
 } from "./rag/retrieve.js";
 import { getOpenAiApiKey } from "./secrets/openaiKey.js";
 import { runIntentGate } from "./security/intentGate.js";
@@ -216,13 +232,17 @@ export async function handleChatRequest(
           embeddingsFile.chunks,
           navLocale
         );
-        const { embedding } = await embed({
+        const retrievalQueries = [
+          guarded.text,
+          ...buildJdHardGateRetrievalQueries(guarded.text),
+        ];
+        const { embeddings: queryEmbeddings } = await embedMany({
           model: openai.embedding(EMBEDDING_MODEL),
-          value: guarded.text,
+          values: retrievalQueries,
         });
-        const topChunks = retrieveTopK(
+        const topChunks = retrieveMergedTopK(
           chunksForNavLocale,
-          embedding,
+          queryEmbeddings,
           RAG_TOP_K
         );
         const sourceExcerpts = formatPortfolioChunks(topChunks, navLocale);
@@ -244,6 +264,32 @@ export async function handleChatRequest(
           experimental_sendFinish: false,
         });
         const evaluationMarkdown = (await evaluatorResult.text).trim();
+
+        const isOffTopicEvaluation =
+          isRecruiterOffTopicBriefMarkdown(evaluationMarkdown);
+        let hardGateBlock = "";
+        let effectiveMaxTechnicalFit = 10;
+        let hardGateAssessment: HardGateAssessment | null = null;
+
+        if (!isOffTopicEvaluation) {
+          const hardGateRows = await extractHardGateRows(
+            openai,
+            navLocale,
+            guarded.text,
+            evaluationMarkdown
+          );
+          hardGateAssessment = assessHardGates(
+            hardGateRows,
+            evaluationMarkdown,
+            navLocale
+          );
+          hardGateBlock = formatHardGateAssessmentBlock(
+            hardGateAssessment,
+            navLocale
+          );
+          effectiveMaxTechnicalFit =
+            hardGateAssessment.effectiveMaxTechnicalFit;
+        }
 
         dataStream.write(formatDataStreamPart("text", "\n\n---\n\n"));
 
@@ -279,7 +325,8 @@ export async function handleChatRequest(
           navLocale,
           guarded.text,
           sourceExcerpts,
-          evaluationMarkdown
+          evaluationMarkdown,
+          hardGateBlock
         );
 
         const briefResult = streamText({
@@ -304,9 +351,7 @@ export async function handleChatRequest(
         ];
         const evidenceBriefForPitch = evidenceBriefParts.join("\n\n---\n\n");
 
-        const isOffTopicEvaluation =
-          isRecruiterOffTopicBriefMarkdown(evaluationMarkdown);
-        let validatedChartData: ChartData | null = null;
+        let projectedChartData: ChartData | null = null;
 
         if (isOffTopicEvaluation) {
           logInfo("matchProfile", "chart skipped: evaluator off-topic", {
@@ -314,13 +359,18 @@ export async function handleChatRequest(
           });
         } else {
           dataStream.write(
+            formatDataStreamPart("text", CHART_DATA_OPEN_MARKER)
+          );
+
+          dataStream.write(
             formatDataStreamPart("text", BRIEFING_PREP_OPEN_MARKER)
           );
 
           const chartProjectionPrompt = buildChartProjectionUserPrompt(
             guarded.text,
             evaluationMarkdown,
-            evidenceAnalystText
+            evidenceAnalystText,
+            hardGateBlock
           );
           const chartAttempts = [
             {
@@ -339,7 +389,7 @@ export async function handleChatRequest(
               try {
                 const { object: rawChart } = await generateObject({
                   model: openai(CHAT_MODEL),
-                  schema: chartDataSchema,
+                  schema: chartDataSchemaForModelOutput,
                   maxTokens: attempt.maxTokens,
                   system: buildChartProjectionSystemPrompt(attempt.compact),
                   prompt: chartProjectionPrompt,
@@ -357,15 +407,29 @@ export async function handleChatRequest(
                     }
                   );
                 }
+                let chartCandidate = chartForValidation;
+                if (hardGateAssessment) {
+                  const hardGateAligned = alignChartAssessmentWithHardGates(
+                    chartCandidate,
+                    hardGateAssessment
+                  );
+                  chartCandidate = hardGateAligned.chart;
+                  logChartAssessmentAlignment(
+                    "hardGate",
+                    navLocale,
+                    hardGateAligned.fields
+                  );
+                }
                 const validationOutcome = validateChartData(
-                  chartForValidation,
+                  chartCandidate,
                   evaluationMarkdown,
-                  navLocale
+                  navLocale,
+                  hardGateAssessment
                 );
                 if (validationOutcome.ok) {
                   logInfo(
                     "matchProfile",
-                    "chart validated; will emit markers",
+                    "chart validated; pending pitch score sync",
                     {
                       navLocale,
                       attempt: attemptIndex + 1,
@@ -444,27 +508,44 @@ export async function handleChatRequest(
             prepStatusResult.text,
             runChartProjection(),
           ]);
-          validatedChartData = chartFromProjection;
+          projectedChartData = chartFromProjection;
 
           dataStream.write(
             formatDataStreamPart("text", BRIEFING_PREP_CLOSE_MARKER)
           );
-        }
 
-        if (validatedChartData) {
-          const chartJson = JSON.stringify(validatedChartData);
-          logInfo("matchProfile", "emitting chart marker block", {
-            navLocale,
-            jsonChars: chartJson.length,
-          });
-          dataStream.write(
-            formatDataStreamPart(
-              "text",
-              `${CHART_DATA_OPEN_MARKER}${chartJson}${CHART_DATA_CLOSE_MARKER}\n\n`
-            )
-          );
-        } else if (!isOffTopicEvaluation) {
-          logInfo("matchProfile", "no chart markers emitted", { navLocale });
+          if (projectedChartData) {
+            if (hardGateAssessment) {
+              const hardGateAligned = alignChartAssessmentWithHardGates(
+                projectedChartData,
+                hardGateAssessment
+              );
+              projectedChartData = hardGateAligned.chart;
+              logChartAssessmentAlignment(
+                "hardGate",
+                navLocale,
+                hardGateAligned.fields
+              );
+            }
+            const chartJson = JSON.stringify(projectedChartData);
+            logInfo("matchProfile", "emitting chart marker block (pre-pitch)", {
+              navLocale,
+              jsonChars: chartJson.length,
+              technicalFit: projectedChartData.assessmentSummary.technicalFit,
+              recommendation:
+                projectedChartData.assessmentSummary.recommendation,
+            });
+            dataStream.write(
+              formatDataStreamPart(
+                "text",
+                `${chartJson}${CHART_DATA_CLOSE_MARKER}\n\n`
+              )
+            );
+          } else {
+            dataStream.write(
+              formatDataStreamPart("text", CHART_DATA_CLOSE_MARKER)
+            );
+          }
         }
 
         const pitchResult = streamText({
@@ -473,7 +554,9 @@ export async function handleChatRequest(
             evidenceBriefForPitch,
             sourceExcerpts,
             portfolioLanguage,
-            navLocale
+            navLocale,
+            hardGateBlock,
+            effectiveMaxTechnicalFit
           ),
           messages: coreMessages,
           maxTokens: RECRUITER_PITCH_MAX_TOKENS,
@@ -483,7 +566,52 @@ export async function handleChatRequest(
           experimental_sendStart: false,
         });
 
-        const assistantText = await pitchResult.text;
+        let assistantText = await pitchResult.text;
+        if (hardGateAssessment) {
+          const clamped = validateAndClampPitchHardGates(
+            assistantText,
+            hardGateAssessment,
+            navLocale
+          );
+          assistantText = clamped.text;
+        }
+
+        if (projectedChartData) {
+          const pitchAligned = alignChartAssessmentWithPitch(
+            projectedChartData,
+            assistantText,
+            navLocale
+          );
+          if (pitchAligned.adjusted) {
+            projectedChartData = pitchAligned.chart;
+            logChartAssessmentAlignment(
+              "pitch",
+              navLocale,
+              pitchAligned.fields
+            );
+            const chartJson = JSON.stringify(projectedChartData);
+            logInfo(
+              "matchProfile",
+              "re-emitting chart marker block after pitch sync",
+              {
+                navLocale,
+                jsonChars: chartJson.length,
+                technicalFit: projectedChartData.assessmentSummary.technicalFit,
+                recommendation:
+                  projectedChartData.assessmentSummary.recommendation,
+              }
+            );
+            dataStream.write(
+              formatDataStreamPart(
+                "text",
+                `${CHART_DATA_OPEN_MARKER}${chartJson}${CHART_DATA_CLOSE_MARKER}\n\n`
+              )
+            );
+          }
+        } else if (!isOffTopicEvaluation && projectedChartData === null) {
+          logInfo("matchProfile", "no chart markers emitted", { navLocale });
+        }
+
         const referencesMd = await buildReferencesMarkdown(
           openai,
           assistantText,

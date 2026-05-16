@@ -99,41 +99,84 @@ function stripPostThinkingSuffix(suffixRaw: string): {
   };
 }
 
+function tryParseOrphanChartJsonBeforeClose(body: string): {
+  readonly chartData: ChartData | null;
+  readonly cleanedBody: string;
+} {
+  const closeIdx = body.indexOf(CHART_DATA_CLOSE_MARKER);
+  if (closeIdx < 0) {
+    return { chartData: null, cleanedBody: body };
+  }
+  const beforeClose = body.slice(0, closeIdx).trim();
+  if (!beforeClose.startsWith("{")) {
+    return { chartData: null, cleanedBody: body };
+  }
+  const parsed = parseChartDataJson(beforeClose);
+  if (!parsed) {
+    return { chartData: null, cleanedBody: body };
+  }
+  const afterClose = closeIdx + CHART_DATA_CLOSE_MARKER.length;
+  return {
+    chartData: parsed,
+    cleanedBody: `${body.slice(afterClose)}`.trim(),
+  };
+}
+
 function stripChartMarkerBlock(body: string): {
   readonly cleanedBody: string;
   readonly chartData: ChartData | null;
   readonly hasChartMarkerOpen: boolean;
 } {
-  const openIdx = body.indexOf(CHART_DATA_OPEN_MARKER);
-  if (openIdx === -1) {
-    return { cleanedBody: body, chartData: null, hasChartMarkerOpen: false };
+  let cleanedBody = body;
+  let chartData: ChartData | null = null;
+  let hasChartMarkerOpen = false;
+  const completeBlocks: Array<{ start: number; end: number }> = [];
+
+  let searchFrom = 0;
+  while (searchFrom < cleanedBody.length) {
+    const openIdx = cleanedBody.indexOf(CHART_DATA_OPEN_MARKER, searchFrom);
+    if (openIdx === -1) {
+      break;
+    }
+
+    const afterOpen = openIdx + CHART_DATA_OPEN_MARKER.length;
+    const closeIdx = cleanedBody.indexOf(CHART_DATA_CLOSE_MARKER, afterOpen);
+
+    if (closeIdx === -1) {
+      cleanedBody = cleanedBody.slice(0, openIdx).trim();
+      hasChartMarkerOpen = true;
+      break;
+    }
+
+    const jsonText = cleanedBody.slice(afterOpen, closeIdx).trim();
+    const parsed = parseChartDataJson(jsonText);
+    if (parsed) {
+      chartData = parsed;
+    }
+
+    completeBlocks.push({
+      start: openIdx,
+      end: closeIdx + CHART_DATA_CLOSE_MARKER.length,
+    });
+    searchFrom = closeIdx + CHART_DATA_CLOSE_MARKER.length;
   }
 
-  const afterOpen = openIdx + CHART_DATA_OPEN_MARKER.length;
-  const closeIdx = body.indexOf(CHART_DATA_CLOSE_MARKER, afterOpen);
-
-  const beforeOpen = body.slice(0, openIdx);
-  const afterBlockStart =
-    closeIdx === -1 ? body.length : closeIdx + CHART_DATA_CLOSE_MARKER.length;
-  const afterBlock = body.slice(afterBlockStart);
-
-  const cleanedBody = `${beforeOpen}${afterBlock}`.trim();
-
-  if (closeIdx === -1) {
-    return {
-      cleanedBody,
-      chartData: null,
-      hasChartMarkerOpen: true,
-    };
+  for (let i = completeBlocks.length - 1; i >= 0; i -= 1) {
+    const { start, end } = completeBlocks[i];
+    cleanedBody =
+      `${cleanedBody.slice(0, start)}${cleanedBody.slice(end)}`.trim();
   }
 
-  const jsonText = body.slice(afterOpen, closeIdx).trim();
-  const chartData = parseChartDataJson(jsonText);
+  if (!chartData && !hasChartMarkerOpen) {
+    const orphan = tryParseOrphanChartJsonBeforeClose(cleanedBody);
+    chartData = orphan.chartData;
+    cleanedBody = orphan.cleanedBody;
+  }
 
   return {
     cleanedBody,
     chartData,
-    hasChartMarkerOpen: false,
+    hasChartMarkerOpen,
   };
 }
 

@@ -10,12 +10,6 @@ export const CHAT_HERO_TOPBAR_OFFSET_MD_PX = 64;
 /** Max width for the recruiter chat column (common assistant UI width). */
 export const RECRUITER_CHAT_MAX_WIDTH_PX = 768;
 
-/** Keep in sync with API `MAX_CHAT_HISTORY_JSON_CHARS`. */
-export const RECRUITER_MAX_CHAT_HISTORY_JSON_CHARS = 32_768;
-
-/** API / fetch error code when serialized `messages` exceeds the history cap. */
-export const RECRUITER_PAYLOAD_TOO_LARGE_ERROR = "payload_too_large" as const;
-
 /** Height of the capability radar chart in the match profile (px). */
 export const RECRUITER_MATCH_PROFILE_CHART_HEIGHT_PX = 260;
 
@@ -23,11 +17,20 @@ export const RECRUITER_MATCH_PROFILE_CHART_HEIGHT_PX = 260;
 export const RECRUITER_CHART_DIMENSION_LABEL_MAX_LENGTH = 56;
 export const RECRUITER_CHART_DIMENSION_RATIONALE_MAX_LENGTH = 120;
 
+/** Max width of a submitted job-context panel (% of the chat column). */
+export const RECRUITER_JOB_CONTEXT_PANEL_MAX_WIDTH_PERCENT = 88;
+
 /**
- * Max height of the evidence-review markdown body while the stream is active.
- * Inner scroll keeps the chat log from growing and avoids constant auto-scroll jumps.
+ * Shared collapsible body max height (job context + evidence review); content
+ * scrolls inside so panel height matches across the two panels.
  */
-export const RECRUITER_EVIDENCE_REVIEW_STREAMING_MAX_HEIGHT_PX = 320;
+export const RECRUITER_ASSISTANT_COLLAPSIBLE_BODY_MAX_HEIGHT_PX = 420;
+
+/**
+ * Body copy scale for collapsible panels — aligned with evidence review markdown.
+ */
+export const RECRUITER_ASSISTANT_PANEL_BODY_FONT_REM = 0.8125;
+export const RECRUITER_ASSISTANT_PANEL_BODY_LINE_HEIGHT = 1.55;
 
 /**
  * sessionStorage key: user accepted feature terms for the recruiter assistant
@@ -60,20 +63,29 @@ export const RECRUITER_BAD_PROMPT_LOCK_DURATION_MS = 24 * 60 * 60 * 1000;
 export const RECRUITER_BAD_PROMPT_STRIKE_EVENT =
   "danieltostes:recruiterAssistantBadPromptUpdated" as const;
 
+/** Minimum height of the bottom dock while a conversation exists (composer / loading slot). */
+export const RECRUITER_ASSISTANT_BOTTOM_DOCK_MIN_HEIGHT_PX = 228;
+
+/**
+ * Theme spacing units (`sx`): distance from a briefing section label to the control
+ * or body directly beneath it (collapsible header, cards, markdown block).
+ */
+export const RECRUITER_ASSISTANT_SECTION_TITLE_TO_CONTENT_SPACING = 1.5;
+
+/**
+ * Theme spacing units: vertical gap between major briefing blocks (e.g. after a
+ * collapsible panel, before pitch markdown; subsequent `# …` pitch headings).
+ */
+export const RECRUITER_ASSISTANT_SECTION_BLOCK_GAP = 2.75;
+
 /** Max width for the prompt composer (matches chat column on GPT-style layouts). */
 export const RECRUITER_COMPOSER_MAX_WIDTH_PX = 768;
 
 /** Composer corner radius — ChatGPT-like rounded rectangle (px). */
 export const RECRUITER_COMPOSER_BORDER_RADIUS_PX = 24;
 
-/**
- * Uniform inner padding (px) for the expanded composer (JD paste).
- * Compact single-line bar uses `RECRUITER_COMPOSER_COMPACT_INNER_PADDING_PX`.
- */
+/** Uniform inner padding (px) for the job-description composer. */
 export const RECRUITER_COMPOSER_INNER_PADDING_PX = 14;
-
-/** Uniform inner padding (px) for the compact (post-message) composer bar. */
-export const RECRUITER_COMPOSER_COMPACT_INNER_PADDING_PX = 10;
 
 /** Max height of the scrollable prompt field only (px), excluding the footer row. */
 export const RECRUITER_COMPOSER_INPUT_MAX_HEIGHT_PX = 120;
@@ -84,6 +96,16 @@ export const RECRUITER_COMPOSER_INPUT_MAX_HEIGHT_PX = 120;
  * Keep consistent with `RECRUITER_COMPOSER_INPUT_MAX_HEIGHT_PX` (~line height × rows).
  */
 export const RECRUITER_COMPOSER_EXPANDED_ROWS = 5;
+
+/**
+ * After the evidence phase (`hasThinking && !isThinkingStreaming`), the JD
+ * composer exits (fade + nudge down). The job-context panel auto-collapses when
+ * `[[THINKING_START]]` arrives (see `shouldRequestJobContextCollapse`).
+ */
+export const RECRUITER_COMPOSER_EXIT_DURATION_MS = 100;
+
+/** Vertical offset for the composer exit motion (px). */
+export const RECRUITER_COMPOSER_EXIT_TRANSLATE_Y_PX = 16;
 
 /** Pixels of window scroll over which the “scroll for more” cue fades out. */
 export const ASSISTANT_SCROLL_CUE_FADE_DISTANCE_PX = 160;

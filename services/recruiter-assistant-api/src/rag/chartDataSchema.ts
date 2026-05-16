@@ -68,3 +68,38 @@ export const chartDataSchema = z.object({
 export type AssessmentSummary = z.infer<typeof assessmentSummarySchema>;
 export type CapabilityDimension = z.infer<typeof capabilityDimensionSchema>;
 export type ChartData = z.infer<typeof chartDataSchema>;
+
+/**
+ * Maps model-invented or legacy dimension keys to the canonical enum before
+ * schema validation (generateObject / streamed chart repair).
+ */
+const CAPABILITY_DIMENSION_KEY_ALIASES: Readonly<
+  Record<string, CapabilityDimensionKey>
+> = {
+  developerExperience: "integrations",
+};
+
+function remapChartCapabilityDimensionKeys(data: unknown): unknown {
+  if (typeof data !== "object" || data === null) return data;
+  const chart = data as Record<string, unknown>;
+  const dims = chart.capabilityDimensions;
+  if (!Array.isArray(dims)) return data;
+  return {
+    ...chart,
+    capabilityDimensions: dims.map((dim) => {
+      if (typeof dim !== "object" || dim === null) return dim;
+      const row = dim as Record<string, unknown>;
+      const key = row.key;
+      if (typeof key !== "string") return dim;
+      const mapped = CAPABILITY_DIMENSION_KEY_ALIASES[key];
+      if (mapped === undefined) return dim;
+      return { ...row, key: mapped };
+    }),
+  };
+}
+
+/** Use with `generateObject` so minor key drift still validates as `ChartData`. */
+export const chartDataSchemaForModelOutput = z.preprocess(
+  remapChartCapabilityDimensionKeys,
+  chartDataSchema
+);

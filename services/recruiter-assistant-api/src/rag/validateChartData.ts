@@ -7,6 +7,8 @@ import {
   type CapabilityDimension,
 } from "./chartDataSchema.js";
 import { logWarn } from "../logging/logger.js";
+import type { HardGateAssessment } from "./hardGates/schema.js";
+import { localizedRecommendationToKey } from "./hardGates/formatHardGateBlock.js";
 import { parseEvaluatorMatchMetadata } from "./parseEvaluatorMatchMetadata.js";
 import { parseEvaluatorRequirementEvidence } from "./parseEvaluatorRequirementEvidence.js";
 
@@ -155,10 +157,32 @@ function allDimensionScoresMatchTechnicalFit(
  * Validates chart JSON against schema, dimension rules, and evaluator metadata.
  * Returns a failure reason when invalid (for operator logs).
  */
+function resolveTechnicalFitCeiling(
+  evaluatorCeiling: number | null,
+  hardGateAssessment: HardGateAssessment | null | undefined
+): number | null {
+  if (hardGateAssessment) {
+    const evaluatorCap = evaluatorCeiling ?? 10;
+    return Math.min(evaluatorCap, hardGateAssessment.effectiveMaxTechnicalFit);
+  }
+  return evaluatorCeiling;
+}
+
+function isChartRecommendationAllowedByHardGates(
+  recommendation: ChartRecommendation,
+  assessment: HardGateAssessment
+): boolean {
+  const key = localizedRecommendationToKey(recommendation, "en");
+  if (!key) return false;
+  if (assessment.blockedRecommendations.includes(key)) return false;
+  return assessment.allowedRecommendations.includes(key);
+}
+
 export function validateChartData(
   raw: unknown,
   evaluatorMarkdown: string,
-  navLocale: RecruiterNavLocale
+  navLocale: RecruiterNavLocale,
+  hardGateAssessment?: HardGateAssessment | null
 ): ChartValidationOutcome {
   const parsed = chartDataSchema.safeParse(raw);
   if (!parsed.success) {
@@ -200,7 +224,12 @@ export function validateChartData(
   );
   const { assessmentSummary } = chart;
 
-  if (!evaluatorMeta) {
+  const technicalFitCeiling = resolveTechnicalFitCeiling(
+    evaluatorMeta?.technicalFitCeiling ?? null,
+    hardGateAssessment
+  );
+
+  if (!evaluatorMeta && !hardGateAssessment) {
     logWarn(
       "matchProfile",
       "evaluator metadata unparsed; structural chart checks only",
@@ -216,25 +245,28 @@ export function validateChartData(
     );
   }
 
-  if (assessmentSummary.technicalFit > evaluatorMeta.technicalFitCeiling) {
-    return {
-      ok: false,
-      reason: "technical_fit_exceeds_ceiling",
-      detail: `chart=${assessmentSummary.technicalFit} ceiling=${evaluatorMeta.technicalFitCeiling}`,
-    };
+  if (technicalFitCeiling !== null) {
+    if (assessmentSummary.technicalFit > technicalFitCeiling) {
+      return {
+        ok: false,
+        reason: "technical_fit_exceeds_ceiling",
+        detail: `chart=${assessmentSummary.technicalFit} ceiling=${technicalFitCeiling}`,
+      };
+    }
+    const driftAnchor = hardGateAssessment
+      ? hardGateAssessment.effectiveMaxTechnicalFit
+      : evaluatorMeta!.technicalFitCeiling;
+    if (Math.abs(assessmentSummary.technicalFit - driftAnchor) > 1) {
+      return {
+        ok: false,
+        reason: "technical_fit_drift",
+        detail: `chart=${assessmentSummary.technicalFit} ceiling=${driftAnchor}`,
+      };
+    }
   }
+
   if (
-    Math.abs(
-      assessmentSummary.technicalFit - evaluatorMeta.technicalFitCeiling
-    ) > 1
-  ) {
-    return {
-      ok: false,
-      reason: "technical_fit_drift",
-      detail: `chart=${assessmentSummary.technicalFit} ceiling=${evaluatorMeta.technicalFitCeiling}`,
-    };
-  }
-  if (
+    evaluatorMeta &&
     assessmentSummary.evidenceConfidence !== evaluatorMeta.evidenceConfidence
   ) {
     return {
@@ -244,15 +276,30 @@ export function validateChartData(
     };
   }
 
-  const allowed = allowedRecommendationsForFitCeiling(
-    evaluatorMeta.technicalFitCeiling
-  );
-  if (!allowed.includes(assessmentSummary.recommendation)) {
-    return {
-      ok: false,
-      reason: "recommendation_not_in_fit_band",
-      detail: `recommendation=${assessmentSummary.recommendation} allowed=${allowed.join(",")}`,
-    };
+  if (hardGateAssessment) {
+    if (
+      !isChartRecommendationAllowedByHardGates(
+        assessmentSummary.recommendation,
+        hardGateAssessment
+      )
+    ) {
+      return {
+        ok: false,
+        reason: "recommendation_not_in_fit_band",
+        detail: `recommendation=${assessmentSummary.recommendation} hardGateAllowed=${hardGateAssessment.allowedRecommendations.join(",")}`,
+      };
+    }
+  } else if (evaluatorMeta) {
+    const allowed = allowedRecommendationsForFitCeiling(
+      evaluatorMeta.technicalFitCeiling
+    );
+    if (!allowed.includes(assessmentSummary.recommendation)) {
+      return {
+        ok: false,
+        reason: "recommendation_not_in_fit_band",
+        detail: `recommendation=${assessmentSummary.recommendation} allowed=${allowed.join(",")}`,
+      };
+    }
   }
 
   const requirementEvidence = parseEvaluatorRequirementEvidence(
@@ -367,8 +414,14 @@ function validateChartShapeWithoutEvaluatorMeta(
 export function parseAndValidateChartData(
   raw: unknown,
   evaluatorMarkdown: string,
-  navLocale: RecruiterNavLocale
+  navLocale: RecruiterNavLocale,
+  hardGateAssessment?: HardGateAssessment | null
 ): ChartData | null {
-  const outcome = validateChartData(raw, evaluatorMarkdown, navLocale);
+  const outcome = validateChartData(
+    raw,
+    evaluatorMarkdown,
+    navLocale,
+    hardGateAssessment
+  );
   return outcome.ok ? outcome.chart : null;
 }

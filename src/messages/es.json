@@ -22,13 +22,13 @@
     "briefingDraftingLabel": "Redactando el briefing para reclutadores…",
     "evidenceReferencesLabel": "Referencias de evidencias",
     "jobContextLabel": "Contexto del rol",
+    "jobDescriptionSectionLabel": "Descripción del puesto",
     "placeholder": "Pega aquí la descripción del puesto…",
     "send": "Enviar",
     "sending": "Pensando…",
     "unavailable": "Asistente no configurado (falta la URL de la API).",
     "badPromptStrikesCounter": "Mensajes fuera de contexto: {count} / {max} — el asistente solo acepta texto de empleo o recruiting.",
-    "payloadTooLargeWarning": "Mensaje demasiado grande. Para pegar una nueva oportunidad laboral, actualice la ventana del navegador.",
-    "disclaimer": "Generado por IA a partir del contenido público del portafolio; verifica los hechos antes de decidir.",
+    "disclaimer": "El análisis por IA puede variar o contener errores. Generado a partir del contenido público del portafolio — verifica los datos clave antes de tomar decisiones.",
     "scrollDownCue": "Hay más contenido abajo — desplázate hacia abajo",
     "termsModalTitle": "Términos y condiciones",
     "termsModalDescription": "Tienes que aceptar antes de enviar estos datos. Los <terms>términos completos y uso razonable</terms> explican qué ocurre al enviar.",
@@ -46,7 +46,8 @@
     "chartRecommendationPursue": "Impulsar",
     "chartRecommendationMaybe": "Tal vez / validar antes",
     "chartRecommendationWeakFit": "Encaje débil",
-    "chartRecommendationSkip": "Descartar"
+    "chartRecommendationSkip": "Descartar",
+    "scoresRationaleLabel": "Fundamento"
   },
   "RecruiterAssistantTerms": {
     "metaTitle": "Términos del Asistente de IA para reclutadores",

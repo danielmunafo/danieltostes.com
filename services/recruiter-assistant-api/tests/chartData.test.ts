@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { chartDataSchema } from "../src/rag/chartDataSchema.js";
+import {
+  chartDataSchema,
+  chartDataSchemaForModelOutput,
+} from "../src/rag/chartDataSchema.js";
 import { parseEvaluatorMatchMetadata } from "../src/rag/parseEvaluatorMatchMetadata.js";
 import { parseEvaluatorRequirementEvidence } from "../src/rag/parseEvaluatorRequirementEvidence.js";
 import {
@@ -13,6 +16,8 @@ import {
   buildChartProjectionSystemPrompt,
   buildChartProjectionUserPrompt,
 } from "../src/rag/chartProjectionPrompt.js";
+import { computeHardGateAssessment } from "../src/rag/hardGates/computeHardGateAssessment.js";
+import type { HardGateRequirementRow } from "../src/rag/hardGates/schema.js";
 
 const validEvaluatorEn = `# Requirement Coverage
 
@@ -95,6 +100,27 @@ describe("chartDataSchema", () => {
   it("accepts valid chart data", () => {
     const result = chartDataSchema.safeParse(makeValidChart());
     expect(result.success).toBe(true);
+  });
+
+  it("remaps developerExperience via chartDataSchemaForModelOutput", () => {
+    const chart = makeValidChart();
+    const dims = chart.capabilityDimensions.map((d, i) =>
+      i === 2
+        ? {
+            ...d,
+            key: "developerExperience" as unknown as typeof d.key,
+            label: "Developer experience",
+          }
+        : d
+    );
+    const result = chartDataSchemaForModelOutput.safeParse({
+      ...chart,
+      capabilityDimensions: dims,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.capabilityDimensions[2].key).toBe("integrations");
+    }
   });
 
   it("rejects fewer than 4 dimensions", () => {
@@ -285,6 +311,53 @@ Score caps applied: None`;
   it("rejects technical fit above evaluator ceiling", () => {
     const chart = makeValidChart({ technicalFit: 9 });
     expect(parseAndValidateChartData(chart, validEvaluatorEn, "en")).toBeNull();
+  });
+
+  it("rejects chart Pursue at 6/10 when hard gates cap at 4", () => {
+    const evaluatorSix = validEvaluatorEn.replace(
+      "**Recommended match strength:** 8/10",
+      "**Recommended match strength:** 6/10"
+    );
+    const chart = makeValidChart({
+      technicalFit: 6,
+      recommendation: "Pursue",
+    });
+    chart.assessmentSummary.evidenceConfidence = "Medium";
+    const hardGateAssessment = computeHardGateAssessment([
+      {
+        requirement: "German fluency",
+        category: "spoken_language",
+        evidenceLevel: "not_evidenced",
+        requirementImportance: "must_have",
+        isHardGate: true,
+        severity: "major",
+        jdSuggestsFlexibility: false,
+        rationale: "test",
+      } satisfies HardGateRequirementRow,
+      {
+        requirement: "Production Golang",
+        category: "primary_stack",
+        evidenceLevel: "not_evidenced",
+        requirementImportance: "must_have",
+        isHardGate: true,
+        severity: "major",
+        jdSuggestsFlexibility: false,
+        rationale: "test",
+      } satisfies HardGateRequirementRow,
+    ]);
+    const outcome = validateChartData(
+      chart,
+      evaluatorSix,
+      "en",
+      hardGateAssessment
+    );
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) {
+      expect([
+        "technical_fit_exceeds_ceiling",
+        "recommendation_not_in_fit_band",
+      ]).toContain(outcome.reason);
+    }
   });
 
   it("rejects confidence mismatch", () => {
@@ -502,5 +575,13 @@ describe("chartProjectionPrompt", () => {
     expect(user).toContain(validEvaluatorEn);
     expect(user).toContain("target 6-8");
     expect(user).toContain("Vary scores across dimensions");
+    const withHardGates = buildChartProjectionUserPrompt(
+      "JD",
+      validEvaluatorEn,
+      "analyst",
+      "Deterministic hard gate assessment\n- Effective max technical fit: 4/10"
+    );
+    expect(withHardGates).toContain("Backend-enforced hard gate assessment");
+    expect(withHardGates).toContain("Effective max technical fit: 4/10");
   });
 });
