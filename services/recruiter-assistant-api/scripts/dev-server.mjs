@@ -20,9 +20,14 @@ const port = Number(process.env.PORT ?? 3001);
 createServer(async (req, res) => {
   const method = req.method ?? "GET";
   const url = req.url ?? "/";
-  if (method === "GET" && (url === "/health" || url === "/health/")) {
+  const isHealthPath = url === "/health" || url === "/health/";
+  if (isHealthPath && (method === "GET" || method === "HEAD")) {
     res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ ok: true }));
+    if (method === "GET") {
+      res.end(JSON.stringify({ ok: true }));
+    } else {
+      res.end();
+    }
     return;
   }
 
