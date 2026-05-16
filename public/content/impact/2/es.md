@@ -1,45 +1,50 @@
 ### Resumen Ejecutivo
 
-Diseñé e implementé un servicio de orquestación distribuido basado en SAGA que permite a los clientes adherir al descubierto ("Cheque Especial") directamente por canales móviles.
+Diseñé y entregué un servicio de orquestación distribuido basado en SAGA que permitió a los clientes contratar el producto de descubierto (“Cheque Especial”) directamente por canales móviles, sustituyendo una ruta de alta más dependiente de sucursal/manual por un flujo digital orientado a eventos.
 
-La solución coordina múltiples dominios de backend (autorización, riesgo, servicios de cuenta, notificación) garantizando consistencia eventual, tolerancia a fallos y alta concurrencia en un entorno bancario regulado.
+El servicio coordinó múltiples dominios bancarios — incluyendo autorización, evaluación de riesgo, actualización de cuenta y notificación al cliente — preservando consistencia eventual, recuperabilidad operativa y auditabilidad en un entorno financiero regulado. Cada alta se modeló como un flujo determinista en máquina de estados, con snapshots de estado persistidos en Cassandra y coordinación asíncrona entre dominios mediante Kafka.
 
-### Impacto en el Negocio
+El objetivo no era solo exponer una nueva funcionalidad móvil de alta, sino crear una capa de orquestación resiliente capaz de sobrevivir a fallos parciales, eventos duplicados, reintentos downstream y handoffs manuales de soporte sin perder silenciosamente solicitudes de clientes.
 
-- Habilitó onboarding del producto descubierto por canal móvil
-- Redujo dependencia operativa de sucursal/inscripción manual
-- Aumentó adopción de productos digitales
-- Reforzó trazabilidad y visibilidad operacional
-- Contención de fallos mediante estrategia de retry estructurado + DLQ
+### Impacto de Negocio
 
-### Visión de la Arquitectura
+- Habilité un nuevo canal móvil para la contratación de descubierto, ampliando el acceso más allá de flujos en sucursal/manual o asistidos por soporte.
+- Reduje la dependencia operativa de altas manuales e intervención de backoffice en recorridos estándar de clientes.
+- Mejoré la adopción digital del producto al permitir que clientes elegibles completaran la contratación de descubierto directamente desde la app móvil.
+- Reforcé la auditabilidad al persistir snapshots de estado de la saga y hacer rastreable cada transición del flujo.
+- Mejoré la fiabilidad al aislar altas fallidas o con timeout mediante reintentos acotados, límites de TTL, enrutamiento a DLQ y escalado a soporte.
+- Creé un patrón reutilizable de orquestación para flujos bancarios de larga duración que requieren consistencia eventual entre múltiples dominios backend.
 
-El servicio de orquestación actúa como motor de flujo centralizado, coordinando servicios de dominio de forma asíncrona por flujos de eventos y persistiendo el estado de la saga para recuperación y escalabilidad horizontal.
+### Visión General de la Arquitectura
+
+El servicio de orquestación operaba como un motor de flujo centralizado responsable de coordinar servicios de dominio de forma asíncrona. Las solicitudes móviles entraban por la ruta de aplicación/BFF y disparaban una nueva instancia de saga; el orquestador avanzaba el flujo publicando y consumiendo eventos Kafka, persistiendo snapshots de progreso y aplicando transiciones de estado deterministas.
 
 ![diagram](/content/diagrams/impact-2-es-0.svg)
 
-Infraestructura de soporte:
+Infraestructura de Soporte:
 
-- Backbone de eventos: Apache Kafka
-- Dead Letter Queue (DLQ) para inscripciones fallidas
-- Persistencia de estado: Cassandra (snapshots de la saga)
-- Observabilidad: logging centralizado y dashboards Grafana
-- Streaming analítico: Apache Spark
-- Informes y BI: Amazon Redshift
+- Backbone de Eventos: Apache Kafka
+- Gobernanza de Esquemas: Avro + Confluent Schema Registry
+- Dead Letter Queue (DLQ): flujos de alta fallidos o expirados
+- Persistencia de Estado: snapshots de saga en Cassandra
+- Observabilidad: logs centralizados, dashboards Grafana, consultas operativas
+- Streaming Analítico: Apache Spark
+- Reporting & BI: Amazon Redshift
 
-#### Características de la Arquitectura
+#### Características Arquitectónicas
 
-- Orquestación SAGA orientada a máquina de estados
-- Comunicación event-driven entre servicios
-- Snapshots persistentes de la saga para recuperación tras fallo
-- Instancias worker stateless para escalabilidad horizontal
-- Tratamiento idempotente de eventos
-- Estrategia de retry acotada con aislamiento de fallos
-- Observabilidad operacional completa (logs + métricas)
+- Orquestación SAGA impulsada por máquina de estados para flujos financieros de larga duración
+- Comunicación orientada a eventos entre el orquestador y dominios bancarios downstream
+- Snapshots persistentes de saga que permiten recuperación, replay e investigación manual
+- Workers orquestadores stateless para escalabilidad horizontal
+- Manejo idempotente mediante garantías downstream y progresión monotónica del estado de la saga
+- Estrategia de reintento acotada con aislamiento de fallos basado en TTL
+- Ruta de escalado vía DLQ para equipos de soporte cuando el procesamiento automatizado no podía completarse con seguridad
+- Observabilidad operativa completa mediante logs, métricas, dashboards e historial de estado consultable
 
-### Modelo de la Máquina de Estados
+### Modelo de Máquina de Estados
 
-Cada solicitud de inscripción se modela como una máquina de estados determinista con transiciones solo hacia adelante.
+Cada solicitud de alta se modeló como una máquina de estados determinista con transiciones solo hacia adelante. El orquestador persistía snapshots tras transiciones relevantes para que el flujo pudiera reanudarse con seguridad tras reinicios de proceso, eventos duplicados o retrasos downstream.
 
 #### Estados Principales
 
@@ -51,91 +56,90 @@ Cada solicitud de inscripción se modela como una máquina de estados determinis
 - COMPLETED
 - FAILED
 
-Las transiciones están guiadas por snapshot y son monótonas: una vez la saga avanza a un estado más reciente, eventos antiguos o duplicados no pueden sobrescribirlo.
+Las transiciones de estado eran monotónicas: una vez que la saga avanzaba a un estado más nuevo, eventos obsoletos o duplicados no podían retrocederla ni sobrescribir el snapshot más avanzado.
 
-### Diagrama de Secuencia - Inscripción en Descubierto Event-Driven (Kafka)
+### Diagrama de Secuencia — Alta de Descubierto Orientada a Eventos (Kafka)
 
 ![diagram](/content/diagrams/impact-2-es-1.svg)
 
-### Flujo de Inscripción y Tratamiento de Fallos
+### Flujo de Alta y Manejo de Fallos
 
-1. Cliente envía inscripción en descubierto por móvil.
-2. API dispara nueva instancia de la saga (estado = STARTED).
-3. Estado de la saga persistido en Cassandra.
+1. El cliente envía una solicitud de alta de descubierto por la app móvil.
+2. El móvil llama a la capa BFF/API, que crea o dispara una nueva instancia de saga.
+3. El orquestador persiste el estado inicial de la saga en Cassandra.
 
-4. Paso de autorización
-   - Invocar servicio de autorización
-   - En éxito → transición a AUTHORIZED
-   - En fallo → retry (hasta 3 intentos)
+4. Paso de Autorización
+   - Solicita autorización al dominio de autorización.
+   - En éxito, transiciona a `AUTHORIZED` y persiste un nuevo snapshot.
+   - En fallo transitorio, reintenta dentro de límites definidos.
 
-5. Evaluación de riesgo
-   - Invocar motor de riesgo
-   - En aprobación → transición a RISK_APPROVED
-   - En fallo → retry (intentos acotados)
+5. Evaluación de Riesgo
+   - Solicita evaluación de elegibilidad/riesgo al dominio de riesgo.
+   - En aprobación, transiciona a `RISK_APPROVED`.
+   - En fallo o respuesta no disponible, reintenta solo mientras el flujo permanezca dentro del presupuesto de ejecución.
 
-6. Actualización de cuenta
-   - Actualizar límite de descubierto
-   - En éxito → transición a ACCOUNT_UPDATED
-   - En fallo → retry (intentos acotados)
+6. Actualización de Cuenta
+   - Solicita actualización de cuenta/límite de descubierto al dominio de cuentas.
+   - En éxito, transiciona a `ACCOUNT_UPDATED`.
+   - En estado duplicado o ya procesado downstream, trata la respuesta según el snapshot actual de la saga y evita corromper el flujo.
 
 7. Notificación
-   - Enviar mensaje de confirmación
-   - Transición a COMPLETED
+   - Envía confirmación o comunicación final al cliente.
+   - Transiciona a `NOTIFIED` y luego `COMPLETED` cuando el flujo alcanza su estado terminal de éxito.
 
-### Estrategia de Retry y Dead Letter
+### Estrategia de Reintento y Dead Letter
 
-- Cada paso admite hasta 3 intentos de retry
-- Un TTL global de aproximadamente 5 minutos acota la ejecución de la saga
-- Si se agotan los retries o se excede el TTL:
-  - La inscripción se deriva a la Dead Letter Queue (DLQ)
-  - El caso se envía a un equipo de soporte dedicado para procesamiento manual
+- Cada paso crítico soportaba reintentos acotados, comúnmente hasta 3 intentos.
+- Un time-to-live (TTL) global de aproximadamente 5 minutos acotaba la ejecución completa de la saga.
+- Si los reintentos se agotaban, se excedía el TTL o el flujo alcanzaba un estado que no podía resolverse automáticamente con seguridad:
+  - La alta se enrutaba a una Dead Letter Queue (DLQ).
+  - El estado final y snapshots relevantes permanecían disponibles para investigación.
+  - Un equipo dedicado de soporte podía procesar o reconciliar el caso manualmente.
 
-Este diseño evita retries indefinidos, protege la estabilidad del sistema y asegura que las solicitudes del cliente no se pierdan en silencio.
+Este diseño evitaba reintentos indefinidos y protegía sistemas downstream de tormentas de reintento, asegurando que las solicitudes de clientes nunca se perdieran silenciosamente.
 
 ### Modelo de Idempotencia y Concurrencia
 
-- Sin bloqueo distribuido en Cassandra
-- Workers del orquestador stateless y escalables horizontalmente
-- Procesamiento duplicado no corrompe el estado
+El orquestador se diseñó para escalar horizontalmente sin depender de locks distribuidos en Cassandra. La seguridad provenía de la combinación de idempotencia downstream, reglas de máquina de estados y comparación de snapshots.
 
-Si un sistema downstream ya ha procesado una solicitud:
+- Los workers orquestadores eran stateless y escalables horizontalmente.
+- Mensajes duplicados o ejecución repetida de pasos podían ocurrir en condiciones normales de sistemas distribuidos.
+- Se esperaba que los sistemas downstream rechazaran o manejaran con seguridad operaciones duplicadas ya procesadas.
+- El orquestador evaluaba respuestas contra el snapshot actual de la saga antes de aplicar cualquier transición.
+- Eventos obsoletos, respuestas retrasadas o callbacks duplicados no podían sobrescribir un estado más avanzado.
 
-- El sistema downstream rechaza la operación duplicada
-- La máquina de estados ignora eventos obsoletos
-- La comparación por snapshot asegura solo transiciones de avance
+Si un sistema downstream ya había procesado una solicitud, la respuesta duplicada no corrompía la saga. El orquestador ignoraba el evento obsoleto o lo interpretaba en el contexto del snapshot persistido más reciente.
 
-La progresión del estado es monótona.  
-Eventos más antiguos no pueden sobrescribir un estado de saga más avanzado.
+La progresión de estado era monotónica. Eventos más antiguos no podían sobrescribir un estado de saga más avanzado, lo que proporcionaba seguridad sin introducir cuellos de botella de coordinación.
 
-Esto garantiza seguridad sin introducir cuellos de botella de coordinación.
+### Observabilidad y Transparencia Operativa
 
-### Observabilidad y Transparencia Operacional
+- Logs estructurados para cada transición de saga, intento de reintento, solicitud downstream, estado de fallo y evento de enrutamiento a DLQ.
+- Agregación centralizada de logs y dashboards Grafana para investigación operativa.
+- Snapshots de saga consultables en Cassandra para reconstruir el historial de alta.
+- Monitorización de DLQ para flujos de intervención manual.
+- Métricas de tasa de éxito, volumen de reintentos, latencia por paso, tasa de timeout y concentración de fallos por dominio downstream.
+- Streaming analítico hacia Apache Spark y Amazon Redshift para soportar reporting y visibilidad de negocio.
 
-- Logs estructurados para cada transición de la saga
-- Agregación centralizada de logs
-- Trazas operacionales consultables en Grafana
-- Monitorización de la DLQ para flujos de intervención manual
-- Métricas en tiempo real para sistemas de analytics e informes
-
-Los equipos operativos pueden rastrear cualquier inscripción de extremo a extremo en segundos.
+Los equipos operativos podían rastrear una alta de extremo a extremo usando logs, snapshots de estado y contexto de DLQ, reduciendo ambigüedad cuando se requería intervención de soporte.
 
 ### Diseño de Escalabilidad y Resiliencia
 
-- Workers orquestadores stateless
-- Coordinación distribuida basada en Kafka
-- Persistencia del estado de la saga en Cassandra
-- Capacidad segura de replay y reanudación
-- Modelo de retry acotado que evita fallos en cascada
-- Diseñado para alta concurrencia en picos de uso móvil
+- Workers orquestadores stateless soportaban escalado horizontal en picos de uso móvil.
+- Kafka proporcionaba coordinación orientada a eventos y capacidad de replay entre dominios.
+- Snapshots de saga en Cassandra permitían recuperación tras caídas de proceso, reinicios de despliegue o respuestas downstream retrasadas.
+- Esquemas Avro y Confluent Schema Registry ayudaban a mantener contratos de eventos type-safe y retrocompatibles.
+- Reintentos acotados y límites de TTL evitaban fallos en cascada y ejecución indefinida de flujos.
+- El enrutamiento a DLQ convertía fallos de automatización no resueltos en trabajo operativo explícito en lugar de inconsistencia oculta de datos.
 
 ---
 
-_Asociado con Itaú Unibanco_
+_Asociado a Itaú Unibanco_
 
-_Detalles como plazos, métricas e identificadores internos han sido generalizados de acuerdo con acuerdos de confidencialidad._
+_Los detalles como cronogramas específicos, métricas e identificadores internos se han generalizado de acuerdo con acuerdos de confidencialidad._
 
 ---
 
-### Tech Stack
+### Stack Tecnológico
 
-Java, Spring Boot, Spring State Machine, Apache Kafka, Cassandra, Apache Spark, Amazon Redshift, Docker, JUnit, Grafana
+Java, Spring Boot, Spring State Machine, Apache Kafka, Avro, Confluent Schema Registry, Cassandra, Apache Spark, Amazon Redshift, Docker, JUnit, Grafana

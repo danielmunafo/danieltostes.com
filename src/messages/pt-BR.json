@@ -73,14 +73,14 @@
       "infraLabel": "Infra & Ops",
       "infraValue": "Kubernetes, Terraform, CI/CD, Observabilidade",
       "aiLabel": "IA",
-      "aiValue": "Fluxos LLM com RAG, prompting em estágios (avaliador + analista + pitch), Cursor, Copilot, APIs OpenAI"
+      "aiValue": "Fluxos LLM com recuperação fundamentada, avaliador + analista + pitch em estágios, Cursor, Copilot, APIs OpenAI"
     },
     "impactTitle": "Impacto Selecionado",
     "impactAnonymizeNote": "Todos os itens abaixo e seus detalhes refletem iniciativas reais; figuras, nomes e cronogramas específicos foram anonimizados para cumprir NDAs.",
     "impact": [
       {
-        "title": "Plataforma de Automação de Garantias com IA",
-        "description": "Construí um sistema de automação de garantias com IA usando motor de regras em JSON e workers assíncronos. Integrei modelos de imagem, retentativas limitadas e escalonamento, substituindo o processamento manual por decisão automatizada confiável.",
+        "title": "Plataforma de Automação de Garantias Orientada a IA",
+        "description": "Construí um sistema de automação de garantias com IA usando motor de regras JSON e workers assíncronos. Integrei modelos de imagem, retentativas limitadas e escalonamento, substituindo o processamento manual por decisão confiável.",
         "searchContext": "Impacto Selecionado. Todos os itens abaixo e seus detalhes refletem iniciativas reais; figuras, nomes e cronogramas específicos foram anonimizados para cumprir NDAs. Fechar.",
         "chips": [
           "Complexidade: Alta",
@@ -138,12 +138,10 @@
         "position": "Engenheiro de Software Sênior",
         "sectionTitle": "Experiência",
         "desc": [
-          "Projetei e entreguei uma plataforma de automação de garantias orientada a IA, substituindo fluxos manuais de suporte por um motor de decisão escalável baseado em JSON integrado a modelos de avaliação por imagem.",
-          "Implementei processamento assíncrono com retries limitados e salvaguardas de escalonamento, integrei atualizações de casos no Salesforce e automações de chatbot e permiti evolução dinâmica de regras de negócio sem impactar produção — coordenando dependências entre owners de integração multifuncionais e cronogramas de fornecedores.",
-          "Coordenei cenários complexos em uma máquina de estados multifásica — coordenação resiliente e tolerante a falhas entre workers assíncronos, sistemas externos e caminhos de escalação, para que fluxos longos se recuperem de forma limpa.",
-          "Liderei entrega cross-funcional de ponta a ponta 100% remota: fui o elo de engenharia entre negócios, cliente, infraestrutura, segurança, suporte e times internos de produto e engenharia — conduzindo planejamento conjunto, revisões compartilhadas de risco e checkpoints de integração — para que grupos de stakeholders com perfis diversos seguissem alinhados da descoberta ao go-live com handoffs enxutos.",
-          "Fui owner da camada de testes E2E ponta a ponta: defini cobertura para jornadas críticas de negócio, construí e mantive suítes automatizadas e integrei-as em CI para proteger releases.",
-          "Conduzi rituais cross-funcionais que mantiveram escopo visível para todas as disciplinas: rastreabilidade em tickets, workshops multidisciplinares com produto, suporte, engenharia e pares de compliance, desenho colaborativo de soluções, além de especificações e registro de decisões — frequentemente rascunhos assistidos por IA, depois revisados por humanos — mantendo trade-offs explícitos e auditáveis."
+          "Projetei e entreguei uma plataforma de automação de garantias orientada a IA que substituiu fluxos manuais de suporte por um motor de decisão escalável baseado em JSON, integrado a modelos de avaliação por imagem, atualizações de casos no Salesforce e automação de chatbot.",
+          "Arquitetei processamento assíncrono com BullMQ e workers Redis, usando retentativas limitadas, salvaguardas de escalonamento e coordenação em máquina de estados multifásica para que fluxos longos de garantia se recuperassem de forma limpa entre sistemas externos e handoffs de suporte.",
+          "Fui o elo de engenharia entre negócio, cliente, infraestrutura, segurança, suporte, produto e engenharia em um modelo de entrega 100% remoto, mantendo escopo, riscos e checkpoints de integração visíveis por tickets, specs, workshops e logs de decisão.",
+          "Defini e mantive a camada de testes E2E para jornadas críticas de negócio, integrando suítes automatizadas em CI para proteger releases enquanto regras de negócio evoluíam sem interromper produção."
         ],
         "tech": "TypeScript, Node.js, GraphQL (Apollo Federation), BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture, E2E Testing",
         "context": {
@@ -156,10 +154,16 @@
       },
       {
         "company": "danieltostes.com",
-        "period": "2026 - Presente",
+        "period": "Fev/2026 - Presente",
         "position": "Engenheiro de Software (Projeto Pessoal)",
         "detailBodyPath": "experience/danieltostes-com",
         "cardDescription": "O portfólio em produção e o assistente para recrutadores saem de código de aplicação 100% gerado por IA—escrito no Cursor com Copilot no ciclo de revisão—enquanto eu mantenho ownership de arquitetura, modelagem de ameaças, prompts, testes, CI/CD e operações na AWS ponta a ponta.\n\nClique neste card para ver o plano de entrega, o escopo e o que está em produção hoje.",
+        "desc": [
+          "Construí e opero meu portfólio como projeto de software nativo em IA em nível de produção, usando-o como perfil para recrutadores e demonstração ao vivo de arquitetura, design de prompts, CI/CD, testes e práticas de entrega em nuvem.",
+          "Projetei um Assistente de IA para Recrutadores que avalia descrições de vaga contra evidências do portfólio com fluxos fundamentados em recuperação, geração em estágios avaliador → analista → pitch, respostas em stream, pontuação de capacidades e conteúdo público do portfólio como fonte da verdade.",
+          "Tenho ownership do stack completo: export estático Next.js, React, TypeScript, MUI, integração OpenAI, APIs Lambda, hospedagem S3/CloudFront, GitHub Actions, Playwright, Vitest, acessibilidade, metadata e polish de UX para recrutadores.",
+          "Uso Cursor e Copilot como parceiros de desenvolvimento com IA mantendo ownership humano sobre design de sistema, qualidade de revisão, threat modeling, prompts, estratégia de testes e operações em produção."
+        ],
         "chips": [
           "Código: 100% gerado por IA (Cursor)",
           "Revisão: Humano no circuito (Copilot)",
@@ -178,17 +182,19 @@
         "period": "Jul/2024 - Jun/2025",
         "position": "Engenheiro de Software Sênior",
         "desc": [
-          "Construí e mantive funcionalidades core para produtos de faturamento e bancários servindo pequenas empresas na Europa, esclarecendo escopo e trade-offs com produto e engenharia por tickets, briefs escritos e discussões de desenho.",
-          "Implementei decisões técnicas em nível de empresa, padronizando práticas de engenharia e melhorando manutenibilidade a longo prazo com diretrizes documentadas e racional estilo ADR compartilhado entre times.",
-          "Liderei iniciativas de observabilidade e monitoramento, permitindo decisões de produto e operação baseadas em dados, comunicadas com dashboards, playbooks escritos e atualizações a stakeholders."
+          "Liderei arquitetura e entrega do onboarding enterprise BKYC, construindo um app React Native performático, portal web complementar e serviços backend que permitiram à empresa onboardar grandes clientes corporativos e suportar casos de assinatura enterprise pela primeira vez.",
+          "Colaborei com UX, produto, backend, compliance e times de integração bancária para definir fluxos escaláveis de onboarding com dados de entidade corporativa, documentos KYC, permissões de autoridade e validação em tempo real contra APIs Solaris e de terceiros.",
+          "Implementei fluxos compartilhados entre React Native, web React e serviços backend, aplicando clean architecture, lógica de negócio reutilizável, testes e práticas de CI/CD para manter a plataforma sustentável conforme requisitos evoluíam.",
+          "Construí uma ponte event-driven faturamento-nota fiscal com AWS Lambda, SQS, Node.js, APIs REST, validação de schema, chaves de idempotência, retentativas, dashboards CloudWatch e alarmes — reduzindo latência de sincronização de horas para menos de 500ms com baixo custo de processamento.",
+          "Melhorei observabilidade em onboarding e fluxos de produtos financeiros com Datadog APM, RUM, dashboards customizados, analytics de produto e playbooks operacionais para detectar erros de validação, falhas de integração, regressões de latência e fricção nas jornadas."
         ],
-        "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS, Terraform, Docker, PostgreSQL, Datadog, Sentry",
+        "tech": "React, React Native, Node.js, TypeScript, Next.js, AWS Lambda, SQS, Terraform, Docker, PostgreSQL, Datadog, Sentry, Jest, REST APIs",
         "context": {
           "teamSize": "8",
           "companySize": "Até 100",
           "sector": "Bancário & Fintech",
-          "domain": "Bancário & Faturamento",
-          "compliance": "PII, GDPR"
+          "domain": "Bancário, Faturamento & Onboarding Enterprise",
+          "compliance": "PII, GDPR, KYC"
         }
       },
       {
@@ -196,16 +202,19 @@
         "period": "Mar/2022 - Jun/2024",
         "position": "Engenheiro de Software",
         "desc": [
-          "Desenvolvi e evoluí a plataforma de email transacional e campanhas de marketing da Klarna, suportando comunicação de alto volume e multi-mercado.",
-          "Implementei um novo modelo de decision-engine de marketing para entrega de conteúdo personalizado com machine learning, busca vetorial e matching de recomendações com IA.",
-          "Atuei em iniciativas cross-funcionais entre plataforma de dados, incentivos, conteúdo, marketing, analytics e engenharia de plataforma — negociando prioridades entre times com metas e cadências diferentes — com documentação compartilhada, RFCs assíncronos e sessões de planejamento ao vivo; mentorei novos integrantes no código e no fluxo de releases e resolvi divergências com discussão baseada em evidências."
+          "Desenvolvi e evoluí a plataforma de email transacional e campanhas de marketing da Klarna, suportando comunicação de alto volume e multi-mercado em fluxos críticos de compra e lifecycle.",
+          "Projetei e liderei a implementação de um motor de decisão vetorial em tempo real que transformava dados de interação do cliente em embeddings, correspondia perfis a campanhas ativas e recuperava conteúdo personalizado no pipeline de email transacional dentro de uma janela de ~200ms a ~100 RPS.",
+          "Construí o motor como microsserviço containerizado Node.js/TypeScript com endpoints REST para recuperação de conteúdo on-the-fly em fluxos de confirmação de compra, integrando lógica de recomendação por perfis Power User e feeds de campanhas ao vivo.",
+          "Entreguei integrações de campanhas com desconto conectando sistemas externos de gestão de descontos à plataforma de email por conectores resilientes, eventos Kafka, regras de personalização e variantes de teste A/B para que clientes ativassem ofertas relevantes direto da caixa de entrada.",
+          "Instrumentei observabilidade ponta a ponta com tracing Datadog, métricas customizadas, SLOs de latência/erro e práticas de plantão para sistemas críticos de comunicação, ajudando a detectar falhas de integração, otimizar retentativas e proteger a confiabilidade de entrega de campanhas.",
+          "Colaborei com plataforma de dados, incentivos, conteúdo, marketing, analytics, UX e engenharia de plataforma por design docs, RFCs assíncronos, sessões de planejamento e discussões técnicas baseadas em evidência."
         ],
-        "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Datadog, OpsGenie",
+        "tech": "React, Node.js, TypeScript, Next.js, PostgreSQL, Kafka, REST APIs, Datadog, OpsGenie, Jest, Vector Search, Embeddings",
         "context": {
           "teamSize": "6",
           "companySize": "5.000+",
           "sector": "Bancário/Fintech & E-commerce",
-          "domain": "Marketing",
+          "domain": "Marketing, Mensageria Transacional & Personalização",
           "compliance": "PII, PCI, GDPR"
         }
       },
@@ -214,15 +223,22 @@
         "period": "Out/2020 - Fev/2022",
         "position": "Engenheiro de Software Sênior",
         "desc": [
-          "Conduzi um programa cross-funcional de migração do modelo anterior da experiência fiscal para uma nova experiência — alinhando produto, política fiscal, UX, backend e times regionais de mercado com filosofias diferentes — e unifiquei práticas de entrega assíncrona que toda a coalizão multifuncional pudesse adotar para manter releases desbloqueados.",
-          "Fundei e liderei uma organização de engenharia multifuncional do zero — contratando em várias disciplinas, emparelhando engenharia com parceiros de produto e operações e com ownership de sistemas back-office para isenções fiscais e reembolsos — enquanto integrava engenheiros, dava feedback direto e resolvia conflitos de prioridade com parceiros fora da engenharia."
+          "Liderei arquitetura e entrega de iniciativas de experiência fiscal no Brasil e na América Latina, modernizando fluxos fiscais para vendedores e backoffice no MercadoLivre e MercadoPago com Node.js, React, TypeScript, serviços REST, observabilidade e arquitetura frontend reutilizável.",
+          "Arquitetei e propus melhorias assíncronas com times de impostos e faturamento, desenhando uma view BFF em cache para relatórios fiscais de vendedores que reduziu latência percebida de 1–2s para até ~200ms preservando limites claros de ownership entre times.",
+          "Conduzi migração cross-funcional do modelo anterior de experiência fiscal para uma experiência unificada, alinhando produto, política fiscal, UX, backend, mobile, faturamento e times regionais em trade-offs de implementação, padrões assíncronos, sequenciamento de release e suportabilidade.",
+          "Projetei e lancei um serviço unificado de apresentação fiscal para vendedores argentinos e uruguaios, expondo APIs REST para frontends React e apps mobile, melhorando transparência fiscal, mantendo respostas de API abaixo de 150ms em pico e suportando metas de 99,98% de uptime.",
+          "Construí fluxos de isenção fiscal e detalhamento para vendedores na Argentina, incluindo serviços Node.js, dashboards React, workflows documentais com MySQL, cache leve, checagens de status em tempo real e colaboração com legal, fiscal e UX.",
+          "Liderei o desenho de uma plataforma unificada de backoffice que consolidou várias ferramentas internas em interface única, com biblioteca core React, camada de orquestração Node.js, componentes compartilhados, conectores de serviço, theming SCSS padronizado e testes E2E para reduzir troca de contexto e erros de suporte.",
+          "Impulsionei fundações de plataforma frontend para o time de Experiência Fiscal Brasil, incluindo scaffold reutilizável, diretrizes DDD, setup Webpack/Express, ESLint/TypeScript, templates Jest/Cypress, documentação Docsify e exemplos Storybook que reduziram bootstrap de novos projetos de dias para menos de uma hora.",
+          "Projetei e implantei monorepo gerenciado com Lerna para componentes UI, clientes de serviço, middleware e tooling interno, com limites de pacotes, versionamento, builds Webpack/Rollup, typings TypeScript, testes Jest e documentação que aceleraram integração de componentes compartilhados de dias para horas.",
+          "Liderei migração de serviços core, bancos de dados e infraestrutura de hosting legado para a plataforma padrão Fury, mapeando dependências, planejando cutovers, migrando serviços Java/Groovy/Node.js, bancos MySQL/Oracle, roteamento NGINX, clusters Elasticsearch, monitoramento, logging e práticas de segurança com zero downtime visível ao usuário."
         ],
-        "tech": "Java, React, Node.js, TypeScript, Express, Sass, Datadog, New Relic",
+        "tech": "Java, Groovy, React, Node.js, TypeScript, Express, Sass, REST APIs, MySQL, Oracle, Elasticsearch, NGINX, Fury, Lerna, Webpack, Rollup, Jest, Cypress, Datadog, New Relic",
         "context": {
           "teamSize": "10",
           "companySize": "5.000+",
           "sector": "Impostos & E-commerce",
-          "domain": "Experiência do Usuário"
+          "domain": "Experiência Fiscal do Vendedor, Backoffice & Engenharia de Plataforma"
         }
       },
       {
@@ -230,15 +246,17 @@
         "period": "Jun/2020 - Out/2020",
         "position": "Engenheiro de Software",
         "desc": [
-          "Migrei funcionalidades críticas de mainframe legado para soluções modernas em nuvem e containerizadas, coordenando dependências com planos de cutover escritos e walkthroughs técnicos com arquitetura e operações.",
-          "Desenvolvi portais internos e máquinas de estado de workflow para operações de cheque especial e financeiras, traduzindo regras de negócio em especificações escritas revisadas com analistas e documentando o comportamento para revisores de compliance."
+          "Projetei e desenvolvi um serviço de orquestração distribuído baseado em SAGA para adesão mobile a cheque especial, permitindo que clientes contratassem o produto pelo mobile enquanto coordenava autorização, checagens de risco, atualizações de conta, notificações e tratamento de falhas entre sistemas backend.",
+          "Implementei uma camada de orquestração orientada a máquina de estados com Spring Boot State Machine, streams Kafka, schemas Avro, snapshots de saga no Cassandra, políticas de retentativa assíncrona, caminhos de compensação e observabilidade para que fluxos financeiros longos se recuperassem após falhas parciais.",
+          "Construí ferramentas batch de alto throughput para promoções de cheque especial sem juros, incluindo interface de upload Angular, workers batch Java, armazenamento de eventos no Cassandra, deploy OpenShift, integração IBM MQ com mainframes legados, mensageria idempotente, retentativas e processamento auditável.",
+          "Coordenei dependências com arquitetura, SRE, operações, analistas e compliance por especificações escritas, planos de cutover, walkthroughs técnicos e evidências de validação para fluxos bancários regulados."
         ],
-        "tech": "Java, Spring State Machine, AngularJS, Kafka, Cassandra, AWS, OpenShift, Grafana",
+        "tech": "Java, Spring Boot, Spring State Machine, AngularJS, Kafka, Avro, Cassandra, AWS, OpenShift, IBM MQ, Spring Batch, Grafana, JUnit, Docker",
         "context": {
           "teamSize": "15",
           "companySize": "5.000+",
           "sector": "Bancário",
-          "domain": "Cheque Especial",
+          "domain": "Cheque Especial, Adesão Mobile & Operações Batch",
           "compliance": "PII, PCI"
         }
       },
@@ -247,15 +265,17 @@
         "period": "Nov/2019 - Jun/2020",
         "position": "Desenvolvedor de Sistemas",
         "desc": [
-          "Construí ferramentas internas para reduzir tempo de resposta a incidentes e melhorar troubleshooting para equipes de suporte, com fluxos claros em tickets, notas de handoff e guias escritos de troubleshooting.",
-          "Implementei pipelines CI/CD e serviços containerizados em conformidade com requisitos rigorosos de segurança e compliance, documentando mudanças de pipeline e o racional de rollout para operações e segurança."
+          "Projetei e entreguei uma plataforma interna de diagnóstico e troubleshooting para equipes de suporte Nível 2 e 3, agregando dados de várias APIs internas e externas em um modelo unificado que expunha pistas de causa raiz e saúde de fluxos em tempo real.",
+          "Construí serviços Node.js/TypeScript, endpoints de health status, deploys Dockerizados, configuração de runtime Mesos e pipelines Jenkins CI/CD para automatizar testes, builds e releases em ambiente operacional rigoroso.",
+          "Parceirei com SRE, suporte de aplicação e liderança de suporte para refinar limiares de alerta, documentar fluxos de troubleshooting, integrar usuários e aumentar throughput de tickets ajudando engenheiros a diagnosticar incidentes mais rápido.",
+          "Implementei CI/CD e serviços containerizados em conformidade com requisitos de segurança e compliance, mantendo racional de rollout, handoffs operacionais e guias de troubleshooting claros para suporte e operações."
         ],
-        "tech": "Node.js, Java, Docker, Jenkins, Mesos/Marathon, Splunk, New Relic",
+        "tech": "Node.js, TypeScript, Express.js, Java, Docker, Jenkins, Mesos/Marathon, Splunk, New Relic, REST APIs, Internal Monitoring Tools",
         "context": {
           "teamSize": "4",
           "companySize": "1.000+",
           "sector": "Bancário & Fintech",
-          "domain": "Suporte ao Cliente",
+          "domain": "Suporte ao Cliente, Diagnóstico & Resposta a Incidentes",
           "compliance": "PII, PCI"
         }
       },
@@ -264,16 +284,18 @@
         "period": "Mar/2017 - Nov/2019",
         "position": "Desenvolvedor Full Stack de Sistemas",
         "desc": [
-          "Projetei e entreguei software de validação em um contexto multifuncional de fundador — trabalhando diretamente com o CEO e líderes de vendas, QA e campo em elicitação de requisitos, planejamento e análise — reduzindo overhead operacional e esforço manual.",
-          "Escalei práticas técnicas garantindo qualidade de código, padrões de documentação escrita e processos de release controlados — com pacotes de evidência e notas de revisão adequados a auditorias reguladas.",
-          "Coordenei entrega cross-funcional com especialistas em validação, QA, operações de vendas e stakeholders de negócio — traduzindo requisitos em documentação pronta para auditoria e mantendo parceiros técnicos e não técnicos alinhados em cada release."
+          "Construí o Go!Five do zero em ambiente de startup liderada pelo fundador, transformando um processo manual de validação farmacêutica em plataforma na nuvem para consultores executarem fluxos de validação, gerarem evidências e gerenciarem sign-off de QA online.",
+          "Colaborei diretamente com liderança, consultores, QA, vendas e especialistas de campo para elicitar requisitos, documentar critérios de validação, modelar fluxos e traduzir processos regulados em funcionalidades full-stack.",
+          "Implementei serviços backend em Java/Spring Boot, frontends React, schema PostgreSQL, quality gates SonarQube, testes unitários e de integração, Jenkins CI/CD, deploy AWS, monitoramento CloudWatch, backups e tuning de performance.",
+          "Automatizei bibliotecas e scripts de validação, estabeleci práticas de release controladas, mantive documentação e pacotes de evidência prontos para auditoria e reduzi esforço manual de validação melhorando consistência entre projetos.",
+          "Construí sistemas internos anteriores para gestão de ativos de TI e consulta de ramais no início da carreira, com Java, SQL Server, deploy em LAN, UIs pesquisáveis, backups automatizados e documentação substituindo planilhas e processos manuais de suporte."
         ],
-        "tech": "Java, PostgreSQL, React, AWS CodeBuild, S3, CloudFront, RDS, Route53, Jenkins, SonarQube",
+        "tech": "Java, Spring Boot, PostgreSQL, React, AWS EC2, S3, CloudFront, RDS, CloudWatch, CodeBuild, Jenkins, SonarQube, SQL Server, Java SE",
         "context": {
           "teamSize": "5",
           "companySize": "Até 30",
           "sector": "Indústria Farmacêutica",
-          "domain": "Vendas",
+          "domain": "Validação de Sistemas, Automação de QA & Ferramentas Internas",
           "compliance": "Regulamentações GAMP & FDA"
         }
       }

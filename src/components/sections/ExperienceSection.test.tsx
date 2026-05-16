@@ -52,7 +52,11 @@ describe("ExperienceSection", () => {
     renderWithProviders(<ExperienceSection />);
     expect(screen.getAllByText("Team: 5").length).toBeGreaterThan(0);
     expect(screen.getByText("Sector: E-commerce")).toBeInTheDocument();
-    expect(screen.getByText("Domain: Marketing")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Domain: Marketing, Transactional Messaging & Personalization"
+      )
+    ).toBeInTheDocument();
   });
 
   it("renders tech chips for roles", () => {

@@ -1,87 +1,105 @@
 ## Sistemas Distribuídos — Coordenação Orientada a Eventos e Isolamento de Falhas
 
-**Problema:** Sistemas em produção abrangendo cadastro bancário, automação de garantias e personalização de e-mails transacionais exigiam coordenar trabalho entre domínios de backend independentes sem criar acoplamento frágil ou pontos únicos de falha.
+**Problema:** Sistemas em produção em cadastro bancário, automação de garantias, sincronização faturamento/nota fiscal, relatórios fiscais e personalização de email transacional exigiam coordenar trabalho entre domínios independentes sem criar acoplamento frágil, tempestades de retentativa ou pontos únicos de falha.
 
-**Abordagem:** Arquiteturas orientadas a eventos com gerenciamento explícito de estado. Padrões SAGA com máquinas de estado determinísticas para fluxos de múltiplas etapas. Coordenação baseada em mensagens (Kafka, BullMQ) prevenindo acoplamento forte. Workers stateless para escalabilidade horizontal.
+**Abordagem:** Projetei arquiteturas orientadas a eventos e assíncronas com gerenciamento explícito de estado. Usei orquestração SAGA com máquinas de estado determinísticas para fluxos bancários de múltiplas etapas, workers BullMQ/Redis para automação longa de garantias, Kafka para coordenação entre domínios, SQS/Lambda para sincronização serverless faturamento→nota fiscal e views BFF/cacheadas para relatórios fiscais de vendedores sensíveis à latência.
 
-**Tratamento de falhas:** Retentativas limitadas com escalação automática em vez de retentativas indefinidas. Dead letter queues para casos irresolvíveis. Processamento idempotente e progressão monotônica de estado garantindo segurança sem lock distribuído.
+**Tratamento de falhas:** Usei retentativas limitadas, limites de TTL, dead letter queues, caminhos de escalonamento, comportamento de fallback e estados de handoff para suporte em vez de retentativas indefinidas. Projetei fluxos em que falha parcial era esperada e observável: snapshots de estado, progressão monotônica, tratamento idempotente downstream, processamento seguro contra duplicatas e estados terminais explícitos de falha.
 
-**Por que importa:** Demonstra conforto projetando sistemas onde falha parcial é esperada — uma preocupação de nível staff em ambientes com integração pesada, regulados e críticos para receita.
+**Evidência:** Adesão mobile a cheque especial no Itaú usou Kafka, Avro, snapshots no Cassandra, Spring State Machine, roteamento DLQ e escalonamento para suporte. Automação de garantias usou BullMQ, Redis, coordenação em máquina de estados, retentativas e salvaguardas de escalonamento. Sincronização de faturamento na Ageras usou AWS Lambda, SQS, validação de schema, chaves de idempotência, retentativas e alarmes CloudWatch. Relatórios fiscais no Mercado Livre usaram view BFF assíncrona em cache para reduzir latência de resposta de 1–2s para até ~200ms.
 
-## Engenharia Nativa em IA — Fluxos LLM em Estágios com Fundamentação por Recuperação
+**Por que importa:** Demonstra conforto ao projetar sistemas em que falha parcial, eventos duplicados, respostas atrasadas e falhas de dependências externas são restrições normais de engenharia — uma preocupação de nível sênior/staff em ambientes regulados, com integração pesada e críticos para receita.
 
-**Problema:** Construir funcionalidades de produto alimentadas por IA que sejam críveis e fundamentadas, em vez de genéricas, exige arquitetura deliberada em torno de determinismo na recuperação, risco de alucinação e UX de streaming.
+## Engenharia Nativa em IA — Fluxos LLM com Recuperação e em Estágios
 
-**Abordagem:** Assistente de recrutador baseado em RAG com recuperação determinística por similaridade de cosseno sobre chunks de embedding pré-gerados. **Três estágios de chat em stream** no mesmo fluxo; os dois primeiros ficam dentro de marcadores API de **thinking**: (1) um **avaliador de evidências** que classifica cada requisito principal da vaga contra os trechos recuperados (obrigatório vs desejável; direto/adjacente/não evidenciado/contraditório), sinaliza onde a similaridade do cosseno pode induzir leitura errada e emite **orientação de pontuação** com **tetos** para que conceitos vizinhos não justifiquem um match forte; com uma **rubrica de interesses** privada configurada, um passo opcional de **alinhamento de interesses** como conclusão **fora do stream** — **apenas log no servidor** para operadores, não enviado ao cliente nem fundido ao pitch; (2) um **analista** que sintetiza alinhamento, correspondências de alto sinal e ângulos de entrevista **sem contradizer** o avaliador, no mesmo bloco **thinking** após um separador curto; (3) **após o fechamento do thinking**, uma **avaliação para o recrutador** cuja intensidade do match **não pode ultrapassar** o teto recomendado pelo avaliador. O handler **espera o stream do avaliador terminar** antes de interesses (se houver) e o analista, para que os prompts downstream vejam sempre uma tabela de cobertura completa e autoritativa. Depois que o pitch termina, uma **passagem estruturada** extrai claims concretas, gera embeddings e faz match de volta aos chunks do portfolio para anexar uma seção de **Referências** (com sinalização explícita quando a similaridade fica abaixo do limiar). **Modelagem determinística da entrada** e um **intent gate** por LLM rodam antes de qualquer recuperação ou geração.
+**Problema:** Funcionalidades de produto com IA podem facilmente se tornar genéricas, excessivamente confiantes ou enganosas, a menos que sejam projetadas em torno de qualidade de recuperação, risco de alucinação, calibração de aderência e limites transparentes de evidência.
 
-**Tradeoffs:** Recuperação determinística + geração probabilística mantém a fundamentação enquanto permite síntese. Sem fine-tuning — modelos fundacionais com prompting em estágios, tratamento explícito de incerteza e uma passagem de “crítica” antes da síntese. O avaliador + analista encapsulados por marcadores, avaliação opcional de interesses só no servidor, e o match de referências pós-stream mantêm a voz final alinhada a evidências verificáveis.
+**Abordagem:** Construí um assistente de recrutador baseado em RAG que avalia descrições de vaga contra evidências do portfólio usando recuperação determinística por similaridade de cosseno sobre chunks de embedding pré-gerados, análise LLM em estágios, UX em stream, tetos explícitos de match score e validação de referências pós-geração.
 
-**O que isso demonstra:** Pensamento de produto nativo em IA — projetar em torno de recuperação, fundamentação, mitigação de alucinação, calibração honesta de aderência e latência de streaming com a mesma disciplina de engenharia do restante do stack.
+**Fluxo:** O assistente executa modelagem determinística da entrada e um intent gate por LLM antes de recuperação ou geração. Em seguida transmite três estágios em um único caminho de resposta: (1) um avaliador de evidências dentro de marcadores API de `thinking` que classifica requisitos da vaga como obrigatórios ou desejáveis e evidências como diretas, adjacentes, não evidenciadas ou contraditórias; (2) um analista de evidências, também no bloco thinking, que sintetiza correspondências de alto sinal e ângulos de entrevista sem contradizer o avaliador; e (3) uma avaliação voltada ao recrutador após o marcador de fechamento do thinking, cuja intensidade de match não pode exceder o teto recomendado pelo avaliador.
+
+**Salvaguardas de fundamentação:** O avaliador sinaliza onde a similaridade de cosseno pode induzir leitura errada, emite orientação de match score com tetos rígidos e impede que conceitos vizinhos não relacionados sejam apresentados como evidência forte. O handler aguarda o stream do avaliador terminar antes de executar análises downstream, para que prompts posteriores recebam sempre a tabela de cobertura completa e autoritativa. Após o pitch para recrutadores, uma passagem estruturada extrai afirmações concretas, gera embeddings e faz match de volta aos chunks do portfólio para anexar uma seção de Referências com sinalização explícita de baixa similaridade quando a evidência é fraca.
+
+**Tratamento de aderência privada:** Quando uma rubrica privada de interesses está configurada, um passo opcional de alinhamento de interesses roda como conclusão não transmitida em stream após o avaliador. É registrado apenas no servidor para operadores e não é enviado ao cliente nem fundido ao pitch para recrutadores, mantendo evidência pública separada da análise de preferências privadas.
+
+**O que isso demonstra:** Engenharia de produto nativa em IA — tratar recuperação, fundamentação, incerteza, mitigação de alucinação, calibração de score e latência de streaming como preocupações de arquitetura, não apenas de prompt.
 
 ## Sistemas de Decisão Orientados a IA — Automação Inteligente Sob Restrições
 
-**Problema:** Processamento manual de sinistros de garantia era caro e não escalável. E-mails transacionais críticos para receita precisavam de conteúdo personalizado em tempo real sob restrições extremas de latência (~200 ms a ~100 RPS).
+**Problema:** Processamento manual de garantias era caro e difícil de escalar, enquanto emails transacionais precisavam de conteúdo personalizado em um caminho crítico para receita sob restrições rigorosas de latência de ~200ms a ~100 RPS.
 
-**Abordagem:** Motores de decisão baseados em JSON com integração de modelos de IA para sinistros de garantia — regras de negócio dinâmicas avaliadas contra rótulos e scores de imagem gerados por IA. Correspondência de similaridade por embeddings vetoriais em tempo real para personalização de e-mails transacionais sob restrições determinísticas de latência.
+**Abordagem:** Projetei sistemas de decisão assistidos por IA que mantiveram a saída da IA atrás de limites de engenharia controlados. Automação de garantias usou avaliação de imagens por IA como entrada em um motor determinístico de regras JSON, em vez de decisor final. Personalização na Klarna usou correspondência de similaridade vetorial sobre comportamento do cliente, vetores de campanhas ativas e embeddings de perfis “Power User” para recuperar blocos elegíveis em tempo real.
 
-**Padrões de confiabilidade:** Mecanismos de fallback seguros garantindo zero interrupção dos fluxos principais. Retentativas limitadas com salvaguardas de escalação. Sincronização assíncrona de dados de plataformas de dados de clientes para manter a latência de decisão baixa.
+**Padrões de confiabilidade:** Usei mecanismos de fallback seguros para que fluxos principais não fossem bloqueados por saídas de IA indisponíveis, matching vetorial lento, dados ausentes, falhas em sistemas externos ou caminhos de regra desconhecidos. Fluxos de garantia usaram processamento assíncrono em fila, retentativas limitadas, salvaguardas de escalonamento e estados de handoff para suporte. Personalização em email transacional usou fallback para conteúdo padrão para manter a entrega de confirmação de compra confiável.
 
-**Impacto:** Reduziu o overhead de processamento manual mantendo salvaguardas de escalação. Melhorou o engajamento de e-mail (CTR de 1,4 % para 1,8 %). Estabeleceu frameworks escaláveis para automação e personalização alimentadas por IA.
+**Impacto:** Reduzi sobrecarga manual de processamento de garantias preservando escalonamento para suporte em casos incertos ou com falha. Melhorei engajamento em email transacional, com CTR de ~1,4% para ~1,8% no contexto de personalização. Estabeleci padrões reutilizáveis para automação assistida por IA em que regras determinísticas, orçamentos de latência, observabilidade, caminhos de fallback e revisão humana precisam coexistir.
 
 ## Observabilidade e Confiabilidade — Maturidade Operacional Orientada a SLO
 
-**Problema:** Sistemas em produção em fintech, e-commerce de alto tráfego e bancos exigem observabilidade estruturada e níveis de serviço definidos — não apenas dashboards de monitoramento.
+**Problema:** Plataformas fintech, bancárias, de e-commerce e suporte ao cliente precisam de visibilidade operacional que explique o que aconteceu entre sistemas — não apenas dashboards que mostram que algo quebrou.
 
-**Abordagem:** Instrumentação ponta a ponta com Datadog e Grafana: métricas customizadas, traces distribuídos, dashboards de latência/erro. Definição e monitoramento de SLO/SLA para tempo de resposta e disponibilidade. Logging estruturado para rastreamento de estado de workflows e sagas.
+**Abordagem:** Instrumentei sistemas com Datadog, Grafana, CloudWatch, New Relic, logs estruturados, traces distribuídos, dashboards de latência/erro e métricas de negócio customizadas. Defini e monitorei SLOs/SLAs de tempo de resposta, disponibilidade, comportamento em falha, saúde de filas e caminhos críticos de integração.
 
-**Padrões operacionais:** Monitoramento de DLQ para fluxos de intervenção manual. Rotação de plantão para sistemas críticos de receita. Estratégias de retentativa limitada prevenindo falhas em cascata. Alertas configurados para confiabilidade contínua. Ferramentas de diagnóstico construídas para reduzir o tempo de resposta a incidentes.
+**Padrões operacionais:** Usei monitoramento de DLQ, retentativas limitadas, caminhos de escalonamento, plantão, alertas, rastreamento de estado de saga, dashboards de saúde de filas, telemetria de fallback e ferramentas de diagnóstico. Projetei sistemas para que suporte, SRE e engenharia pudessem rastrear fluxos ponta a ponta por logs, snapshots de estado, dashboards e consultas operacionais.
 
-**Por que importa:** Times operacionais conseguem rastrear transações ponta a ponta em segundos. Sistemas mantêm confiabilidade sob carga por meio de contenção estruturada de falhas e caminhos explícitos de escalação.
+**Evidência:** Personalização na Klarna usou tracing Datadog, SLOs de latência/erro, telemetria de fallback e ownership de plantão. Orquestração SAGA no Itaú usou logs estruturados de transição, dashboards Grafana, snapshots no Cassandra, monitoramento de DLQ e reporting Spark/Redshift. Sincronização de faturamento na Ageras usou métricas CloudWatch, dashboards, alarmes, taxas de sucesso de invocação, latência e tendências de erro. Diagnósticos no PagSeguro agregaram dados de API em um modelo unificado de troubleshooting para equipes de suporte Nível 2 e 3.
 
-## Engenharia de Plataforma Full-Stack — Entrega e Propriedade Entre Camadas
+**Por que importa:** Mostra ownership de produção além da entrega de features: visibilidade de incidentes, contenção de falhas, handoffs operacionais, suportabilidade e confiabilidade sob carga.
 
-**Problema:** Produtos complexos exigem engenheiros capazes de assumir problemas de ponta a ponta — backend, frontend, infraestrutura e preocupações operacionais — em vez de transferir responsabilidade entre camadas.
+## Engenharia de Plataforma Full-Stack — Entrega e Ownership em Múltiplas Camadas
 
-**Escopo:** Backend em Node.js/TypeScript e Java/Spring. Frontend em React e React Native. Infraestrutura na AWS com Kubernetes, Terraform e pipelines de CI/CD. Domínios abrangendo fintech (faturamento, produtos bancários), e-commerce de alto tráfego (conformidade fiscal na América Latina), marcas de consumo (automação de garantias) e ferramentas internas.
+**Problema:** Trabalho de produto complexo frequentemente corta frontend, backend, infraestrutura, observabilidade, dados e preocupações operacionais. O impacto depende de ownership do caminho inteiro, não de otimizar apenas uma camada.
 
-**Padrões de entrega:** Propriedade de ciclo completo do design ao rollout e iteração. Microsserviços e micro-frontends para entrega modular. Padronização de práticas de engenharia e documentação. Implementação de pipelines de CI/CD e serviços conteinerizados.
+**Escopo:** Entreguei serviços backend em Node.js/TypeScript e Java/Spring, aplicações frontend em React e React Native, infraestrutura em AWS/Kubernetes/Terraform, pipelines CI/CD, observabilidade e testes em fintech, bancário, e-commerce, validação farmacêutica, suporte ao cliente e domínios de produto assistidos por IA.
 
-**Impacto:** Acelerou times por meio de práticas padronizadas, ferramentas compartilhadas e transferência de conhecimento entre contextos organizacionais, de grande marketplace a fintech menor.
+**Padrões de entrega:** Ownership de ciclo de vida completo da descoberta e arquitetura à implementação, testes, rollout, monitoramento e iteração. Usei clean architecture, limites hexagonais, microsserviços, fluxos event-driven, scaffolds frontend reutilizáveis, monorepos, bibliotecas UI compartilhadas, APIs tipadas, testes E2E e automação de deploy.
 
-## Arquitetura de Integração — Composição de Serviços e Design de Fronteiras
+**Evidência:** BKYC na Ageras combinou React Native, web React, serviços backend, integrações Solaris/terceiros, Datadog e onboarding sensível a compliance. Mercado Livre combinou APIs fiscais, dashboards de vendedores, plataformas backoffice, scaffolds reutilizáveis, monorepos e migração de infraestrutura. Five Validation combinou Java/Spring, React, PostgreSQL, AWS, Jenkins, SonarQube, CloudWatch e automação de fluxos regulados.
 
-**Problema:** Produtos que integram CRMs, serviços de IA, backbones de eventos, plataformas de dados e sistemas de notificação precisam de fronteiras de serviço resilientes — falhas em um ponto de integração não devem se propagar em cascata.
+**Impacto:** Acelerei times por arquitetura reutilizável, ferramentas compartilhadas, práticas padronizadas, documentação e transferência de conhecimento em contextos que vão de grandes marketplaces e bancos a fintechs e startups menores.
 
-**Abordagem:** GraphQL (Apollo Federation) para composição de serviços permitindo evolução independente. APIs REST para integração síncrona em fluxos sensíveis a latência. Coordenação orientada a eventos via Kafka para comunicação assíncrona entre domínios. Integração de gestão de casos Salesforce, avaliação de imagens por IA, plataformas de dados de clientes e sistemas de notificação multi-mercado.
+## Arquitetura de Integração — Composição de Serviços e Desenho de Limites
 
-**Tradeoffs:** Federation ao invés de APIs monolíticas para implantação independente. Orientação a eventos ao invés de ponto a ponto para isolamento de falhas. Mecanismos de fallback seguros em cada fronteira de integração para proteger os fluxos principais.
+**Problema:** Produtos que integram CRMs, serviços de IA, sistemas bancários, backbones de eventos, plataformas de dados, notificações e fluxos de suporte precisam de limites resilientes para que falha de uma dependência não propague em cascata no fluxo principal do cliente.
 
-**Por que importa:** Sistemas permanecem independentemente implantáveis e evoluíveis. Falhas de integração são contidas, não propagadas em cascata — crítico em ambientes com múltiplas dependências externas.
+**Abordagem:** Usei GraphQL/Apollo Federation para composição de serviços, APIs REST para caminhos síncronos de baixa latência, Kafka/SQS/BullMQ para coordenação assíncrona, views BFF/cacheadas para performance de read models e limites de adaptadores para isolar sistemas externos da lógica de negócio central.
+
+**Tradeoffs:** Usei federação ou composição quando evolução independente importava, REST quando tempo de resposta síncrono e simplicidade operacional importavam, comunicação event-driven quando isolamento de falhas e consistência eventual importavam, e views BFF/cacheadas quando latência voltada ao usuário exigia dados pré-computados ou consolidados.
+
+**Evidência:** Automação de garantias integrou Salesforce, chatbot, avaliação de imagens por IA, serviços GraphQL, workers de fila e escalonamento para suporte. Personalização na Klarna integrou feeds de campanhas, dados de interação, embeddings de perfis semelhantes, endpoints REST e geração de email transacional. Ageras integrou APIs Solaris/terceiros para BKYC e SQS/Lambda/REST para sincronização de faturamento. Mercado Livre coordenou impostos, faturamento, mobile, UX, produto e reporting fiscal de vendedores por limites de serviço e frontend.
+
+**Por que importa:** Demonstra capacidade de compor sistemas entre limites organizacionais e técnicos preservando confiabilidade, deployabilidade e ownership claro.
 
 ## Liderança Técnica — Práticas de Engenharia e Impacto em Times
 
-**Problema:** Times e bases de código em crescimento precisam de mais do que contribuições individuais — precisam de práticas padronizadas, ferramentas compartilhadas e cultura de engenharia.
+**Problema:** Sistemas e times em crescimento precisam de práticas que escalem: arquitetura compartilhada, ownership claro, decisões revisáveis, ferramentas reutilizáveis, onboarding e alinhamento cross-funcional.
 
-**Contribuições:** Implementou decisões técnicas em nível de empresa padronizando práticas de engenharia e melhorando a manutenibilidade de longo prazo. Liderou iniciativas de melhoria de observabilidade e monitoramento possibilitando decisões orientadas a dados. Mentorou engenheiros e colaborou de forma multifuncional com produto, UX e SRE. Estabeleceu padrões de documentação e fluxos de planejamento estruturados.
+**Contribuições:** Padronizei práticas por scaffolds reutilizáveis, monorepos, bibliotecas UI compartilhadas, templates de teste, práticas de CI/CD, melhorias de observabilidade, documentação, logs de decisão e orientação de arquitetura. Mentorei engenheiros, integrei colegas, colaborei com produto/UX/SRE/suporte/compliance e traduzi trade-offs técnicos para linguagem acionável por times não técnicos.
 
-**Escopo:** Atuou em diversos contextos organizacionais — de um grande marketplace latino-americano e uma fintech europeia a plataformas bancárias e SaaS menores — demonstrando adaptabilidade e influência de engenharia consistente.
+**Evidência:** Scaffolds frontend no Mercado Livre reduziram bootstrap de novos projetos de dias para menos de uma hora, e o monorepo acelerou integração de componentes compartilhados de dias para horas. Trabalho contratual confidencial usou specs, tickets, workshops, logs de decisão e revisões de risco compartilhadas para alinhar negócio, cliente, infraestrutura, segurança, suporte, produto e engenharia. Five Validation exigiu colaboração direta com liderança, elicitação de requisitos, documentação pronta para auditoria e controles de release em ambiente regulado.
 
-**Sinais de senioridade:** Tomada de decisão técnica em nível de empresa, influência multifuncional, efeito multiplicador e mentoria, stewardship de cultura de engenharia.
+**Sinais de senioridade:** Tomada de decisão técnica em nível de empresa, influência cross-funcional, mentoria, pensamento de plataforma, ownership além da implementação, disciplina de documentação e efeito multiplicador por sistemas reutilizáveis.
 
-## Engenharia Assistida por IA — Adoção Pragmática de Ferramentas como Prática de Entrega
+## Engenharia Assistida por IA — Adoção Pragmática como Prática de Entrega
 
-**Problema:** A entrega moderna de software se beneficia de ferramentas assistidas por IA, mas afirmações de profundidade exigem distinguir entre usar ferramentas de IA na entrega e ter propriedade de sistemas de ML em produção.
+**Problema:** Desenvolvimento assistido por IA pode acelerar entrega, mas afirmações críveis exigem separar uso de ferramentas de codificação com IA de ownership de sistemas de IA em produção e de claims de ML não suportados.
 
-**Prática:** Site do portfólio e serviço do recrutador implementados com ferramentas de codificação assistida por IA (Cursor, assistentes no estilo Copilot) para scaffolding, refatorações, cobertura de testes e iteração de texto. Ferramentas de IA integradas ao fluxo diário de engenharia como multiplicador de produtividade.
+**Prática:** Construí o site de portfólio e o assistente de recrutador com ferramentas como Cursor e revisão estilo Copilot para scaffolding, refactors, testes, iteração de copy e planejamento de implementação. Mantive ownership humano sobre arquitetura, prompts, threat modeling, code review, CI/CD, testes, deploy e comportamento em produção.
 
-**O que isso demonstra:** Adoção pragmática de IA — tratando assistentes de IA como parte do stack de engenharia, não apenas uma novidade. Combinado com o design de funcionalidades de produto nativas em IA (o assistente de recrutador, com avaliação de requisitos em stream antes da síntese e pontuação com tetos) usando disciplina de engenharia: testes, CI, type safety, observabilidade.
+**Distinção em produção:** O assistente de recrutador é uma funcionalidade de produto nativa em IA com escopo definido usando RAG, geração em estágios avaliador/analista/pitch, UX em stream, match score com teto e match de referências pós-stream. O trabalho de personalização na Klarna envolveu similaridade vetorial e embeddings em contexto de email transacional crítico para receita. Automação de garantias usou avaliação de imagens por IA atrás de regras de negócio determinísticas.
 
-**Distinção:** Este é um sinal de prática de entrega, não uma alegação de propriedade de ML em produção não relacionada. O assistente de recrutador demonstra trabalho de produto de IA com escopo definido e fundamentado em evidências.
+**O que isso demonstra:** Adoção pragmática de IA como prática de entrega e capacidade de produto: usar ferramentas de IA para aumentar alavancagem de engenharia aplicando testes, type safety, observabilidade, disciplina de revisão, fundamentação e fallback.
 
-## Colaboração multifuncional — entrega matricial e remota
+**Distinção:** Codificação assistida por IA é apresentada como sinal de produtividade e entrega. Trabalho de produto nativo em IA é apresentado separadamente onde a arquitetura realmente usa recuperação, embeddings, motores de decisão ou saídas de modelos de IA.
 
-**Prática:** Em entrega 100% remota, atuou como ponte de engenharia entre negócios, cliente, infraestrutura, segurança, suporte, produto e engenharia interna — conduzindo planejamento conjunto, revisões compartilhadas de risco e checkpoints de integração para manter funções diversas alinhadas ponta a ponta.
+## Colaboração Cross-Funcional — Entrega Matricial e Remota
 
-**Em escala:** Entregou por meio de iniciativas multifuncionais envolvendo plataforma de dados, incentivos, conteúdo, marketing, analytics e engenharia de plataforma — negociando prioridades quando parceiros tinham metas e cadências de release diferentes.
+**Problema:** Muitos projetos de alto impacto falham não porque o código é difícil, mas porque múltiplos times possuem partes diferentes do fluxo, incentivos, dados, compliance, timing de release e responsabilidades de suporte.
 
-**Contextos anteriores:** Liderou programas multifuncionais de migração quando a propriedade da experiência fiscal mudou — produto, política, UX, backend e times regionais com filosofias de implementação distintas. Em empresas menores, coordenou validação, QA, operações de vendas e stakeholders executivos — incluindo trabalho direto com o CEO em requisitos e planejamento.
+**Prática:** Em entrega contratual remota, atuei como ponte de engenharia entre negócio, cliente, infraestrutura, segurança, suporte, produto e engenharia interna — usando rastreabilidade em tickets, especificações compartilhadas, workshops, logs de decisão, planejamento conjunto, revisões de risco e checkpoints de integração para manter stakeholders alinhados da descoberta ao lançamento.
+
+**Em escala:** Entreguei iniciativas cross-funcionais envolvendo plataforma de dados, incentivos, conteúdo, marketing, analytics, UX, engenharia de plataforma, política fiscal, faturamento, mobile, backend, times regionais de mercado, jurídico, compliance, SRE, QA, suporte e operações. Negociei trade-offs de implementação quando times tinham metas, cadências e limites de ownership diferentes.
+
+**Contextos anteriores:** Liderei migração da experiência fiscal e iniciativas de plataforma no Mercado Livre com produto, política, UX, backend, faturamento, mobile e times regionais. Trabalhei com arquitetura bancária, SRE, operações, analistas e compliance no Itaú. Coordenei validação, QA, operações de vendas, consultores e stakeholders executivos na Five Validation, incluindo colaboração direta com liderança em requisitos e planejamento.
+
+**Por que importa:** Mostra capacidade de operar em ambientes matriciais em que arquitetura técnica, comunicação, sequenciamento e confiança entre stakeholders fazem parte do sistema de entrega.

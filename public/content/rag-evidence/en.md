@@ -1,87 +1,105 @@
 ## Distributed Systems — Event-Driven Coordination and Failure Isolation
 
-**Problem:** Production systems spanning banking enrollment, warranty automation, and transactional email personalization required coordinating work across independent backend domains without creating brittle coupling or single points of failure.
+**Problem:** Production systems across banking enrollment, warranty automation, billing/invoicing sync, tax reporting, and transactional email personalization required coordinating work across independent domains without creating brittle coupling, retry storms, or single points of failure.
 
-**Approach:** Event-driven architectures with explicit state management. SAGA patterns with deterministic state machines for multi-step workflows. Message-based coordination (Kafka, BullMQ) preventing tight coupling. Stateless workers for horizontal scalability.
+**Approach:** Designed event-driven and asynchronous architectures with explicit state management. Used SAGA orchestration with deterministic state machines for multi-step banking workflows, BullMQ/Redis workers for long-running warranty automation, Kafka for cross-domain event coordination, SQS/Lambda for serverless billing-to-invoicing synchronization, and BFF/cached views for latency-sensitive seller tax reporting.
 
-**Failure handling:** Bounded retries with automatic escalation instead of indefinite retries. Dead letter queues for unresolvable cases. Idempotent processing and monotonic state progression ensuring safety without distributed locking.
+**Failure handling:** Used bounded retries, TTL limits, dead letter queues, escalation paths, fallback behavior, and support handoff states instead of indefinite retries. Designed workflows so partial failure was expected and observable: state snapshots, monotonic state progression, idempotent downstream handling, duplicate-safe processing, and explicit terminal failure states.
 
-**Why it matters:** Demonstrates comfort designing systems where partial failure is expected — a staff-level concern in integration-heavy, regulated, and revenue-critical environments.
+**Evidence:** Mobile overdraft enrollment at Itaú used Kafka, Avro, Cassandra snapshots, Spring State Machine, DLQ routing, and support escalation. Warranty automation used BullMQ, Redis, state-machine coordination, retries, and escalation safeguards. Ageras billing sync used AWS Lambda, SQS, schema validation, idempotency keys, retries, and CloudWatch alarms. MercadoLivre tax reporting used an asynchronous BFF cached view to reduce seller tax report response latency from 1–2s to up to ~200ms.
+
+**Why it matters:** Demonstrates comfort designing systems where partial failure, duplicate events, delayed responses, and external dependency failures are normal engineering constraints — a senior/staff-level concern in regulated, integration-heavy, and revenue-critical environments.
 
 ## AI-Native Engineering — Retrieval-Grounded and Staged LLM Workflows
 
-**Problem:** Building AI-powered product features that are credible and grounded rather than generic requires deliberate architecture around retrieval determinism, hallucination risk, and streaming UX.
+**Problem:** AI-powered product features can easily become generic, overconfident, or misleading unless they are designed around retrieval quality, hallucination risk, fit calibration, and transparent evidence boundaries.
 
-**Approach:** RAG-based recruiter assistant with deterministic cosine retrieval over prebuilt embedding chunks. **Three streamed chat stages** on one data stream, inside API **thinking** markers for the first two: (1) an **evidence evaluator** that classifies each major job requirement against retrieved excerpts (must-have vs nice-to-have; direct vs adjacent vs not evidenced vs contradictory), flags where cosine similarity could mislead readers, and emits **match score guidance** with **hard caps** so unrelated-but-neighbor concepts cannot justify a strong fit; when a private **interests rubric** is configured, an optional **interests alignment** step runs next as a **non-streamed** completion — **logged server-side for operators only**, not sent to the client or merged into the pitch; (2) an **evidence analyst** that synthesizes alignment, high-signal matches, and interview angles **without contradicting** the evaluator, streamed in the same **thinking** block after a short separator; (3) after the thinking close marker, a **recruiter-facing assessment** whose match strength **must not exceed** the evaluator’s recommended ceiling. The handler **waits for the evaluator stream to finish** before interests (if any) and the analyst so downstream prompts always see a complete, authoritative coverage table. After the pitch completes, a **structured pass** extracts concrete claims, embeds them, and matches them back to portfolio chunks to append a **References** section (with explicit flags when similarity is below threshold). Deterministic **input shaping** and an **LLM intent gate** run before any retrieval or generation.
+**Approach:** Built a RAG-based recruiter assistant that evaluates job descriptions against portfolio evidence using deterministic cosine retrieval over prebuilt embedding chunks, staged LLM analysis, streamed UX, explicit match-score ceilings, and post-generation reference validation.
 
-**Tradeoffs:** Deterministic retrieval + probabilistic generation keeps grounding while allowing synthesis. No fine-tuning — foundation models with staged prompting, explicit uncertainty handling, and a dedicated “critic” pass before synthesis. Marker-wrapped evaluator + analyst, optional private interests evaluation (server-only), plus post-stream reference matching keep the recruiter voice aligned with checkable evidence.
+**Workflow:** The assistant runs deterministic input shaping and an LLM intent gate before retrieval or generation. It then streams three stages through one response path: (1) an evidence evaluator inside API `thinking` markers that classifies job requirements as must-have or nice-to-have and evidence as direct, adjacent, not evidenced, or contradictory; (2) an evidence analyst, also inside the thinking block, that synthesizes high-signal matches and interview angles without contradicting the evaluator; and (3) a recruiter-facing assessment after the thinking close marker whose match strength cannot exceed the evaluator’s recommended ceiling.
 
-**What this demonstrates:** AI-native product thinking — designing around retrieval, grounding, hallucination mitigation, honest fit calibration, and streaming latency with the same engineering discipline as the rest of the stack.
+**Grounding safeguards:** The evaluator flags where cosine similarity may mislead readers, emits match-score guidance with hard caps, and prevents unrelated-neighbor concepts from being presented as strong evidence. The handler waits for the evaluator stream to finish before running downstream analysis so later prompts always receive the complete authoritative coverage table. After the recruiter-facing pitch completes, a structured pass extracts concrete claims, embeds them, and matches them back to portfolio chunks to append a References section with explicit low-similarity flags when evidence is weak.
+
+**Private-fit handling:** When a private interests rubric is configured, an optional interests-alignment step runs as a non-streamed completion after the evaluator. It is logged server-side for operators only and is not sent to the client or merged into the recruiter pitch, keeping public evidence separate from private preference analysis.
+
+**What this demonstrates:** AI-native product engineering — treating retrieval, grounding, uncertainty, hallucination mitigation, score calibration, and streaming latency as architecture concerns rather than prompt-only problems.
 
 ## AI-Driven Decision Systems — Intelligent Automation Under Constraints
 
-**Problem:** Manual warranty claim processing was expensive and unscalable. Revenue-critical transactional emails needed real-time personalized content under extreme latency constraints (~200 ms at ~100 RPS).
+**Problem:** Warranty claim processing was manual and expensive to scale, while transactional emails needed personalized content in a revenue-critical path under strict latency constraints of roughly ~200ms at ~100 RPS.
 
-**Approach:** JSON-based decision engines with AI model integration for warranty claims — dynamic business rules evaluated against AI-generated image labels and scores. Vector-based real-time embedding similarity matching for transactional email personalization under deterministic latency constraints.
+**Approach:** Designed AI-assisted decision systems that kept AI output behind controlled engineering boundaries. Warranty automation used AI image evaluation as an input into a JSON-based deterministic rules engine rather than as the final decision-maker. Klarna personalization used vector similarity matching over customer behavior, live campaign vectors, and “Power User” profile embeddings to retrieve eligible content blocks in real time.
 
-**Reliability patterns:** Safe fallback mechanisms ensuring zero disruption to core flows. Bounded retries with escalation safeguards. Asynchronous data sync from customer data platforms to keep decision latency low.
+**Reliability patterns:** Used safe fallback mechanisms so core flows were not blocked by unavailable AI outputs, slow vector matching, missing data, failed external systems, or unknown rule paths. Warranty workflows used asynchronous queue processing, bounded retries, escalation safeguards, and support handoff states. Transactional email personalization used default content fallbacks so purchase-confirmation delivery remained reliable.
 
-**Impact:** Reduced manual processing overhead while maintaining escalation safeguards. Improved email engagement (CTR from 1.4 % to 1.8 %). Established scalable frameworks for AI-powered automation and personalization.
+**Impact:** Reduced manual warranty-processing overhead while preserving support escalation for uncertain or failed cases. Improved transactional email engagement, with CTR moving from ~1.4% to ~1.8% in the personalization context. Established reusable patterns for AI-assisted automation where deterministic rules, latency budgets, observability, fallback paths, and human review must coexist.
 
 ## Observability and Reliability — SLO-Driven Operational Maturity
 
-**Problem:** Production systems in fintech, high-traffic e-commerce, and banking require structured observability and defined service levels — not just monitoring dashboards.
+**Problem:** Fintech, banking, e-commerce, and customer-support platforms need operational visibility that explains what happened across systems — not just dashboards that show something is broken.
 
-**Approach:** End-to-end instrumentation with Datadog and Grafana: custom metrics, distributed traces, latency/error dashboards. SLO/SLA definition and monitoring for response time and availability. Structured logging for workflow and saga state tracing.
+**Approach:** Instrumented systems with Datadog, Grafana, CloudWatch, New Relic, structured logs, distributed traces, latency/error dashboards, and custom business metrics. Defined and monitored SLOs/SLAs for response time, availability, failure behavior, queue health, and critical integration paths.
 
-**Operational patterns:** DLQ monitoring for manual intervention workflows. On-call rotation for revenue-critical systems. Bounded retry strategies preventing cascading failures. Alerting configured for continuous reliability. Built diagnostic tooling to reduce incident response time.
+**Operational patterns:** Used DLQ monitoring, bounded retries, escalation paths, on-call rotation, alerting, saga-state tracing, queue-health dashboards, fallback telemetry, and diagnostic tooling. Designed systems so support, SRE, and engineering teams could trace workflows end to end through logs, state snapshots, dashboards, and operational queries.
 
-**Why it matters:** Operational teams can trace transactions end-to-end within seconds. Systems maintain reliability under load through structured failure containment and explicit escalation paths.
+**Evidence:** Klarna personalization used Datadog tracing, latency/error SLOs, fallback telemetry, and on-call ownership. Itaú SAGA orchestration used structured transition logs, Grafana dashboards, Cassandra snapshots, DLQ monitoring, and Spark/Redshift reporting. Ageras billing sync used CloudWatch metrics, dashboards, alarms, invocation success rates, latency, and error trends. PagSeguro diagnostics aggregated API data into a unified troubleshooting model for Level 2 and Level 3 support teams.
+
+**Why it matters:** Shows production ownership beyond feature delivery: incident visibility, failure containment, operational handoffs, supportability, and reliability under load.
 
 ## Full-Stack Platform Engineering — Cross-Layer Delivery and Ownership
 
-**Problem:** Complex products require engineers who can own problems end-to-end — backend, frontend, infrastructure, and operational concerns — rather than handing off across layers.
+**Problem:** Complex product work often cuts across frontend, backend, infrastructure, observability, data, and operational concerns. Impact depends on owning the whole path rather than optimizing only one layer.
 
-**Scope:** Backend in Node.js/TypeScript and Java/Spring. Frontend in React and React Native. Infrastructure on AWS with Kubernetes, Terraform, and CI/CD pipelines. Domains spanning fintech (invoicing, banking products), high-traffic e-commerce (tax compliance across Latin America), consumer brands (warranty automation), and internal tooling.
+**Scope:** Delivered backend services in Node.js/TypeScript and Java/Spring, frontend applications in React and React Native, infrastructure on AWS/Kubernetes/Terraform, CI/CD pipelines, observability, and testing across fintech, banking, e-commerce, pharmaceutical validation, customer support, and AI-assisted product domains.
 
-**Delivery patterns:** Full lifecycle ownership from design through rollout and iteration. Microservices and micro-frontends for modular delivery. Engineering practices standardization and documentation. CI/CD pipeline implementation and containerized services.
+**Delivery patterns:** Owned full lifecycle delivery from discovery and architecture through implementation, testing, rollout, monitoring, and iteration. Used clean architecture, hexagonal boundaries, microservices, event-driven workflows, reusable frontend scaffolds, monorepos, shared UI libraries, typed APIs, E2E tests, and deployment automation.
 
-**Impact:** Accelerated teams through standardized practices, shared tooling, and knowledge transfer across organizational contexts from major marketplace to smaller fintech.
+**Evidence:** Ageras BKYC combined React Native, React web, backend services, Solaris/third-party integrations, Datadog, and compliance-sensitive onboarding. MercadoLivre combined tax APIs, seller dashboards, backoffice platforms, reusable scaffolds, monorepos, and infrastructure migration. Five Validation combined Java/Spring, React, PostgreSQL, AWS, Jenkins, SonarQube, CloudWatch, and regulated workflow automation.
+
+**Impact:** Accelerated teams through reusable architecture, shared tooling, standardized practices, documentation, and knowledge transfer across contexts ranging from major marketplaces and banks to smaller fintech and startup environments.
 
 ## Integration Architecture — Service Composition and Boundary Design
 
-**Problem:** Products that integrate CRMs, AI services, event backbones, data platforms, and notification systems need resilient service boundaries — failures at one integration point should not cascade.
+**Problem:** Products that integrate CRMs, AI services, banking systems, event backbones, data platforms, notification systems, and support workflows need resilient service boundaries so one dependency failure does not cascade into the core customer flow.
 
-**Approach:** GraphQL (Apollo Federation) for service composition enabling independent evolution. REST APIs for synchronous integration in latency-sensitive flows. Event-driven coordination via Kafka for asynchronous cross-domain communication. Integrated Salesforce case management, AI image evaluation, customer data platforms, and multi-market notification systems.
+**Approach:** Used GraphQL/Apollo Federation for service composition, REST APIs for synchronous low-latency paths, Kafka/SQS/BullMQ for asynchronous coordination, BFF/cached views for read-model performance, and adapter boundaries to isolate external systems from core business logic.
 
-**Tradeoffs:** Federation over monolithic APIs for independent deployability. Event-driven over point-to-point for failure isolation. Safe fallback mechanisms at every integration boundary to protect core flows.
+**Tradeoffs:** Used federation or service composition when independent evolution mattered, REST when synchronous response time and operational simplicity mattered, event-driven communication when failure isolation and eventual consistency mattered, and cached/BFF views when user-facing latency required precomputed or consolidated data.
 
-**Why it matters:** Systems remain independently deployable and evolvable. Integration failures are contained, not cascading — critical in environments with multiple external dependencies.
+**Evidence:** Warranty automation integrated Salesforce, chatbot automation, AI image evaluation, GraphQL services, queue workers, and support escalation. Klarna personalization integrated campaign feeds, customer interaction data, peer-profile embeddings, REST endpoints, and transactional email generation. Ageras integrated Solaris/third-party APIs for BKYC and SQS/Lambda/REST for billing sync. MercadoLivre coordinated taxes, billing, mobile, UX, product, and seller-facing tax reporting through service and frontend boundaries.
+
+**Why it matters:** Demonstrates the ability to compose systems across organizational and technical boundaries while preserving reliability, deployability, and clear ownership.
 
 ## Technical Leadership — Engineering Practices and Team Impact
 
-**Problem:** Growing teams and codebases need more than individual contributions — they need standardized practices, shared tooling, and engineering culture.
+**Problem:** Growing systems and teams need engineering practices that scale: shared architecture, clear ownership, reviewable decisions, reusable tooling, onboarding paths, and cross-functional alignment.
 
-**Contributions:** Implemented company-level technical decisions standardizing engineering practices and improving long-term maintainability. Led observability and monitoring improvement initiatives enabling data-driven decisions. Mentored engineers and collaborated cross-functionally with product, UX, and SRE. Established documentation standards and structured planning workflows.
+**Contributions:** Standardized engineering practices through reusable project scaffolds, monorepos, shared UI libraries, testing templates, CI/CD practices, observability improvements, documentation, decision logs, and architecture guidance. Mentored engineers, onboarded teammates, collaborated with product/UX/SRE/support/compliance stakeholders, and translated technical trade-offs into language non-engineering teams could act on.
 
-**Scope:** Operated across organizational contexts — from a major Latin American marketplace and a European fintech to smaller banking and SaaS platforms — demonstrating adaptability and consistent engineering influence.
+**Evidence:** MercadoLivre frontend scaffolds reduced new-project bootstrap time from days to under an hour, and the monorepo accelerated shared component integration from days to hours. Confidential contract work used specs, tickets, workshops, decision logs, and shared risk reviews to align business, client, infrastructure, security, support, product, and engineering stakeholders. Five Validation required direct leadership collaboration, requirements elicitation, audit-ready documentation, and release controls in a regulated environment.
 
-**Seniority signals:** Company-level technical decision-making, cross-functional influence, mentoring and multiplier effect, engineering culture stewardship.
+**Seniority signals:** Company-level technical decision-making, cross-functional influence, mentoring, platform thinking, ownership beyond implementation, documentation discipline, and multiplier effect through reusable systems.
 
 ## AI-Assisted Engineering — Pragmatic Tooling Adoption as Delivery Practice
 
-**Problem:** Modern software delivery benefits from AI-assisted tooling, but depth claims require distinguishing between using AI tools in delivery and owning production ML systems.
+**Problem:** AI-assisted development can accelerate delivery, but credible claims require separating use of AI coding tools from ownership of production AI systems and from unsupported ML claims.
 
-**Practice:** Portfolio site and recruiter service implemented with AI-assisted coding tools (Cursor, Copilot-class assistants) for scaffolding, refactors, test coverage, and copy iteration. AI tooling integrated into day-to-day engineering workflow as a productivity multiplier.
+**Practice:** Built the portfolio site and recruiter assistant with AI-assisted coding tools such as Cursor and Copilot-class review assistance for scaffolding, refactors, tests, copy iteration, and implementation planning. Kept human ownership over architecture, prompts, threat modeling, code review, CI/CD, testing, deployment, and production behavior.
 
-**What this demonstrates:** Pragmatic AI adoption — treating AI assistants as part of the engineering stack, not just a novelty. Combined with designing AI-native product features (the recruiter assistant, including streamed requirement evaluation before synthesis and capped match scoring) using engineering discipline: tests, CI, type safety, observability.
+**Production AI distinction:** The recruiter assistant is a scoped AI-native product feature using RAG, staged evaluator/analyst/pitch generation, streamed UX, capped match scoring, and post-stream reference matching. The Klarna personalization work involved vector similarity matching and embeddings in a revenue-critical transactional email context. Warranty automation used AI image evaluation behind deterministic business rules.
 
-**Distinction:** This is a delivery practice signal, not a claim of unrelated production ML ownership. The recruiter assistant demonstrates scoped, evidence-grounded AI product work.
+**What this demonstrates:** Pragmatic AI adoption as both a delivery practice and a product capability: using AI tools to increase engineering leverage while still applying tests, type safety, observability, review discipline, grounding, and fallback behavior.
 
-## Cross-functional collaboration — matrixed and remote delivery
+**Distinction:** AI-assisted coding is presented as a productivity and delivery signal. AI-native product work is presented separately where the architecture actually uses retrieval, embeddings, decision engines, or AI model outputs.
 
-**Practice:** In remote-first contract delivery, acted as the engineering bridge across business, client, infrastructure, security, support, product, and internal engineering—running joint planning, shared risk reviews, and integration checkpoints so diverse functions stayed aligned end to end.
+## Cross-Functional Collaboration — Matrixed and Remote Delivery
 
-**At scale:** Delivered through cross-functional initiatives spanning data platform, incentives, content, marketing, analytics, and platform engineering—negotiating priorities when partners had different goals and release cadences.
+**Problem:** Many high-impact engineering projects fail not because the code is hard, but because multiple teams own different parts of the workflow, incentives, data, compliance, release timing, and support responsibilities.
 
-**Earlier contexts:** Led cross-functional migration programs when tax experience ownership changed across product, policy, UX, backend, and regional teams with different implementation philosophies. In smaller organizations, coordinated validation, QA, sales operations, and executive stakeholders—including direct CEO engagement on requirements and planning.
+**Practice:** In remote-first contract delivery, acted as the engineering bridge across business, client, infrastructure, security, support, product, and internal engineering teams — using ticket-backed traceability, shared specifications, workshops, decision logs, joint planning, risk reviews, and integration checkpoints to keep stakeholders aligned from discovery through launch.
+
+**At scale:** Delivered cross-functional initiatives involving data platform, incentives, content, marketing, analytics, UX, platform engineering, tax policy, billing, mobile, backend, regional market teams, legal, compliance, SRE, QA, support, and operations. Negotiated implementation trade-offs when teams had different goals, release cadences, and ownership boundaries.
+
+**Earlier contexts:** Led tax-experience migration and platform initiatives at MercadoLivre across product, policy, UX, backend, billing, mobile, and regional teams. Worked with banking architecture, SRE, operations, analysts, and compliance stakeholders at Itaú. Coordinated validation, QA, sales operations, consultants, and executive stakeholders at Five Validation, including direct leadership collaboration on requirements and planning.
+
+**Why it matters:** Shows ability to operate in matrixed environments where technical architecture, communication, sequencing, and stakeholder trust are part of the delivery system.
