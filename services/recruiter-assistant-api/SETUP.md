@@ -90,6 +90,7 @@ Add **inline policy** (tighten ARNs to your account):
 | `INTERESTS_PACK_S3_URI` | Optional: `s3://YOUR_EMBEDDINGS_BUCKET/interests-pack.json` (see §1b)                                                                                                             |
 | `RECRUITER_CHAT_MODEL`  | Optional: OpenAI chat model id. Default in code is **`gpt-5.4-mini`** (`CHAT_MODEL` in `src/constants.ts`). Set only to override (e.g. pinning or A/B).                           |
 | `ALLOWED_ORIGIN`        | Comma-separated, **exact** `Origin` match: prod `https://…` hosts plus local dev `http://localhost:3000` **and** `http://127.0.0.1:3000` if you ever open Next on the loopback IP |
+| `RECAPTCHA_SECRET_KEY`  | reCAPTCHA v2 **secret** key for server-side `siteverify` on chat POST. Omit locally to skip verification. Pair with `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` on the Next build (see §8).  |
 
 Do **not** set `OPENAI_API_KEY` in Lambda env (use the secret only).
 
@@ -158,6 +159,7 @@ OIDC trust for the repo is unchanged; see [docs/deployment-setup.md](../../docs/
 ## 8. GitHub repository variables
 
 - **`RECRUITER_API_URL`** — full Function URL (no trailing slash). Set on GitHub **environment** `dev` / `production` (or repository secret/variable); the Frontend **build** job uses the same environment as deploy and passes it as `NEXT_PUBLIC_RECRUITER_API_URL` (see `.github/workflows/ci.yml`).
+- **`RECAPTCHA_SITE_KEY`** (optional) — reCAPTCHA v2 **site** key; CI passes it as `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` when set. Must match `RECAPTCHA_SECRET_KEY` on Lambda.
 
 ---
 
@@ -206,6 +208,9 @@ Terminal B — Next site:
 
 ```bash
 export NEXT_PUBLIC_RECRUITER_API_URL=http://127.0.0.1:3001
+# Optional — root `.env.local` for the site key; API `.env.local` for RECAPTCHA_SECRET_KEY
+# export NEXT_PUBLIC_RECAPTCHA_SITE_KEY=...
+# export RECAPTCHA_SECRET_KEY=...
 npm run dev
 ```
 
