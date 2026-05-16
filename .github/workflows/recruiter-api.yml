@@ -58,6 +58,7 @@ jobs:
   recruiter-e2e:
     needs: test-and-build
     runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'pull_request' && 'dev' || 'production' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -80,10 +81,20 @@ jobs:
         working-directory: services/recruiter-assistant-api
         run: npm run build
 
+      - name: Require OpenAI API key
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
+          DEPLOY_ENV: ${{ github.event_name == 'pull_request' && 'dev' || 'production' }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::OPENAI_API_KEY is unset for environment '$DEPLOY_ENV'. Add an environment secret (Settings → Environments → $DEPLOY_ENV), or a repository secret/variable."
+            exit 1
+          fi
+
       - name: Build embeddings
         working-directory: services/recruiter-assistant-api
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
         run: node scripts/build-embeddings.mjs
 
       - name: Resolve embeddings path
@@ -99,7 +110,7 @@ jobs:
       - name: Start API dev server
         working-directory: services/recruiter-assistant-api
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
           ALLOWED_ORIGIN: http://localhost:3000
         run: |
           npm run dev &
@@ -177,9 +188,19 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Require OpenAI API key
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
+          DEPLOY_ENV: ${{ github.event_name == 'pull_request' && 'dev' || 'production' }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::OPENAI_API_KEY is unset for environment '$DEPLOY_ENV'. Add an environment secret (Settings → Environments → $DEPLOY_ENV), or a repository secret/variable."
+            exit 1
+          fi
+
       - name: Build embeddings
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
         run: node scripts/build-embeddings.mjs
 
       - name: Configure AWS credentials
