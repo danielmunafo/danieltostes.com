@@ -57,6 +57,9 @@ export const RECRUITER_BAD_PROMPT_LOCK_DURATION_MS = 24 * 60 * 60 * 1000;
 export const RECRUITER_BAD_PROMPT_STRIKE_EVENT =
   "danieltostes:recruiterAssistantBadPromptUpdated" as const;
 
+/** Minimum height of the bottom dock while a conversation exists (composer / loading slot). */
+export const RECRUITER_ASSISTANT_BOTTOM_DOCK_MIN_HEIGHT_PX = 228;
+
 /** Max width for the prompt composer (matches chat column on GPT-style layouts). */
 export const RECRUITER_COMPOSER_MAX_WIDTH_PX = 768;
 
@@ -77,9 +80,9 @@ export const RECRUITER_COMPOSER_INPUT_MAX_HEIGHT_PX = 120;
 export const RECRUITER_COMPOSER_EXPANDED_ROWS = 5;
 
 /**
- * After `[[THINKING_END]]`, the JD composer exits (fade + nudge down).
- * The job-context panel auto-collapses at the same stream milestone (see
- * `shouldRequestJobContextCollapse`).
+ * After the evidence phase (`hasThinking && !isThinkingStreaming`), the JD
+ * composer exits (fade + nudge down). The job-context panel auto-collapses when
+ * `[[THINKING_START]]` arrives (see `shouldRequestJobContextCollapse`).
  */
 export const RECRUITER_COMPOSER_EXIT_DURATION_MS = 100;
 

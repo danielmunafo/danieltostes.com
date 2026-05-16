@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { chartDataSchema } from "../src/rag/chartDataSchema.js";
+import {
+  chartDataSchema,
+  chartDataSchemaForModelOutput,
+} from "../src/rag/chartDataSchema.js";
 import { parseEvaluatorMatchMetadata } from "../src/rag/parseEvaluatorMatchMetadata.js";
 import { parseEvaluatorRequirementEvidence } from "../src/rag/parseEvaluatorRequirementEvidence.js";
 import {
@@ -97,6 +100,27 @@ describe("chartDataSchema", () => {
   it("accepts valid chart data", () => {
     const result = chartDataSchema.safeParse(makeValidChart());
     expect(result.success).toBe(true);
+  });
+
+  it("remaps developerExperience via chartDataSchemaForModelOutput", () => {
+    const chart = makeValidChart();
+    const dims = chart.capabilityDimensions.map((d, i) =>
+      i === 2
+        ? {
+            ...d,
+            key: "developerExperience" as unknown as typeof d.key,
+            label: "Developer experience",
+          }
+        : d
+    );
+    const result = chartDataSchemaForModelOutput.safeParse({
+      ...chart,
+      capabilityDimensions: dims,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.capabilityDimensions[2].key).toBe("integrations");
+    }
   });
 
   it("rejects fewer than 4 dimensions", () => {

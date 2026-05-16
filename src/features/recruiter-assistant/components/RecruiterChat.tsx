@@ -12,6 +12,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
+import LinearProgress from "@mui/material/LinearProgress";
 import MuiLink from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
@@ -31,6 +32,7 @@ import {
 } from "react";
 import { isValidLocale, type Locale } from "@/i18n/request";
 import {
+  RECRUITER_ASSISTANT_BOTTOM_DOCK_MIN_HEIGHT_PX,
   RECRUITER_BAD_PROMPT_MAX_STRIKES,
   RECRUITER_CHAT_MAX_WIDTH_PX,
   RECRUITER_COMPOSER_BORDER_RADIUS_PX,
@@ -165,8 +167,11 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   const localeRaw = useLocale();
   const locale = (isValidLocale(localeRaw) ? localeRaw : "en") as Locale;
   const t = useTranslations("RecruiterAssistant");
-  const { setHasConversation, badPromptStrikeCount } =
-    useRecruiterAssistantUi();
+  const {
+    setHasConversation,
+    badPromptStrikeCount,
+    setImmersiveEvidenceStreamActive,
+  } = useRecruiterAssistantUi();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const wasChatBusyRef = useRef(false);
   const [termsHydrated, setTermsHydrated] = useState(false);
@@ -183,6 +188,22 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   });
 
   const isBusy = status === "submitted" || status === "streaming";
+
+  const isAssistantEvidenceStreaming = useMemo(() => {
+    if (!isBusy) return false;
+    const last = messages[messages.length - 1];
+    if (last?.role !== "assistant") return false;
+    const raw = getRecruiterAssistantMessagePlainText(last);
+    const split = splitThinkingFromBody(raw);
+    return split.hasThinking && split.isThinkingStreaming;
+  }, [isBusy, messages]);
+
+  useEffect(() => {
+    setImmersiveEvidenceStreamActive(isAssistantEvidenceStreaming);
+    return () => {
+      setImmersiveEvidenceStreamActive(false);
+    };
+  }, [isAssistantEvidenceStreaming, setImmersiveEvidenceStreamActive]);
 
   const latestUserMessageId = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -267,7 +288,26 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     shouldHideComposer && composerExitPhase === "hidden";
   const showComposerChrome =
     messages.length === 0 ||
-    (isLatestJobContextPanelOpen && !briefingComposerDismissed);
+    (!isAssistantEvidenceStreaming &&
+      isLatestJobContextPanelOpen &&
+      !briefingComposerDismissed);
+
+  const showBottomChartLoadingProgress = useMemo(() => {
+    if (!isBusy) return false;
+    const last = messages[messages.length - 1];
+    if (last?.role !== "assistant") return false;
+    const raw = getRecruiterAssistantMessagePlainText(last);
+    const split = splitThinkingFromBody(raw);
+    return (
+      split.hasThinking &&
+      !split.isThinkingStreaming &&
+      split.chartData === null
+    );
+  }, [isBusy, messages]);
+
+  const reserveBottomComposerSlot =
+    showComposerChrome || showBottomChartLoadingProgress;
+
   const termsHref = `/${locale}/recruiter-assistant/terms`;
 
   useEffect(() => {
@@ -497,9 +537,10 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
         <Stack
           spacing={3}
           sx={{
-            flex: "1 0 auto",
+            flex: "1 1 auto",
             minHeight: "100%",
             width: "100%",
+            boxSizing: "border-box",
             display: "flex",
             flexDirection: "column",
           }}
@@ -612,6 +653,11 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                             split!.thinking
                           )}
                           isStreaming={split!.isThinkingStreaming}
+                          collapseRequested={
+                            isStreamingThisMessage &&
+                            showEvidenceReview &&
+                            !isEvidenceReviewStreaming
+                          }
                           label={t("evidenceReviewLabel")}
                           streamingLabel={t("evidenceReviewStreamingLabel")}
                           locale={locale}
@@ -733,200 +779,232 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
         </Stack>
       </Box>
 
-      <Stack
-        spacing={1}
+      <Box
         sx={{
           flexShrink: 0,
-          pt: 1.25,
           alignSelf: "center",
           width: `min(100%, ${RECRUITER_COMPOSER_MAX_WIDTH_PX}px)`,
           boxSizing: "border-box",
           px: 0,
+          pt: 1.25,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2.5,
         }}
       >
-        {showComposerChrome ? (
-          <Stack
-            spacing={1}
-            sx={{
-              opacity: isComposerInteractive ? 1 : 0,
-              transform: isComposerInteractive
-                ? "none"
-                : `translateY(${RECRUITER_COMPOSER_EXIT_TRANSLATE_Y_PX}px)`,
-              transition: theme.transitions.create(["opacity", "transform"], {
-                duration: RECRUITER_COMPOSER_EXIT_DURATION_MS,
-                easing: theme.transitions.easing.easeOut,
-              }),
-              pointerEvents: isComposerInteractive ? "auto" : "none",
-            }}
-          >
-            <Typography component="p" sx={jobDescriptionSectionLabelSx}>
-              {t("jobDescriptionSectionLabel")}
-            </Typography>
-            <Box
-              component="form"
-              onSubmit={onFormSubmit}
+        <Box
+          sx={{
+            flexShrink: 0,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end",
+            gap: 1.5,
+            ...(messages.length > 0 && reserveBottomComposerSlot
+              ? {
+                  minHeight: RECRUITER_ASSISTANT_BOTTOM_DOCK_MIN_HEIGHT_PX,
+                }
+              : {}),
+          }}
+        >
+          {showBottomChartLoadingProgress ? (
+            <LinearProgress
+              aria-busy
+              aria-label={t("briefingMatchProfileLabel")}
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "stretch",
                 width: "100%",
+                height: 3,
+                borderRadius: 999,
+                overflow: "hidden",
+                flexShrink: 0,
+              }}
+              color="primary"
+            />
+          ) : null}
+          {showComposerChrome ? (
+            <Stack
+              spacing={1}
+              sx={{
+                flexShrink: 0,
+                opacity: isComposerInteractive ? 1 : 0,
+                transform: isComposerInteractive
+                  ? "none"
+                  : `translateY(${RECRUITER_COMPOSER_EXIT_TRANSLATE_Y_PX}px)`,
+                transition: theme.transitions.create(["opacity", "transform"], {
+                  duration: RECRUITER_COMPOSER_EXIT_DURATION_MS,
+                  easing: theme.transitions.easing.easeOut,
+                }),
+                pointerEvents: isComposerInteractive ? "auto" : "none",
               }}
             >
-              {badPromptStrikeCount > 0 ? (
-                <Typography
-                  variant="caption"
-                  component="p"
-                  color="warning.main"
-                  sx={{ mb: 1, px: 0.5, fontWeight: 600 }}
-                >
-                  {t("badPromptStrikesCounter", {
-                    count: badPromptStrikeCount,
-                    max: RECRUITER_BAD_PROMPT_MAX_STRIKES,
-                  })}
-                </Typography>
-              ) : null}
+              <Typography component="p" sx={jobDescriptionSectionLabelSx}>
+                {t("jobDescriptionSectionLabel")}
+              </Typography>
               <Box
+                component="form"
+                onSubmit={onFormSubmit}
                 sx={{
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "stretch",
-                  gap: 0,
-                  p: `${RECRUITER_COMPOSER_INNER_PADDING_PX}px`,
-                  borderRadius: `${RECRUITER_COMPOSER_BORDER_RADIUS_PX}px`,
-                  border: `1px solid ${composerBorder}`,
-                  bgcolor: composerBg,
-                  overflow: "hidden",
-                  boxShadow:
-                    theme.palette.mode === "dark"
-                      ? `0 0 0 1px ${alpha(theme.palette.common.white, 0.05)} inset`
-                      : "0 1px 3px rgba(0,0,0,0.06)",
+                  width: "100%",
                 }}
               >
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={RECRUITER_COMPOSER_EXPANDED_ROWS}
-                  margin="none"
-                  value={input}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  placeholder={t("placeholder")}
-                  disabled={isBusy || !isComposerInteractive}
-                  name="prompt"
-                  variant="standard"
-                  InputProps={{
-                    disableUnderline: true,
-                    inputComponent: "textarea" as const,
-                  }}
-                  sx={{
-                    width: "100%",
-                    m: 0,
-                    "& .MuiInputBase-root": {
-                      m: 0,
-                      p: 0,
-                      width: "100%",
-                      alignItems: "flex-start",
-                      overflow: "visible",
-                    },
-                    "& .MuiInputBase-inputMultiline": {
-                      maxHeight: `${RECRUITER_COMPOSER_INPUT_MAX_HEIGHT_PX}px`,
-                      overflowY: "auto",
-                      overflowX: "hidden",
-                      resize: "none",
-                      lineHeight: 1.5,
-                      fontSize: "0.9375rem",
-                      boxSizing: "border-box",
-                      py: 0.375,
-                      px: 0,
-                    },
-                  }}
-                />
+                {badPromptStrikeCount > 0 ? (
+                  <Typography
+                    variant="caption"
+                    component="p"
+                    color="warning.main"
+                    sx={{ mb: 1, px: 0.5, fontWeight: 600 }}
+                  >
+                    {t("badPromptStrikesCounter", {
+                      count: badPromptStrikeCount,
+                      max: RECRUITER_BAD_PROMPT_MAX_STRIKES,
+                    })}
+                  </Typography>
+                ) : null}
                 <Box
                   sx={{
                     display: "flex",
-                    justifyContent: "flex-end",
-                    alignItems: "center",
-                    flexShrink: 0,
-                    pt: 0.75,
+                    flexDirection: "column",
+                    alignItems: "stretch",
+                    gap: 0,
+                    p: `${RECRUITER_COMPOSER_INNER_PADDING_PX}px`,
+                    borderRadius: `${RECRUITER_COMPOSER_BORDER_RADIUS_PX}px`,
+                    border: `1px solid ${composerBorder}`,
+                    bgcolor: composerBg,
+                    overflow: "hidden",
+                    boxShadow:
+                      theme.palette.mode === "dark"
+                        ? `0 0 0 1px ${alpha(theme.palette.common.white, 0.05)} inset`
+                        : "0 1px 3px rgba(0,0,0,0.06)",
                   }}
                 >
-                  {isBusy ? (
-                    <Tooltip
-                      title={t("sending")}
-                      placement="top"
-                      arrow
-                      describeChild
-                    >
-                      <Box
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={RECRUITER_COMPOSER_EXPANDED_ROWS}
+                    margin="none"
+                    value={input}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    placeholder={t("placeholder")}
+                    disabled={isBusy || !isComposerInteractive}
+                    name="prompt"
+                    variant="standard"
+                    InputProps={{
+                      disableUnderline: true,
+                      inputComponent: "textarea" as const,
+                    }}
+                    sx={{
+                      width: "100%",
+                      m: 0,
+                      "& .MuiInputBase-root": {
+                        m: 0,
+                        p: 0,
+                        width: "100%",
+                        alignItems: "flex-start",
+                        overflow: "visible",
+                      },
+                      "& .MuiInputBase-inputMultiline": {
+                        maxHeight: `${RECRUITER_COMPOSER_INPUT_MAX_HEIGHT_PX}px`,
+                        overflowY: "auto",
+                        overflowX: "hidden",
+                        resize: "none",
+                        lineHeight: 1.5,
+                        fontSize: "0.9375rem",
+                        boxSizing: "border-box",
+                        py: 0.375,
+                        px: 0,
+                      },
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                      flexShrink: 0,
+                      pt: 0.75,
+                    }}
+                  >
+                    {isBusy ? (
+                      <Tooltip
+                        title={t("sending")}
+                        placement="top"
+                        arrow
+                        describeChild
                       >
-                        <CircularProgress
-                          size={22}
-                          thickness={5}
-                          aria-label={t("sending")}
-                        />
-                      </Box>
-                    </Tooltip>
-                  ) : (
-                    <Tooltip
-                      title={t("send")}
-                      placement="top"
-                      arrow
-                      describeChild
-                    >
-                      <Box component="span" sx={{ display: "inline-flex" }}>
-                        <IconButton
-                          type="submit"
-                          disabled={
-                            !input.trim() ||
-                            !termsHydrated ||
-                            !isComposerInteractive
-                          }
-                          aria-label={t("send")}
+                        <Box
                           sx={{
                             width: 36,
                             height: 36,
-                            minWidth: 36,
-                            p: 0,
-                            borderRadius: "50%",
-                            boxShadow: 1,
-                            bgcolor:
-                              theme.palette.mode === "dark"
-                                ? alpha(theme.palette.common.white, 0.92)
-                                : alpha(theme.palette.common.black, 0.86),
-                            color:
-                              theme.palette.mode === "dark"
-                                ? theme.palette.grey[900]
-                                : theme.palette.common.white,
-                            "&:hover": {
-                              bgcolor:
-                                theme.palette.mode === "dark"
-                                  ? alpha(theme.palette.common.white, 1)
-                                  : alpha(theme.palette.common.black, 0.92),
-                            },
-                            "&.Mui-disabled": {
-                              bgcolor: "action.disabledBackground",
-                              color: "action.disabled",
-                              boxShadow: "none",
-                            },
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          <SendRoundedIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </Box>
-                    </Tooltip>
-                  )}
+                          <CircularProgress
+                            size={22}
+                            thickness={5}
+                            aria-label={t("sending")}
+                          />
+                        </Box>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip
+                        title={t("send")}
+                        placement="top"
+                        arrow
+                        describeChild
+                      >
+                        <Box component="span" sx={{ display: "inline-flex" }}>
+                          <IconButton
+                            type="submit"
+                            disabled={
+                              !input.trim() ||
+                              !termsHydrated ||
+                              !isComposerInteractive
+                            }
+                            aria-label={t("send")}
+                            sx={{
+                              width: 36,
+                              height: 36,
+                              minWidth: 36,
+                              p: 0,
+                              borderRadius: "50%",
+                              boxShadow: 1,
+                              bgcolor:
+                                theme.palette.mode === "dark"
+                                  ? alpha(theme.palette.common.white, 0.92)
+                                  : alpha(theme.palette.common.black, 0.86),
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? theme.palette.grey[900]
+                                  : theme.palette.common.white,
+                              "&:hover": {
+                                bgcolor:
+                                  theme.palette.mode === "dark"
+                                    ? alpha(theme.palette.common.white, 1)
+                                    : alpha(theme.palette.common.black, 0.92),
+                              },
+                              "&.Mui-disabled": {
+                                bgcolor: "action.disabledBackground",
+                                color: "action.disabled",
+                                boxShadow: "none",
+                              },
+                            }}
+                          >
+                            <SendRoundedIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Box>
+                      </Tooltip>
+                    )}
+                  </Box>
                 </Box>
               </Box>
-            </Box>
-          </Stack>
-        ) : null}
+            </Stack>
+          ) : null}
+        </Box>
         <Dialog
           open={termsModalOpen}
           onClose={onTermsModalClose}
@@ -971,7 +1049,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
           display="block"
           textAlign="center"
           sx={{
-            mt: showComposerChrome ? 1.5 : 1,
+            flexShrink: 0,
             px: { xs: 0.5, sm: 0 },
             opacity: 0.85,
             fontSize: (theme) =>
@@ -980,7 +1058,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
         >
           {t("disclaimer")}
         </Typography>
-      </Stack>
+      </Box>
     </Box>
   );
 }

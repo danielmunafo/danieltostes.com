@@ -1,4 +1,4 @@
-import { THINKING_CLOSE_MARKER } from "./split-thinking-from-body";
+import { THINKING_OPEN_MARKER } from "./split-thinking-from-body";
 
 type ChatMessageRole = "user" | "assistant" | "system" | "data";
 
@@ -19,8 +19,8 @@ function findLastUserMessageIndex(
 /**
  * Job context stays expanded while the latest user JD is awaiting the assistant
  * row (`submitted` / early `streaming`) and until the streamed assistant text
- * contains `[[THINKING_END]]` (chart / briefing-prep phase has started). Older
- * user turns stay collapsed.
+ * contains `[[THINKING_START]]` (evidence brief stream has begun). Older user
+ * turns stay collapsed.
  */
 export function shouldRequestJobContextCollapse(
   messages: readonly CollapseTimingMessage[],
@@ -54,5 +54,5 @@ export function shouldRequestJobContextCollapse(
   }
 
   const plain = followingAssistantPlainText ?? "";
-  return plain.includes(THINKING_CLOSE_MARKER);
+  return plain.includes(THINKING_OPEN_MARKER);
 }

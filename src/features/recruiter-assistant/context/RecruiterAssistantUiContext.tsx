@@ -20,6 +20,9 @@ import {
 type RecruiterAssistantUiContextValue = {
   hasConversation: boolean;
   setHasConversation: (value: boolean) => void;
+  /** True while the assistant is streaming the evidence brief (thinking markers). */
+  immersiveEvidenceStreamActive: boolean;
+  setImmersiveEvidenceStreamActive: (value: boolean) => void;
   /** True after max off-topic API rejections (see `bad-prompt-strikes` localStorage). */
   assistantLocked: boolean;
   /** Current off-topic strike count (same source as localStorage). */
@@ -38,6 +41,9 @@ export function RecruiterAssistantUiProvider({
   const setHasConversation = useCallback((value: boolean) => {
     setHasConversationState(value);
   }, []);
+
+  const [immersiveEvidenceStreamActive, setImmersiveEvidenceStreamActive] =
+    useState(false);
 
   const strikeRaw = useSyncExternalStore(
     subscribeStrikeStore,
@@ -58,10 +64,18 @@ export function RecruiterAssistantUiProvider({
     () => ({
       hasConversation,
       setHasConversation,
+      immersiveEvidenceStreamActive,
+      setImmersiveEvidenceStreamActive,
       assistantLocked,
       badPromptStrikeCount,
     }),
-    [hasConversation, setHasConversation, assistantLocked, badPromptStrikeCount]
+    [
+      hasConversation,
+      setHasConversation,
+      immersiveEvidenceStreamActive,
+      assistantLocked,
+      badPromptStrikeCount,
+    ]
   );
 
   return (

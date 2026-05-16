@@ -67,7 +67,17 @@ export async function extractHardGateRows(
       temperature: 0,
       maxTokens: HARD_GATE_EXTRACTION_MAX_TOKENS,
     });
-    const rows = object.rows.filter((row) => row.isHardGate);
+    const rows = object.rows
+      .filter((row) => row.isHardGate)
+      .map((row) => {
+        const trimmed = row.sourceRequirementText.trim();
+        if (trimmed.length < 2) {
+          const { sourceRequirementText: _unused, ...rest } = row;
+          void _unused;
+          return rest as HardGateRequirementRow;
+        }
+        return { ...row, sourceRequirementText: trimmed };
+      });
     if (rows.length > 0) {
       return rows;
     }

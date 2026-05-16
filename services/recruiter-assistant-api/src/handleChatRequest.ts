@@ -75,7 +75,10 @@ import {
   buildChartProjectionSystemPrompt,
   buildChartProjectionUserPrompt,
 } from "./rag/chartProjectionPrompt.js";
-import { type ChartData, chartDataSchema } from "./rag/chartDataSchema.js";
+import {
+  type ChartData,
+  chartDataSchemaForModelOutput,
+} from "./rag/chartDataSchema.js";
 import { buildReferencesMarkdown } from "./rag/references.js";
 import { buildJdHardGateRetrievalQueries } from "./rag/hardGates/buildJdHardGateRetrievalQueries.js";
 import {
@@ -386,7 +389,7 @@ export async function handleChatRequest(
               try {
                 const { object: rawChart } = await generateObject({
                   model: openai(CHAT_MODEL),
-                  schema: chartDataSchema,
+                  schema: chartDataSchemaForModelOutput,
                   maxTokens: attempt.maxTokens,
                   system: buildChartProjectionSystemPrompt(attempt.compact),
                   prompt: chartProjectionPrompt,

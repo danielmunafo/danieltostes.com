@@ -54,6 +54,12 @@ const evidenceMarkdownSx = {
 interface AssistantEvidenceReviewProps {
   readonly content: string;
   readonly isStreaming: boolean;
+  /**
+   * When true, the panel animates shut (same milestone pattern as job context:
+   * parent sets this once the evidence brief stream has finished while the
+   * overall assistant response may still be streaming).
+   */
+  readonly collapseRequested: boolean;
   readonly label: string;
   readonly streamingLabel: string;
   /** Active UI locale; used to rewrite same-site `/<locale>#…` reference links. */
@@ -63,13 +69,21 @@ interface AssistantEvidenceReviewProps {
 function AssistantEvidenceReviewInner({
   content,
   isStreaming,
+  collapseRequested,
   label,
   streamingLabel,
   locale: localeProp,
 }: AssistantEvidenceReviewProps) {
-  /** Default open so mounted-after-stream still shows evidence; user may collapse. */
-  const [open, setOpen] = useState(true);
+  /** Default open; auto-collapse when `collapseRequested` (see job-context panel). */
+  const [open, setOpen] = useState(() => !collapseRequested);
+  const didAutoCollapseRef = useRef(collapseRequested);
   const streamingBodyScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!collapseRequested || didAutoCollapseRef.current) return;
+    didAutoCollapseRef.current = true;
+    setOpen(false);
+  }, [collapseRequested]);
 
   useEffect(() => {
     if (!isStreaming) return;

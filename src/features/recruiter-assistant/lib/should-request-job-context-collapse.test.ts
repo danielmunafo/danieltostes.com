@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { shouldRequestJobContextCollapse } from "./should-request-job-context-collapse";
-import { THINKING_CLOSE_MARKER } from "./split-thinking-from-body";
+import { THINKING_OPEN_MARKER } from "./split-thinking-from-body";
 
 const USER_ID = "user-1";
 
@@ -19,7 +19,7 @@ describe("shouldRequestJobContextCollapse", () => {
     ).toBe(false);
   });
 
-  it("keeps expanded while streaming after assistant row but before thinking end", () => {
+  it("keeps expanded while streaming after assistant row but before thinking start marker", () => {
     const messages = [
       { id: USER_ID, role: "user" },
       { id: "assistant-1", role: "assistant" },
@@ -29,12 +29,12 @@ describe("shouldRequestJobContextCollapse", () => {
         messages,
         USER_ID,
         "streaming",
-        "partial evidence without close marker"
+        "partial evidence without thinking open marker"
       )
     ).toBe(false);
   });
 
-  it("requests collapse once assistant text includes thinking end marker", () => {
+  it("requests collapse once assistant text includes thinking start marker", () => {
     const messages = [
       { id: USER_ID, role: "user" },
       { id: "assistant-1", role: "assistant" },
@@ -44,7 +44,7 @@ describe("shouldRequestJobContextCollapse", () => {
         messages,
         USER_ID,
         "streaming",
-        `brief\n${THINKING_CLOSE_MARKER}\n`
+        `brief\n${THINKING_OPEN_MARKER}\n`
       )
     ).toBe(true);
   });
