@@ -106,6 +106,7 @@ import { runIntentGate } from "./security/intentGate.js";
 import { runInputGuard } from "./security/inputGuard.js";
 import { logError, logInfo, logWarn } from "./logging/logger.js";
 import { checkRateLimit } from "./security/rateLimit.js";
+import { verifyRecaptcha } from "./security/verifyRecaptcha.js";
 
 /**
  * Core HTTP handler: returns a Web `Response` (streaming body for POST / chat).
@@ -169,6 +170,17 @@ export async function handleChatRequest(
         messagesJsonLength,
         maxChars: MAX_CHAT_HISTORY_JSON_CHARS,
       },
+    });
+  }
+
+  const captcha = await verifyRecaptcha({
+    token: parsed.data.recaptchaToken,
+    remoteIp: clientIp,
+  });
+  if (!captcha.ok) {
+    return clientErrorResponse(403, "captcha_failed", origin, {
+      scope: "handleChatRequest",
+      fields: { reason: captcha.reason },
     });
   }
 

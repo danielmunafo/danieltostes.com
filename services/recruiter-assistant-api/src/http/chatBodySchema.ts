@@ -15,6 +15,8 @@ export const recruiterChatBodySchema = z.object({
   locale: z.string().optional(),
   /** Alias for `locale` (same values). */
   language: z.string().optional(),
+  /** reCAPTCHA v2 response token from the browser widget. */
+  recaptchaToken: z.string().min(1).optional(),
 });
 
 export type RecruiterChatBody = z.infer<typeof recruiterChatBodySchema>;
