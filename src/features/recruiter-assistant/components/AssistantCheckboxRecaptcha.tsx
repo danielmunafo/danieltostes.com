@@ -3,7 +3,13 @@
 import Box from "@mui/material/Box";
 import Skeleton from "@mui/material/Skeleton";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState, type MutableRefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MutableRefObject,
+} from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import {
   RECRUITER_CHECKBOX_RECAPTCHA_HEIGHT_PX,
@@ -18,7 +24,18 @@ interface AssistantCheckboxRecaptchaProps {
   readonly onErrored?: () => void;
 }
 
-export function AssistantCheckboxRecaptcha({
+function isRecaptchaIframePainted(container: HTMLElement | null): boolean {
+  const iframe = container?.querySelector("iframe");
+  return Boolean(iframe && iframe.offsetHeight > 0);
+}
+
+export function AssistantCheckboxRecaptcha(
+  props: AssistantCheckboxRecaptchaProps
+) {
+  return <AssistantCheckboxRecaptchaInner key={props.sitekey} {...props} />;
+}
+
+function AssistantCheckboxRecaptchaInner({
   recaptchaRef,
   sitekey,
   onChange,
@@ -26,68 +43,80 @@ export function AssistantCheckboxRecaptcha({
   onErrored,
 }: AssistantCheckboxRecaptchaProps) {
   const t = useTranslations("RecruiterAssistant");
-  const [isWidgetReady, setIsWidgetReady] = useState(false);
+  const captchaContainerRef = useRef<HTMLDivElement | null>(null);
+  const [isWidgetPainted, setIsWidgetPainted] = useState(false);
+  const paintPollFrameRef = useRef<number | null>(null);
 
-  const markWidgetReady = useCallback(() => {
-    requestAnimationFrame(() => {
-      setIsWidgetReady(true);
-    });
+  const stopPaintPoll = useCallback(() => {
+    if (paintPollFrameRef.current !== null) {
+      cancelAnimationFrame(paintPollFrameRef.current);
+      paintPollFrameRef.current = null;
+    }
   }, []);
 
-  const handleScriptLoad = useCallback(() => {
-    markWidgetReady();
-  }, [markWidgetReady]);
-
-  const handleErrored = useCallback(() => {
-    setIsWidgetReady(true);
-    onErrored?.();
-  }, [onErrored]);
+  const startPaintPoll = useCallback(() => {
+    stopPaintPoll();
+    const poll = () => {
+      if (isRecaptchaIframePainted(captchaContainerRef.current)) {
+        setIsWidgetPainted(true);
+        stopPaintPoll();
+        return;
+      }
+      paintPollFrameRef.current = requestAnimationFrame(poll);
+    };
+    paintPollFrameRef.current = requestAnimationFrame(poll);
+  }, [stopPaintPoll]);
 
   useEffect(() => {
-    const isWindowUndefined = typeof window === "undefined";
-    if (isWindowUndefined) {
-      return;
-    }
-    const grecaptcha = (window as { grecaptcha?: { render?: unknown } })
-      .grecaptcha;
-    if (typeof grecaptcha?.render === "function") {
-      markWidgetReady();
-    }
-  }, [markWidgetReady, sitekey]);
+    startPaintPoll();
+    return stopPaintPoll;
+  }, [startPaintPoll, stopPaintPoll]);
+
+  const handleScriptLoad = useCallback(() => {
+    startPaintPoll();
+  }, [startPaintPoll]);
+
+  const handleErrored = useCallback(() => {
+    stopPaintPoll();
+    setIsWidgetPainted(true);
+    onErrored?.();
+  }, [onErrored, stopPaintPoll]);
 
   return (
     <Box
       sx={{
         position: "relative",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        minHeight: RECRUITER_CHECKBOX_RECAPTCHA_HEIGHT_PX,
-        py: 1,
+        width: RECRUITER_CHECKBOX_RECAPTCHA_WIDTH_PX,
+        maxWidth: "100%",
+        height: RECRUITER_CHECKBOX_RECAPTCHA_HEIGHT_PX,
+        flexShrink: 0,
       }}
     >
-      {!isWidgetReady ? (
+      {!isWidgetPainted ? (
         <Skeleton
           variant="rounded"
-          width={RECRUITER_CHECKBOX_RECAPTCHA_WIDTH_PX}
+          width="100%"
           height={RECRUITER_CHECKBOX_RECAPTCHA_HEIGHT_PX}
           animation="wave"
           aria-busy
           aria-label={t("captchaLoading")}
           sx={{
             position: "absolute",
+            inset: 0,
             borderRadius: 1,
-            maxWidth: "100%",
             pointerEvents: "none",
           }}
         />
       ) : null}
       <Box
+        ref={captchaContainerRef}
         sx={{
+          width: "100%",
+          height: RECRUITER_CHECKBOX_RECAPTCHA_HEIGHT_PX,
           display: "flex",
           justifyContent: "center",
-          width: "100%",
+          alignItems: "center",
+          visibility: isWidgetPainted ? "visible" : "hidden",
         }}
       >
         <ReCAPTCHA

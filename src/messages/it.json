@@ -39,6 +39,7 @@
     "captchaModalTitle": "Controllo di sicurezza",
     "captchaModalContinue": "Continua",
     "captchaLoading": "Caricamento controllo di sicurezza…",
+    "captchaExpired": "Verifica scaduta. Seleziona di nuovo la casella.",
     "assessmentSummary": "Riepilogo della valutazione",
     "capabilityMatchProfile": "Profilo di aderenza per capacità",
     "technicalFit": "Aderenza tecnica",

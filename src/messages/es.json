@@ -39,6 +39,7 @@
     "captchaModalTitle": "Comprobación de seguridad",
     "captchaModalContinue": "Continuar",
     "captchaLoading": "Cargando comprobación de seguridad…",
+    "captchaExpired": "La verificación expiró. Marque la casilla de nuevo.",
     "assessmentSummary": "Resumen de la evaluación",
     "capabilityMatchProfile": "Perfil de encaje por capacidad",
     "technicalFit": "Encaje técnico",

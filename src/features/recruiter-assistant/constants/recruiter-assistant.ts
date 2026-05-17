@@ -133,6 +133,12 @@ export const RECRUITER_COMPOSER_EXIT_TRANSLATE_Y_PX = 16;
 export const RECRUITER_CHECKBOX_RECAPTCHA_WIDTH_PX = 304;
 export const RECRUITER_CHECKBOX_RECAPTCHA_HEIGHT_PX = 78;
 
+/**
+ * reCAPTCHA v2 response tokens expire after two minutes; clear and reset the widget
+ * slightly earlier so Continue is disabled before the API would reject the token.
+ */
+export const RECRUITER_RECAPTCHA_TOKEN_TTL_MS = 110_000;
+
 /** Pixels of window scroll over which the “scroll for more” cue fades out. */
 export const ASSISTANT_SCROLL_CUE_FADE_DISTANCE_PX = 160;
 

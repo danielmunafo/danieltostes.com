@@ -54,6 +54,7 @@ import {
   thinkingEvidenceMapFromSessionBoot,
   useRecruiterChatSessionPersistence,
 } from "../hooks/useRecruiterChatSessionPersistence";
+import { useRecruiterModalRecaptcha } from "../hooks/useRecruiterModalRecaptcha";
 import {
   clearRecruiterChatSessionSnapshot,
   type RecruiterChatComposerExitPhase,
@@ -76,7 +77,10 @@ import {
   mergedThinkingMarkdownForEvidence,
   shouldMountEvidenceReviewPanel,
 } from "../lib/sync-recruiter-assistant-thinking-cache";
-import { hasBestPositioningAngleSectionStarted } from "../lib/split-briefing-markdown";
+import {
+  hasBestPositioningAngleSectionFinished,
+  hasScoresSectionFinished,
+} from "../lib/split-briefing-markdown";
 import {
   CHART_DATA_CLOSE_MARKER,
   CHART_DATA_OPEN_MARKER,
@@ -87,9 +91,11 @@ import {
   recruiterAssistantBriefingSectionHeadingSx,
 } from "../lib/recruiter-assistant-briefing-heading-sx";
 import { logMatchProfileClientDebug } from "../lib/match-profile-debug";
+import { ensureRecruiterRecaptchaScriptLoaded } from "../lib/ensure-recruiter-recaptcha-script-loaded";
 import { AssistantCheckboxRecaptcha } from "./AssistantCheckboxRecaptcha";
+import { RecruiterModalRecaptchaField } from "./RecruiterModalRecaptchaField";
+import { RecruiterRecaptchaPreload } from "./RecruiterRecaptchaPreload";
 import { AssistantBriefingBody } from "./AssistantBriefingBody";
-import { AssistantBriefingProgress } from "./AssistantBriefingProgress";
 import { AssistantBriefingStreamingLine } from "./AssistantBriefingStreamingLine";
 import { AssistantEvidenceReview } from "./AssistantEvidenceReview";
 import { AssistantJobContextPanel } from "./AssistantJobContextPanel";
@@ -159,12 +165,22 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   const isRecaptchaEnabled = isRecruiterRecaptchaConfigured();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const wasChatBusyRef = useRef(false);
-  /** After scrolling to top when `# Best Positioning Angle` starts, skip pin-to-bottom for that turn. */
+  /** After scrolling to top when `# Best Positioning Angle` finishes, skip pin-to-bottom for that turn. */
   const bestPositioningScrollHandledForMessageIdRef = useRef<string | null>(
     null
   );
   const modalRecaptchaRef = useRef<ReCAPTCHA | null>(null);
   const captchaModalRecaptchaRef = useRef<ReCAPTCHA | null>(null);
+  const {
+    token: modalRecaptchaToken,
+    expiredVisible: modalRecaptchaExpiredVisible,
+    onChange: onModalRecaptchaChange,
+    onExpired: onModalRecaptchaExpired,
+    reset: resetModalRecaptcha,
+  } = useRecruiterModalRecaptcha({
+    termsRecaptchaRef: modalRecaptchaRef,
+    captchaModalRecaptchaRef,
+  });
   const pendingSubmitRef = useRef<
     { event?: FormEvent<HTMLFormElement> } | undefined
   >(undefined);
@@ -172,10 +188,8 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   const [termsFromStorage, setTermsFromStorage] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [captchaModalOpen, setCaptchaModalOpen] = useState(false);
-  const [captchaModalRecaptchaKey, setCaptchaModalRecaptchaKey] = useState(0);
-  const [modalRecaptchaToken, setModalRecaptchaToken] = useState<string | null>(
-    null
-  );
+  const [recaptchaPreloadRequested, setRecaptchaPreloadRequested] =
+    useState(false);
   const [captchaFailedVisible, setCaptchaFailedVisible] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [latestEvidencePanelOpen, setLatestEvidencePanelOpen] = useState(
@@ -186,17 +200,30 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     setThinkingEvidenceMarkdownByMessageId,
   ] = useState(() => thinkingEvidenceMapFromSessionBoot(sessionBoot));
 
-  const resetModalRecaptcha = useCallback(() => {
-    setModalRecaptchaToken(null);
-    modalRecaptchaRef.current?.reset();
-    captchaModalRecaptchaRef.current?.reset();
-  }, []);
+  const requestRecaptchaPreload = useCallback(() => {
+    if (!isRecaptchaEnabled) {
+      return;
+    }
+    setRecaptchaPreloadRequested(true);
+  }, [isRecaptchaEnabled]);
+
+  const onComposerFocus = requestRecaptchaPreload;
 
   const openCaptchaModal = useCallback(() => {
+    requestRecaptchaPreload();
     resetModalRecaptcha();
-    setCaptchaModalRecaptchaKey((currentKey) => currentKey + 1);
+    setTermsModalOpen(false);
     setCaptchaModalOpen(true);
-  }, [resetModalRecaptcha]);
+    void ensureRecruiterRecaptchaScriptLoaded();
+  }, [requestRecaptchaPreload, resetModalRecaptcha]);
+
+  const openTermsModal = useCallback(() => {
+    requestRecaptchaPreload();
+    resetModalRecaptcha();
+    setCaptchaModalOpen(false);
+    setTermsModalOpen(true);
+    void ensureRecruiterRecaptchaScriptLoaded();
+  }, [requestRecaptchaPreload, resetModalRecaptcha]);
 
   const closeCaptchaModal = useCallback(() => {
     setCaptchaModalOpen(false);
@@ -458,11 +485,6 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     });
   }, []);
 
-  const openTermsModal = useCallback(() => {
-    resetModalRecaptcha();
-    setTermsModalOpen(true);
-  }, [resetModalRecaptcha]);
-
   const persistTermsAcceptance = () => {
     try {
       window.sessionStorage.setItem(
@@ -535,10 +557,8 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
 
   const requestComposerSubmit = useCallback(
     (event?: FormEvent<HTMLFormElement>) => {
-      if (termsModalOpen || captchaModalOpen) {
-        return;
-      }
       if (!termsFromStorage) {
+        pendingSubmitRef.current = { event };
         openTermsModal();
         return;
       }
@@ -547,16 +567,16 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
         openCaptchaModal();
         return;
       }
+      setTermsModalOpen(false);
+      setCaptchaModalOpen(false);
       void submitChatRequest(event);
     },
     [
-      captchaModalOpen,
       isRecaptchaEnabled,
       openCaptchaModal,
       openTermsModal,
       submitChatRequest,
       termsFromStorage,
-      termsModalOpen,
     ]
   );
 
@@ -579,7 +599,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     }
     persistTermsAcceptance();
     setTermsModalOpen(false);
-    void submitWithRecaptchaFromModal();
+    void submitWithRecaptchaFromModal(pendingSubmitRef.current?.event);
   };
 
   const onTermsModalClose = () => {
@@ -601,10 +621,6 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
 
   const isCaptchaModalContinueDisabled =
     isRecaptchaEnabled && modalRecaptchaToken === null;
-
-  const onModalRecaptchaChange = (token: string | null) => {
-    setModalRecaptchaToken(token);
-  };
 
   const isTermsAcceptDisabled =
     isRecaptchaEnabled && modalRecaptchaToken === null;
@@ -654,13 +670,13 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
         const split = splitThinkingFromBody(
           getRecruiterAssistantMessagePlainText(lastMessage)
         );
-        const bestPositioningStarted = hasBestPositioningAngleSectionStarted(
+        const bestPositioningFinished = hasBestPositioningAngleSectionFinished(
           split.body,
           locale
         );
 
         if (
-          bestPositioningStarted &&
+          bestPositioningFinished &&
           bestPositioningScrollHandledForMessageIdRef.current !== lastMessage.id
         ) {
           bestPositioningScrollHandledForMessageIdRef.current = lastMessage.id;
@@ -760,6 +776,9 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
         overflow: "hidden",
       }}
     >
+      {isRecaptchaEnabled && recaptchaPreloadRequested ? (
+        <RecruiterRecaptchaPreload />
+      ) : null}
       <Box
         ref={messagesScrollRef}
         sx={{
@@ -827,20 +846,23 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
               !isEvidenceReviewStreaming &&
               mainBody.trim() === "";
             const isPostEvidenceBriefingPhase = isBriefingPipelineActive;
+            const isMatchProfileReady =
+              !split?.chartData ||
+              !isStreamingThisMessage ||
+              hasScoresSectionFinished(mainBody, locale);
             const showMatchProfileSkeleton =
-              isBriefingPipelineActive && split?.chartData == null;
-            const isDraftingBriefing =
               !isUser &&
               isStreamingThisMessage &&
-              split?.chartData != null &&
-              mainBody.trim() === "";
+              (split?.chartData == null
+                ? isPostEvidenceBriefingPhase
+                : !isMatchProfileReady);
             const showBodySkeleton =
               !isUser &&
               isStreamingThisMessage &&
               mainBody.trim() === "" &&
               !showEvidenceReview;
             const hasBriefingRenderableBelowEvidence =
-              Boolean(split?.chartData) ||
+              Boolean(split?.chartData && isMatchProfileReady) ||
               (mainBody.trim() !== "" &&
                 !showBodySkeleton &&
                 !showMatchProfileSkeleton);
@@ -1043,14 +1065,14 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                             contentSx={markdownSx}
                             locale={locale}
                             referencesPanelTitle={t("evidenceReferencesLabel")}
-                            chartData={split?.chartData ?? null}
+                            chartData={
+                              isMatchProfileReady
+                                ? (split?.chartData ?? null)
+                                : null
+                            }
+                            matchProfileReady={isMatchProfileReady}
                           />
                         )}
-                        {isDraftingBriefing ? (
-                          <AssistantBriefingProgress
-                            message={t("briefingDraftingLabel")}
-                          />
-                        ) : null}
                       </Box>
                       {hasBriefingToCopy ? (
                         <Box
@@ -1276,6 +1298,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                     margin="none"
                     value={input}
                     onChange={handleInputChange}
+                    onFocus={onComposerFocus}
                     onKeyDown={handleKeyDown}
                     placeholder={t("placeholder")}
                     disabled={isBusy || !isComposerInteractive}
@@ -1401,8 +1424,6 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
           maxWidth="sm"
           fullWidth
           aria-labelledby="recruiter-assistant-terms-dialog-title"
-          disableAutoFocus
-          disableEnforceFocus
           onKeyDownCapture={handleTermsDialogKeyDownCapture}
         >
           <DialogTitle id="recruiter-assistant-terms-dialog-title">
@@ -1425,14 +1446,21 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                 ),
               })}
             </Typography>
+            {isRecaptchaEnabled && modalRecaptchaExpiredVisible ? (
+              <Alert severity="warning" sx={{ mb: 1.5 }}>
+                {t("captchaExpired")}
+              </Alert>
+            ) : null}
             {isRecaptchaEnabled ? (
-              <Box sx={{ mt: 2 }}>
-                <AssistantCheckboxRecaptcha
-                  recaptchaRef={modalRecaptchaRef}
-                  sitekey={recaptchaSiteKey}
-                  onChange={onModalRecaptchaChange}
-                  onExpired={() => setModalRecaptchaToken(null)}
-                />
+              <Box sx={{ mt: 2, width: "100%" }}>
+                <RecruiterModalRecaptchaField>
+                  <AssistantCheckboxRecaptcha
+                    recaptchaRef={modalRecaptchaRef}
+                    sitekey={recaptchaSiteKey}
+                    onChange={onModalRecaptchaChange}
+                    onExpired={onModalRecaptchaExpired}
+                  />
+                </RecruiterModalRecaptchaField>
               </Box>
             ) : null}
           </DialogContent>
@@ -1455,22 +1483,35 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
           maxWidth="sm"
           fullWidth
           aria-labelledby="recruiter-assistant-captcha-dialog-title"
-          disableAutoFocus
-          disableEnforceFocus
           onKeyDownCapture={handleCaptchaDialogKeyDownCapture}
         >
           <DialogTitle id="recruiter-assistant-captcha-dialog-title">
             {t("captchaModalTitle")}
           </DialogTitle>
-          <DialogContent sx={{ pt: 1, pb: 2 }}>
+          <DialogContent
+            sx={{
+              pt: 1,
+              pb: 2,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              overflow: "hidden",
+            }}
+          >
+            {isRecaptchaEnabled && modalRecaptchaExpiredVisible ? (
+              <Alert severity="warning" sx={{ mb: 1.5, width: "100%" }}>
+                {t("captchaExpired")}
+              </Alert>
+            ) : null}
             {isRecaptchaEnabled ? (
-              <AssistantCheckboxRecaptcha
-                key={captchaModalRecaptchaKey}
-                recaptchaRef={captchaModalRecaptchaRef}
-                sitekey={recaptchaSiteKey}
-                onChange={onModalRecaptchaChange}
-                onExpired={() => setModalRecaptchaToken(null)}
-              />
+              <RecruiterModalRecaptchaField>
+                <AssistantCheckboxRecaptcha
+                  recaptchaRef={captchaModalRecaptchaRef}
+                  sitekey={recaptchaSiteKey}
+                  onChange={onModalRecaptchaChange}
+                  onExpired={onModalRecaptchaExpired}
+                />
+              </RecruiterModalRecaptchaField>
             ) : null}
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
