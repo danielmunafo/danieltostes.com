@@ -8,7 +8,7 @@ const LANGUAGE_PATTERNS: readonly RegExp[] = [
 ];
 
 const STACK_PATTERNS: readonly RegExp[] = [
-  /\b(?:typescript|node\.js|nodejs|react|next\.js|nextjs|aws|kubernetes|terraform|cypress|ci\/cd|monorepo|data engineering|machine learning|ai|ml)\b/gi,
+  /\b(?:golang|go|typescript|node\.js|nodejs|react|next\.js|nextjs|aws|kubernetes|terraform|cypress|ci\/cd|monorepo|data engineering|machine learning|ai|ml)\b/gi,
   /\b(?:backend|frontend|full[-\s]?stack|web applications?|cloud[-\s]?native|infrastructure as code|container orchestration)\b/gi,
   /\b(?:staff|senior|lead|principal)\s+(?:\w+\s+){0,3}(?:engineer|developer|backend|frontend|full[-\s]?stack)\b/gi,
 ];

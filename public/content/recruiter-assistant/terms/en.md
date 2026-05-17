@@ -2,24 +2,24 @@
 
 **Effective date:** 15 May 2026
 
-These terms apply when you use the **AI Recruiter Assistant** on this portfolio site (the “**Assistant**”). They describe fair use, what happens to information you submit, and what you can expect from the output. They are **not** legal advice; if you need advice for your organisation, consult qualified counsel.
+These terms apply when you use the **AI Recruiter Assistant** on this portfolio site (the “**Assistant**”). They describe fair use, how submitted information is processed, and what you can reasonably expect from the output. If your organisation requires legal review, consult qualified counsel.
 
 ## 1. What the Assistant is
 
 The Assistant is an **experimental, informational** tool. It compares text you provide (typically a job description or recruiter brief) with **public portfolio evidence** retrieved by the site owner’s software, then generates a structured, natural-language summary to help you explore fit. It does **not** automate hiring decisions, background checks, or compliance outcomes.
 
-## 2. How your inputs are processed (including GDPR-minded transparency)
+## 2. How your inputs are processed
 
-- **What you may submit:** Text you choose to paste (for example a role description, responsibilities, must-have skills, location, or compensation band). Avoid pasting unnecessary personal data about candidates or third parties.
+- **What you may submit:** Text you choose to paste (for example a role description, responsibilities, must-have skills, location, or compensation band). Avoid pasting unnecessary personal data about candidates or third parties. Do not submit confidential or proprietary information you would not normally share with third-party AI systems.
 - **What happens technically:** Your text is sent to a **backend service** controlled by the site owner and, for model inference, to **third-party AI providers** (for example OpenAI) under their terms and privacy policies. Processing is limited to **producing a response** to your request and operating the service (for example security, rate limits, and short-lived logs as configured).
 - **Bot protection:** Before you send a job description, the site may ask you to complete **Google reCAPTCHA** (abuse prevention). That service is subject to [Google’s Privacy Policy](https://policies.google.com/privacy) and [Terms of Service](https://policies.google.com/terms).
-- **Retention:** The site owner aims to keep retention **minimal** (for example transient processing and operational logs). Exact retention depends on hosting and provider settings; do not rely on the Assistant to store or retrieve your submissions long term.
+- **Retention:** The site owner aims to keep retention **minimal** (for example transient processing and operational logs). Exact retention depends on hosting and provider settings. The Assistant is not intended to function as a long-term document storage system.
 - **Lawful basis (EEA/UK-style framing):** Depending on context, processing may rely on **performance of a service you request** (responding to your prompt), **legitimate interests** (operating and securing a small portfolio demo, improving reliability), and, where required, other bases. **Sensitive categories of personal data** should not be submitted; if your paste includes special-category data, do not use the Assistant for that content.
-- **International transfers:** Providers may process data outside your country. Where relevant, standard contractual clauses or other transfer mechanisms may apply through the provider’s programme.
+- **International transfers:** Providers may process data outside your country. Third-party providers may rely on standard contractual clauses or similar mechanisms for international data transfers.
 
 ## 3. Fair use
 
-You agree to use the Assistant **reasonably** and in good faith: occasional recruiter or hiring-manager style evaluation, exploration of public portfolio material, and similar non-abusive use. **You may not:** scrape or high-volume automate the endpoint; probe or circumvent security; attempt prompt injection, jailbreaks, or exfiltration of system prompts or non-public data; use the Assistant to generate unlawful, discriminatory, harassing, or deceptive content; or impose disproportionate load on infrastructure.
+You agree to use the Assistant **reasonably** and in good faith: occasional recruiter or hiring-manager style evaluation, exploration of public portfolio material, and similar non-abusive use. **You may not:** scrape or high-volume automate the endpoint; probe or circumvent security; attempt to bypass safeguards, extract hidden instructions, or access non-public data; use the Assistant to generate unlawful, discriminatory, harassing, or deceptive content; or impose disproportionate load on infrastructure.
 
 The site owner may **rate-limit, block, or change** the feature without notice.
 
@@ -35,7 +35,7 @@ Outputs are **AI-generated** and may be incomplete, outdated, or wrong. They are
 
 ## 6. Intellectual property
 
-Portfolio content and branding remain with their respective owners. You receive no licence beyond what is needed to read responses in your browser for your own evaluation workflow.
+Portfolio content and branding remain the property of their respective owners.
 
 ## 7. Disclaimer of warranties; limitation of liability
 

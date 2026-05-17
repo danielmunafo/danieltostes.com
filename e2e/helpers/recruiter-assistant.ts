@@ -144,10 +144,11 @@ export async function waitForRecruiterPipelineComplete(
 
   // Loaded chart UI only (skeleton / pitch markdown must not satisfy this).
   await expect(
-    log.filter({
-      has: log.getByRole("heading", { name: ASSESSMENT_SUMMARY_HEADING }),
-      has: log.getByText(TECHNICAL_FIT_LABEL),
-    })
+    log
+      .filter({
+        has: log.getByRole("heading", { name: ASSESSMENT_SUMMARY_HEADING }),
+      })
+      .filter({ has: log.getByText(TECHNICAL_FIT_LABEL) })
   ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
 
   const summary = assessmentSummaryRegion(page);
