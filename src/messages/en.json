@@ -24,7 +24,7 @@
     "evidenceReferencesLabel": "Evidence references",
     "jobContextLabel": "Role Context",
     "jobDescriptionSectionLabel": "Job description",
-    "placeholder": "Paste the job description here…",
+    "placeholder": "Paste the job description to generate a candidate fit briefing in about a minute…",
     "send": "Send",
     "sending": "Thinking…",
     "unavailable": "Assistant is not configured (missing API URL).",

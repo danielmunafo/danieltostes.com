@@ -24,7 +24,7 @@
     "evidenceReferencesLabel": "Riferimenti alle evidenze",
     "jobContextLabel": "Contesto della posizione",
     "jobDescriptionSectionLabel": "Descrizione della posizione",
-    "placeholder": "Incolla qui la job description…",
+    "placeholder": "Incolla la descrizione della posizione per generare un briefing di aderenza del candidato in circa un minuto…",
     "send": "Invia",
     "sending": "Sto pensando…",
     "unavailable": "Assistente non configurato (manca l’URL dell’API).",

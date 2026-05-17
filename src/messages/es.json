@@ -24,7 +24,7 @@
     "evidenceReferencesLabel": "Referencias de evidencias",
     "jobContextLabel": "Contexto del rol",
     "jobDescriptionSectionLabel": "Descripción del puesto",
-    "placeholder": "Pega aquí la descripción del puesto…",
+    "placeholder": "Pega la descripción del puesto para generar un briefing de encaje del candidato en aproximadamente un minuto…",
     "send": "Enviar",
     "sending": "Pensando…",
     "unavailable": "Asistente no configurado (falta la URL de la API).",

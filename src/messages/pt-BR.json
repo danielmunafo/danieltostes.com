@@ -24,7 +24,7 @@
     "evidenceReferencesLabel": "Referências de evidências",
     "jobContextLabel": "Contexto da vaga",
     "jobDescriptionSectionLabel": "Descrição da vaga",
-    "placeholder": "Cole a descrição da vaga aqui…",
+    "placeholder": "Cole a descrição da vaga para gerar um briefing de aderência do candidato em cerca de um minuto…",
     "send": "Enviar",
     "sending": "Pensando…",
     "unavailable": "Assistente não configurado (URL da API ausente).",
