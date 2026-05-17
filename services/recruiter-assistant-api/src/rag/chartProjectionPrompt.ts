@@ -17,7 +17,11 @@ const PER_DIMENSION_WORKFLOW = `Per-dimension scoring workflow (mandatory — do
 
 Brevity (required — output must fit in one JSON object):
 - label: max ${CAPABILITY_DIMENSION_LABEL_MAX_LENGTH} characters (short display name).
-- rationale: max ${CAPABILITY_DIMENSION_RATIONALE_MAX_LENGTH} characters (one tight sentence citing mapped requirement rows).`;
+- rationale: max ${CAPABILITY_DIMENSION_RATIONALE_MAX_LENGTH} characters (one light, evidence-based sentence citing mapped requirement rows).
+- Rationale tone: portfolio-assistant language, not hiring-decision language. Describe what was or was not found in the retrieved portfolio evidence; do not imply a final verdict about the candidate.
+- Prefer phrases like "not found in the retrieved portfolio evidence", "not shown in the portfolio excerpts", or "not surfaced by the retrieved excerpts".
+- Avoid judgmental/final-verdict phrases like "unproven", "failed to demonstrate", "weak candidate", "lacks", "insufficient", or "not qualified".
+- Example rewrite: instead of "Senior engineering and communication are well supported, but the role’s core interview-facilitation function and key practical engagement requirements remain unproven", write "Senior engineering and communication are well supported, but interview facilitation and practical engagement requirements were not found in the retrieved portfolio evidence".`;
 
 const CHART_PROJECTION_COMPACT_APPENDIX = `
 
@@ -48,12 +52,13 @@ Dimension selection:
 Hard rules:
 - Do not create more optimistic scores than mapped evaluator rows support.
 - Do not turn adjacent evidence into direct evidence.
-- Do not invent missing skills.
+- Do not invent missing skills; phrase gaps as retrieval/evidence gaps, not personal capability verdicts.
 - Do not override score caps, risk severity, or not-evidenced classifications.
 - Do not copy assessmentSummary.technicalFit onto every capability dimension.
 - When the requirement table has mixed evidence levels, capability scores **must differ** across dimensions (shape the radar).
 - When most mapped rows for a dimension are direct, prefer 8-9 rather than always 10 unless excerpts are exceptional.
 - Do not downgrade strong broad matches because of minor missing examples on unrelated axes.
+- Keep rationale wording lightweight and assistant-like: this chart summarizes portfolio evidence, not a hiring decision or final capability judgment.
 
 Capability score mapping (per dimension, from mapped rows):
 | Evidence level | Score band |
