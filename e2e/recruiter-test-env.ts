@@ -3,8 +3,12 @@ import { resolve } from "node:path";
 
 const ENV_TEST_FILE = ".env.test";
 
-/** Per-test budget for one full recruiter pipeline (evaluator → chart → pitch) in CI. */
-export const RECRUITER_E2E_TEST_TIMEOUT_MS = 240_000;
+/**
+ * Per-test budget for one full recruiter pipeline (evaluator → chart → pitch) in CI.
+ * Must exceed typical wall time; `waitForRecruiterPipelineComplete` uses the same value
+ * as a shared deadline across serial UI waits (not 240s × N per step).
+ */
+export const RECRUITER_E2E_TEST_TIMEOUT_MS = 600_000;
 
 let isEnvTestLoaded = false;
 

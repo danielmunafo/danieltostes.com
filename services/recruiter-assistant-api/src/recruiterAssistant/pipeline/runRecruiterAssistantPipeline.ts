@@ -44,7 +44,7 @@ export async function runRecruiterAssistantPipeline(
     isOffTopic: evaluation.isOffTopic,
   });
 
-  await runInterestsEvaluation({
+  runInterestsEvaluation({
     openai,
     navLocale,
     userText,

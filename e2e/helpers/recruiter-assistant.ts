@@ -10,7 +10,13 @@ const RECRUITER_E2E_LOCALE = "en";
 export const RECRUITER_TERMS_ACCEPTANCE_STORAGE_KEY =
   "danieltostes.recruiterAssistant.termsAccepted.v4" as const;
 
+/** Shared wall-clock budget for all serial waits in `waitForRecruiterPipelineComplete`. */
 export const RECRUITER_E2E_PIPELINE_TIMEOUT_MS = RECRUITER_E2E_TEST_TIMEOUT_MS;
+
+function createPipelineDeadline(totalMs: number): () => number {
+  const endsAt = Date.now() + totalMs;
+  return () => Math.max(5_000, endsAt - Date.now());
+}
 
 const ASSISTANT_HEADING = /AI Recruiter Assistant/i;
 const JOB_DESCRIPTION_PROMPT = /paste the job description/i;
@@ -109,18 +115,19 @@ function assessmentSummaryRegion(page: Page): Locator {
 export async function waitForRecruiterPipelineComplete(
   page: Page
 ): Promise<void> {
+  const remainingMs = createPipelineDeadline(RECRUITER_E2E_PIPELINE_TIMEOUT_MS);
   const log = recruiterConversationLog(page);
 
   // Scope to the message log — the composer shows the same "Job description"
   // heading while the textarea is filled, before any message is submitted.
   await expect(
     log.getByRole("heading", { name: JOB_DESCRIPTION_SECTION })
-  ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
+  ).toBeVisible({ timeout: remainingMs() });
 
   try {
     await expect(
       log.getByRole("button", { name: ROLE_CONTEXT_LABEL })
-    ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
+    ).toBeVisible({ timeout: remainingMs() });
   } catch (error) {
     const isSendStillVisible = await page
       .getByRole("button", { name: SEND_BUTTON })
@@ -135,33 +142,33 @@ export async function waitForRecruiterPipelineComplete(
 
   await expect(
     log.getByRole("heading", { name: BRIEFING_SECTION_HEADING })
-  ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
+  ).toBeVisible({ timeout: remainingMs() });
 
   // Collapsible panels use ButtonBase titles, not heading roles.
   await expect(
     log.getByRole("button", { name: EVIDENCE_REVIEW_LABEL })
-  ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
+  ).toBeVisible({ timeout: remainingMs() });
 
   // Loaded chart only: skeleton uses briefingMatchProfileLabel, not this heading.
   await expect(
     log.getByRole("heading", { name: ASSESSMENT_SUMMARY_HEADING })
-  ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
+  ).toBeVisible({ timeout: remainingMs() });
 
   const summary = assessmentSummaryRegion(page);
   await expect(summary.getByText(TECHNICAL_FIT_LABEL)).toBeVisible({
-    timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS,
+    timeout: remainingMs(),
   });
   await expect(summary.getByText(EVIDENCE_CONFIDENCE_LABEL)).toBeVisible({
-    timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS,
+    timeout: remainingMs(),
   });
   await expect(summary.getByText(RECOMMENDATION_LABEL)).toBeVisible({
-    timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS,
+    timeout: remainingMs(),
   });
 
   // Briefing complete: copy is available; composer is dismissed (Send is not shown).
   await expect(
     page.getByRole("button", { name: COPY_BRIEFING_BUTTON })
-  ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
+  ).toBeVisible({ timeout: remainingMs() });
 }
 
 export type ParsedMatchProfile = {
