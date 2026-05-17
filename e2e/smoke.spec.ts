@@ -40,6 +40,22 @@ test("recruiter assistant professional-context page loads with section anchors",
   ).toBeAttached();
 });
 
+test("recruiter assistant professional-context deep link scrolls to section", async ({
+  page,
+}) => {
+  await page.goto(
+    `${defaultLocalePath}/recruiter-assistant/professional-context#section-professional-context-item-5`
+  );
+  const target = page.locator("#section-professional-context-item-5");
+  await expect(target).toBeVisible();
+  await expect
+    .poll(async () => {
+      const box = await target.boundingBox();
+      return box !== null && box.y < 120;
+    })
+    .toBe(true);
+});
+
 test("summary remains reachable after scrolling past assistant", async ({
   page,
 }) => {

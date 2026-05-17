@@ -14,6 +14,7 @@ import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { isValidLocale, type Locale } from "@/i18n/request";
+import { useScrollToLocationHashWhenReady } from "../hooks/useScrollToLocationHashWhenReady";
 import { PROFESSIONAL_CONTEXT_SCROLL_TARGET_PREFIX } from "../constants/recruiter-assistant";
 import { createPortfolioDeepLinkMarkdownComponents } from "../lib/createPortfolioDeepLinkMarkdownComponents";
 
@@ -127,6 +128,8 @@ function RecruiterAssistantReadmeMarkdownBody({
   }, [contentUrl, logTag]);
 
   const isLoading = !loadError && markdown === null;
+  const isMarkdownReady = markdown !== null && !loadError;
+  useScrollToLocationHashWhenReady(isMarkdownReady);
 
   const mutedBorder =
     theme.palette.mode === "dark"
