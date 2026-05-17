@@ -1,13 +1,7 @@
-import { embedMany } from "ai";
-import { EMBEDDING_MODEL, RAG_TOP_K } from "../../../constants.js";
-import { loadEmbeddingsFile } from "../../../embeddings/loadEmbeddings.js";
+import { RAG_TOP_K } from "../../../constants.js";
 import { loadInterestsPack } from "../../../interests/loadInterestsPack.js";
-import { buildJdHardGateRetrievalQueries } from "../../../rag/hardGates/buildJdHardGateRetrievalQueries.js";
-import { formatPortfolioChunks } from "../../../rag/formatPortfolioChunks.js";
-import {
-  filterChunksByNavigationLocale,
-  retrieveMergedTopK,
-} from "../../../rag/retrieve.js";
+import { createRecruiterRetrieverWithFallback } from "../../../retrieval/createRecruiterRetriever.js";
+import { logRetrievalSummary } from "../../../retrieval/logRetrievalSummary.js";
 import type { RecruiterNavLocale } from "../../../constants.js";
 import type { OpenAiProvider, RecruiterContext } from "../../types.js";
 
@@ -16,29 +10,50 @@ export async function createRecruiterContext(params: {
   navLocale: RecruiterNavLocale;
   userText: string;
 }): Promise<RecruiterContext> {
-  const embeddingsFile = await loadEmbeddingsFile();
   const interestsPack = await loadInterestsPack();
-  const chunksForNavLocale = filterChunksByNavigationLocale(
-    embeddingsFile.chunks,
-    params.navLocale
-  );
-  const retrievalQueries = [
-    params.userText,
-    ...buildJdHardGateRetrievalQueries(params.userText),
-  ];
-  const { embeddings: queryEmbeddings } = await embedMany({
-    model: params.openai.embedding(EMBEDDING_MODEL),
-    values: retrievalQueries,
+  const retrievalStarted = Date.now();
+  const retrieval = await createRecruiterRetrieverWithFallback(
+    params.openai
+  ).retrieve({
+    query: params.userText,
+    navLocale: params.navLocale,
   });
-  const topChunks = retrieveMergedTopK(
-    chunksForNavLocale,
-    queryEmbeddings,
-    RAG_TOP_K
-  );
+  logRetrievalSummary({
+    navLocale: params.navLocale,
+    queryLength: params.userText.length,
+    topK: RAG_TOP_K,
+    topChunkIds: retrieval.topChunks.map((c) => c.id),
+    latencyMs: Date.now() - retrievalStarted,
+  });
   return {
     interestsPack,
-    chunksForNavLocale,
-    topChunks,
-    sourceExcerpts: formatPortfolioChunks(topChunks, params.navLocale),
+    chunksForNavLocale: retrieval.chunksForNavLocale,
+    topChunks: retrieval.topChunks,
+    sourceExcerpts: retrieval.sourceExcerpts,
   };
+}
+
+/** Test hook: inject a custom retriever implementation. */
+export async function createRecruiterContextWithRetriever(
+  params: {
+    openai: OpenAiProvider;
+    navLocale: RecruiterNavLocale;
+    userText: string;
+  },
+  retrieve: (input: {
+    query: string;
+    navLocale: RecruiterNavLocale;
+  }) => Promise<
+    Pick<
+      RecruiterContext,
+      "chunksForNavLocale" | "topChunks" | "sourceExcerpts"
+    >
+  >
+): Promise<RecruiterContext> {
+  const interestsPack = await loadInterestsPack();
+  const retrieval = await retrieve({
+    query: params.userText,
+    navLocale: params.navLocale,
+  });
+  return { interestsPack, ...retrieval };
 }

@@ -7,6 +7,7 @@ import { spawn } from "node:child_process";
 import { mkdirSync, statSync, watch } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { esbuildBundleArgs } from "./esbuild-bundle-args.mjs";
 
 const scriptsDir = dirname(fileURLToPath(import.meta.url));
 const serviceRoot = join(scriptsDir, "..");
@@ -15,15 +16,9 @@ const bundlePath = join(distDir, "index.cjs");
 const esbuildBin = join(serviceRoot, "node_modules/esbuild/bin/esbuild");
 
 const esbuildArgs = [
-  "src/handler.ts",
-  "--bundle",
-  "--platform=node",
-  "--target=node20",
-  "--outfile=dist/index.cjs",
-  "--format=cjs",
-  "--sourcemap",
-  "--loader:.md=text",
-  "--watch",
+  ...esbuildBundleArgs,
+  // CI / Playwright webServer background the process and close stdin; default watch exits.
+  "--watch=forever",
 ];
 
 const restartDebounceMs = 200;

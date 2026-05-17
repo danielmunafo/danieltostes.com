@@ -1,0 +1,73 @@
+{
+  "model": "text-embedding-3-small",
+  "version": "golden-test",
+  "chunks": [
+    {
+      "id": "en-section-experience-item-0-s0-p0",
+      "text": "Staff engineer TypeScript Node.js React distributed backend services Kafka event-driven architecture AWS cloud production systems.",
+      "embedding": [0.92, 0.08, 0.02, 0.01],
+      "metadata": {
+        "locale": "en",
+        "sectionId": "experience",
+        "scrollTargetId": "section-experience-item-0",
+        "title": "Acme Corp"
+      }
+    },
+    {
+      "id": "en-section-experience-item-1-s0-p0",
+      "text": "Led cross-team initiatives mentoring engineers stakeholder communication English fluency agile delivery.",
+      "embedding": [0.15, 0.85, 0.05, 0.02],
+      "metadata": {
+        "locale": "en",
+        "sectionId": "experience",
+        "scrollTargetId": "section-experience-item-1",
+        "title": "Beta GmbH"
+      }
+    },
+    {
+      "id": "en-section-impact-item-0-s0-p0",
+      "text": "Built RAG pipeline with vector retrieval LLM evaluation hard gates recruiter assistant embeddings.",
+      "embedding": [0.1, 0.12, 0.9, 0.05],
+      "metadata": {
+        "locale": "en",
+        "sectionId": "impact",
+        "scrollTargetId": "section-impact-item-0",
+        "title": "AI recruiter assistant"
+      }
+    },
+    {
+      "id": "en-section-professional-context-item-0-s0-p0",
+      "text": "Fluent English professional communication work authorization EU remote hybrid availability employment type.",
+      "embedding": [0.05, 0.88, 0.1, 0.08],
+      "metadata": {
+        "locale": "en",
+        "sectionId": "professionalContext",
+        "scrollTargetId": "section-professional-context-item-0",
+        "title": "Communication",
+        "category": "communication"
+      }
+    },
+    {
+      "id": "en-section-education-item-0-s0-p0",
+      "text": "Computer science degree algorithms data structures formal education.",
+      "embedding": [0.02, 0.05, 0.1, 0.95],
+      "metadata": {
+        "locale": "en",
+        "sectionId": "education",
+        "scrollTargetId": "section-education-item-0",
+        "title": "University"
+      }
+    },
+    {
+      "id": "es-section-experience-item-0-s0-p0",
+      "text": "Ingeniero TypeScript backend en español.",
+      "embedding": [0.9, 0.1, 0, 0],
+      "metadata": {
+        "locale": "es",
+        "sectionId": "experience",
+        "scrollTargetId": "section-experience-item-0",
+        "title": "Empresa ES"
+      }
+    }
+  ]
+}

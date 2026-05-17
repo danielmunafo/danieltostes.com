@@ -11,7 +11,7 @@ This document is the canonical reference for the recruiter-facing AI chat: archi
 - **Model & SDK:** OpenAI **`gpt-4.1-nano`** (chat default in code; override on each Lambda with env `RECRUITER_CHAT_MODEL` in AWS — `CHAT_MODEL` in `services/recruiter-assistant-api/src/constants.ts`) + **`text-embedding-3-small`** (embeddings) via the [Vercel AI SDK](https://sdk.vercel.ai/) (`ai`, `@ai-sdk/openai`). The site’s React chat uses `@ai-sdk/react` / `useChat`; the Lambda handler uses `streamText` (evaluator, analyst, pitch), optional `generateText` (interests evaluator only), `embed`, `createDataStreamResponse`, and (post-stream) `generateObject` for reference claim extraction.
 - **Repo layout:** Monorepo subdir at `services/recruiter-assistant-api/` with its own `package.json`, `tsconfig.json`, tests, runbook, and GitHub Actions workflow. The marketing site remains **static export** (S3/CloudFront).
 - **No Terraform.** Rarely changing AWS resources use a manual runbook + `aws` CLI in CI.
-- **Vector store:** Flat JSON in a private S3 bucket; cosine top-K in Lambda. No managed vector DB.
+- **Vector store:** Flat JSON in a private S3 bucket (`embeddings.json`). Retrieval is behind `RecruiterRetriever` in `src/retrieval/` — default **`custom`** (cosine top-K); optional **LlamaIndex** (`llamaindex-hydrated` / `llamaindex-native`) via `RECRUITER_RETRIEVER_PROVIDER`. No managed vector DB (Pinecone/pgvector).
 - **Streaming transport:** Lambda **Function URL** with **response streaming** (`InvokeMode = RESPONSE_STREAM`). No API Gateway in v1.
 
 ---
@@ -24,9 +24,9 @@ flowchart LR
     FU --> Handler[handleChatRequest + response stream]
     Handler -->|getSecretValue| SM[(Secrets Manager OPENAI_API_KEY)]
     Handler -->|validate + rate limit + guards| Pre[Input guard then intent gate]
-    Pre -->|embed last user text| OAI1[OpenAI Embeddings]
+    Pre --> Ctx[contextAgent.createContext]
     Handler -->|GET embeddings JSON| S3E[(S3 embeddings bucket)]
-    OAI1 --> RAG[Cosine top-K on chunks]
+    Ctx --> RAG[RecruiterRetriever top-K]
     RAG --> Ev[Evaluator streamText]
     Ev --> HG[Hard gates generateObject]
     Ev -->|thinking tokens| User
@@ -75,16 +75,17 @@ flowchart LR
 **Inside the stream** (`runRecruiterAssistantPipeline.ts`, ordered):
 
 1. **`[[THINKING_START]]`** — UI collapsible “evidence review.”
-2. **RAG:** `prepareRecruiterContext` — `embed` guarded user text → `retrieveTopK` (cosine, `RAG_TOP_K` default **30**) → localized chunk headers.
-3. **Evidence evaluator:** `streamText` (`evaluatorPrompt.ts`) — requirement coverage, misleading-similarity warnings, **`# Match Score Guidance`** with evaluator hard caps. Awaits full text; writes `---` separator.
-4. **Hard gates (server-only):** `extractHardGateRows` + `assessHardGates` (`src/rag/hardGates/`) — deterministic caps on technical fit for pitch and chart; markdown block fed to analyst/pitch prompts, **not** streamed as its own panel.
-5. **Interests evaluator (optional):** `generateText` when interests pack loaded and evaluator not off-topic; output `[[INTERESTS_SKIP]]` or logged under `[recruiter-interests-not-in-response]` — **not** in stream or pitch brief.
-6. **Evidence analyst:** `streamText` (`prompt.ts`) — synthesis only; receives evaluator + hard-gate block. Awaits full text.
-7. **`[[THINKING_END]]`**
-8. **Briefing prep + match profile (skipped when off-topic):** `runBriefingAndChartProjection` — opens `[[CHART_DATA_START]]` / `[[BRIEFING_PREP_START]]`, streams a one-line **briefing prep** status (`briefingPrepStatusPrompt.ts`) in parallel with **`generateObject` chart projection** (`chartProjectionPrompt.ts` / `chartDataSchema.ts`), aligns chart to hard gates, emits JSON + `[[CHART_DATA_END]]`. Client strips prep markers from the final body.
-9. **Recruiter pitch:** `streamText` on evaluator + analyst brief + hard-gate block; `validateAndClampPitchHardGates` on final text.
-10. **Chart sync:** `syncChartWithPitch` may **re-emit** `CHART_DATA_*` if pitch alignment adjusts assessment fields.
-11. **References:** `buildReferencesMarkdown` after pitch — claim `generateObject`, embed match-back, append `## References`.
+2. **RAG:** `contextAgent.createContext` — `RecruiterRetriever` (default custom cosine; optional LlamaIndex) → `RAG_TOP_K` **30** → `formatPortfolioChunks`.
+3. **Evidence evaluator:** `evidenceEvaluationAgent.evaluateEvidence` (streamed in thinking panel).
+4. **Off-topic check:** `recruiterAgent.evaluateOffTopic` on evaluator markdown.
+5. **Hard gates (server-only):** `hardGatesAgent.assessHardGates` — caps for pitch/chart; **not** streamed.
+6. **Interests (optional):** `interestsAgent.scheduleEvaluation` — server log only when configured.
+7. **Evidence analyst:** `evidenceAnalysisAgent.analyzeEvidence` (streamed).
+8. **`[[THINKING_END]]`**
+9. **Briefing + chart:** `recruiterAgent.projectBriefingAndChart` — `BRIEFING_PREP_*` + `CHART_DATA_*` markers.
+10. **Pitch:** `recruiterAgent.generatePitch` with hard-gate clamp.
+11. **Chart sync:** `recruiterAgent.syncChartWithPitch` may re-emit chart JSON.
+12. **References:** `referencesAgent.generateReferences` — claim extraction + cosine match-back.
 
 **Latency note:** The analyst cannot start until evaluator (and hard-gate extraction) finish; streaming the evaluator only improves **perceived** time-to-first-token inside the thinking panel.
 

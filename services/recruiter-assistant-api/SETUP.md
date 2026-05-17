@@ -188,21 +188,63 @@ aws s3 cp embeddings/embeddings.v<sha>.json s3://YOUR_EMBEDDINGS_BUCKET/embeddin
 
 Re-run whenever portfolio content under `src/messages/**` or `public/content/**` changes.
 
+### LlamaIndex native index (optional)
+
+Same corpus as embeddings, persisted as `SimpleVectorStore` JSON for `RECRUITER_RETRIEVER_PROVIDER=llamaindex-native`:
+
+```bash
+node scripts/build-llamaindex-index.mjs
+```
+
+Upload the stable key (CI does this on `main`):
+
+```bash
+aws s3 cp embeddings/llamaindex.v<sha>.json s3://YOUR_EMBEDDINGS_BUCKET/llamaindex-index.json
+```
+
+Set `LLAMAINDEX_INDEX_S3_URI=s3://YOUR_EMBEDDINGS_BUCKET/llamaindex-index.json` on the Lambda.
+
+**Retrieval providers** (`RECRUITER_RETRIEVER_PROVIDER`):
+
+| Value                 | Behavior                                                                      |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `custom` (default)    | Cosine top-K on `embeddings.json`                                             |
+| `llamaindex-hydrated` | LlamaIndex `SimpleVectorStore` built from the same JSON at runtime            |
+| `llamaindex-native`   | Loads persisted index from S3/local path                                      |
+| `compare`             | Runs custom + hydrated LlamaIndex; returns custom; logs overlap to CloudWatch |
+
+Use `RECRUITER_RETRIEVER_FALLBACK=custom` only when you want native/hydrated failures to fall back to custom retrieval.
+
 **Optional interests pack:** after editing `private/interests.source.md`, run `npm run build:interests-pack`, then `aws s3 cp private/interests-pack.<hash>.json s3://YOUR_EMBEDDINGS_BUCKET/interests-pack.json` (Lambda `INTERESTS_PACK_S3_URI` stays fixed). Never commit real rubric text.
 
 ---
 
 ## 10. Local development
 
-Copy [`.env.example`](./.env.example) to `.env` in this directory and set `OPENAI_API_KEY`, `EMBEDDINGS_JSON_PATH`, and `ALLOWED_ORIGIN` (see comments in the example file). Optionally set `INTERESTS_PACK_JSON_PATH` after `npm run build:interests-pack`. Chat defaults to **`gpt-4.1-nano`**; set `RECRUITER_CHAT_MODEL` in `.env` locally or on the Lambda in AWS to override.
+Copy [`.env.example`](./.env.example) to `.env` in this directory and set `OPENAI_API_KEY`, `ALLOWED_ORIGIN`, and optionally `EMBEDDINGS_JSON_PATH` / `LLAMAINDEX_INDEX_JSON_PATH` (build scripts update `.env.local` when present). Chat defaults to **`gpt-4.1-nano`**; set `RECRUITER_CHAT_MODEL` in `.env` locally or on the Lambda in AWS to override.
 
-Terminal A — API (after `npm run build` in `services/recruiter-assistant-api`):
+### RAG build scripts (why more than one?)
+
+| Script                   | Output                   | Needed when                                                           |
+| ------------------------ | ------------------------ | --------------------------------------------------------------------- |
+| `build:embeddings`       | `embeddings.v<sha>.json` | **Always** for local dev (`custom` default) and `llamaindex-hydrated` |
+| `build:llamaindex-index` | `llamaindex.v<sha>.json` | Only `RECRUITER_RETRIEVER_PROVIDER=llamaindex-native`                 |
+| `build:rag`              | Both of the above        | One-shot before testing native LlamaIndex or CI parity                |
+
+`llamaindex-hydrated` reuses `embeddings.json` at runtime — no separate index file.
+
+### `npm run dev` vs `dev:server`
+
+- **`npm run dev`** (recommended): runs `predev` first (builds embeddings if missing), then **esbuild watch** + HTTP server that **restarts** when the bundle changes. Use this for everyday API work.
+- **`npm run dev:server`**: HTTP only — assumes `dist/index.cjs` already exists. For debugging the server process without restarting esbuild watch.
+
+`predev` (`ensure-rag-artifacts.mjs`) ensures **both** `embeddings.json` and `llamaindex-index.json` exist (index is hydrated from embeddings when possible — no second OpenAI embed pass). Skips when artifacts already exist. Force rebuild: `FORCE_RAG_REBUILD=1 npm run dev`.
+
+Terminal A — API:
 
 ```bash
 cd services/recruiter-assistant-api
-export OPENAI_API_KEY=sk-...
-export EMBEDDINGS_JSON_PATH="$(pwd)/embeddings/embeddings.v....json"
-export ALLOWED_ORIGIN=http://localhost:3000
+# .env / .env.local: OPENAI_API_KEY, ALLOWED_ORIGIN
 npm run dev
 ```
 
