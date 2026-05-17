@@ -83,14 +83,14 @@ Add **inline policy** (tighten ARNs to your account):
 - **Reserved concurrency:** `5` (cost / abuse ceiling)
 - **Environment variables:**
 
-| Name                    | Example                                                                                                                                                                           |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OPENAI_SECRET_ARN`     | Secret ARN from step 3                                                                                                                                                            |
-| `EMBEDDINGS_S3_URI`     | `s3://YOUR_EMBEDDINGS_BUCKET/embeddings.json` (stable key; CI overwrites this object — see §9)                                                                                    |
-| `INTERESTS_PACK_S3_URI` | Optional: `s3://YOUR_EMBEDDINGS_BUCKET/interests-pack.json` (see §1b)                                                                                                             |
-| `RECRUITER_CHAT_MODEL`  | Optional: OpenAI chat model id. Default in code is **`gpt-5.4-mini`** (`CHAT_MODEL` in `src/constants.ts`). Set only to override (e.g. pinning or A/B).                           |
-| `ALLOWED_ORIGIN`        | Comma-separated, **exact** `Origin` match: prod `https://…` hosts plus local dev `http://localhost:3000` **and** `http://127.0.0.1:3000` if you ever open Next on the loopback IP |
-| `RECAPTCHA_SECRET_KEY`  | reCAPTCHA v2 **secret** key for server-side `siteverify` on chat POST. Omit locally to skip verification. Pair with `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` on the Next build (see §8).  |
+| Name                    | Example                                                                                                                                                                                                                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OPENAI_SECRET_ARN`     | Secret ARN from step 3                                                                                                                                                                                                                                                                                  |
+| `EMBEDDINGS_S3_URI`     | `s3://YOUR_EMBEDDINGS_BUCKET/embeddings.json` (stable key; CI overwrites this object — see §9)                                                                                                                                                                                                          |
+| `INTERESTS_PACK_S3_URI` | Optional: `s3://YOUR_EMBEDDINGS_BUCKET/interests-pack.json` (see §1b)                                                                                                                                                                                                                                   |
+| `RECRUITER_CHAT_MODEL`  | Optional. OpenAI chat model id for all LLM stages. Set **per Lambda** in the AWS console (or CLI) so dev and prod can differ. If omitted, the runtime uses the code default **`gpt-4.1-nano`** (`CHAT_MODEL` in `src/constants.ts`). CI deploy updates **code only** and does not change this variable. |
+| `ALLOWED_ORIGIN`        | Comma-separated, **exact** `Origin` match: prod `https://…` hosts plus local dev `http://localhost:3000` **and** `http://127.0.0.1:3000` if you ever open Next on the loopback IP                                                                                                                       |
+| `RECAPTCHA_SECRET_KEY`  | reCAPTCHA v2 **secret** key for server-side `siteverify` on chat POST. Omit locally to skip verification. Pair with `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` on the Next build (see §8).                                                                                                                        |
 
 Do **not** set `OPENAI_API_KEY` in Lambda env (use the secret only).
 
@@ -161,6 +161,8 @@ OIDC trust for the repo is unchanged; see [docs/deployment-setup.md](../../docs/
 - **`RECRUITER_API_URL`** — full Function URL (no trailing slash). Set on GitHub **environment** `dev` / `production` (or repository secret/variable); the Frontend **build** job uses the same environment as deploy and passes it as `NEXT_PUBLIC_RECRUITER_API_URL` (see `.github/workflows/ci.yml`).
 - **`RECAPTCHA_SITE_KEY`** (optional) — reCAPTCHA v2 **site** key; CI passes it as `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` when set. Must match `RECAPTCHA_SECRET_KEY` on Lambda.
 
+Chat model is **not** a GitHub variable: set `RECRUITER_CHAT_MODEL` on each Lambda in AWS (§5). Local dev: `.env` or export before `npm run dev`.
+
 ---
 
 ## 9. Build and upload embeddings
@@ -192,7 +194,7 @@ Re-run whenever portfolio content under `src/messages/**` or `public/content/**`
 
 ## 10. Local development
 
-Copy [`.env.example`](./.env.example) to `.env` in this directory and set `OPENAI_API_KEY`, `EMBEDDINGS_JSON_PATH`, and `ALLOWED_ORIGIN` (see comments in the example file). Optionally set `INTERESTS_PACK_JSON_PATH` after `npm run build:interests-pack`. Chat defaults to **`gpt-5.4-mini`**; set `RECRUITER_CHAT_MODEL` only if you need a different model locally or in Lambda.
+Copy [`.env.example`](./.env.example) to `.env` in this directory and set `OPENAI_API_KEY`, `EMBEDDINGS_JSON_PATH`, and `ALLOWED_ORIGIN` (see comments in the example file). Optionally set `INTERESTS_PACK_JSON_PATH` after `npm run build:interests-pack`. Chat defaults to **`gpt-4.1-nano`**; set `RECRUITER_CHAT_MODEL` in `.env` locally or on the Lambda in AWS to override.
 
 Terminal A — API (after `npm run build` in `services/recruiter-assistant-api`):
 
@@ -218,7 +220,7 @@ npm run dev
 
 ## CI
 
-- **`.github/workflows/recruiter-api.yml`** — on changes under `services/recruiter-assistant-api/**`: test, bundle; **deploy** and **embeddings** on same-repo PRs (`dev` environment) and `main` (`production`), matching `.github/workflows/ci.yml`.
+- **`.github/workflows/recruiter-api.yml`** — on changes under `services/recruiter-assistant-api/**`: test, bundle; **deploy** (`update-function-code` only — Lambda env vars such as `RECRUITER_CHAT_MODEL` stay as configured in AWS) and **embeddings** on same-repo PRs (`dev` environment) and `main` (`production`), matching `.github/workflows/ci.yml`.
 - Embeddings CI publishes to **`embeddings.json`** (stable) plus a versioned `embeddings.v<sha>.json` in `RECRUITER_EMBEDDINGS_BUCKET` per environment. Interests pack uses **`interests-pack.json`** when `private/interests.source.md` exists in the runner (typically manual upload only; source is gitignored).
 - Repository secrets **`AWS_ROLE_ARN`** (shared with site CI), **`OPENAI_API_KEY`**; per-environment secrets **`LAMBDA_FUNCTION_NAME`**, **`RECRUITER_EMBEDDINGS_BUCKET`**.
 

@@ -90,9 +90,12 @@ export const MAX_CHAT_MESSAGES = 50;
  */
 export const MAX_CHAT_HISTORY_JSON_CHARS = 32_768;
 
-/** OpenAI chat model for recruiter matching (`RECRUITER_CHAT_MODEL` overrides). */
+/**
+ * OpenAI chat model for recruiter matching. Set `RECRUITER_CHAT_MODEL` on the
+ * Lambda in AWS (per function) or in local `.env`; CI does not manage it.
+ */
 export const CHAT_MODEL =
-  process.env.RECRUITER_CHAT_MODEL?.trim() || "gpt-5.4-mini";
+  process.env.RECRUITER_CHAT_MODEL?.trim() || "gpt-4.1-nano";
 
 /**
  * Re-chunks each provider `text-delta` into words (per AI SDK `smoothStream`)

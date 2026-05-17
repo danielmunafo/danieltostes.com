@@ -8,7 +8,7 @@ This document is the canonical reference for the recruiter-facing AI chat: archi
 
 ## Locked decisions
 
-- **Model & SDK:** OpenAI **`gpt-5.4-mini`** (chat; `CHAT_MODEL` in `services/recruiter-assistant-api/src/constants.ts`) + **`text-embedding-3-small`** (embeddings) via the [Vercel AI SDK](https://sdk.vercel.ai/) (`ai`, `@ai-sdk/openai`). The site’s React chat uses `@ai-sdk/react` / `useChat`; the Lambda handler uses `streamText` (evaluator, analyst, pitch), optional `generateText` (interests evaluator only), `embed`, `createDataStreamResponse`, and (post-stream) `generateObject` for reference claim extraction.
+- **Model & SDK:** OpenAI **`gpt-4.1-nano`** (chat default in code; override on each Lambda with env `RECRUITER_CHAT_MODEL` in AWS — `CHAT_MODEL` in `services/recruiter-assistant-api/src/constants.ts`) + **`text-embedding-3-small`** (embeddings) via the [Vercel AI SDK](https://sdk.vercel.ai/) (`ai`, `@ai-sdk/openai`). The site’s React chat uses `@ai-sdk/react` / `useChat`; the Lambda handler uses `streamText` (evaluator, analyst, pitch), optional `generateText` (interests evaluator only), `embed`, `createDataStreamResponse`, and (post-stream) `generateObject` for reference claim extraction.
 - **Repo layout:** Monorepo subdir at `services/recruiter-assistant-api/` with its own `package.json`, `tsconfig.json`, tests, runbook, and GitHub Actions workflow. The marketing site remains **static export** (S3/CloudFront).
 - **No Terraform.** Rarely changing AWS resources use a manual runbook + `aws` CLI in CI.
 - **Vector store:** Flat JSON in a private S3 bucket; cosine top-K in Lambda. No managed vector DB.
@@ -115,7 +115,7 @@ See **[services/recruiter-assistant-api/SETUP.md](../../services/recruiter-assis
 
 ## CI
 
-- **`.github/workflows/recruiter-api.yml`** — On changes under `services/recruiter-assistant-api/**`: test, bundle, `aws lambda update-function-code` on `main` (OIDC). Embeddings refresh job (manual + path filters) uploads a new JSON to S3 and updates Lambda env `EMBEDDINGS_S3_URI` / `EMBEDDINGS_S3_KEY` as documented in `SETUP.md`.
+- **`.github/workflows/recruiter-api.yml`** — On changes under `services/recruiter-assistant-api/**`: test, bundle, `aws lambda update-function-code` (OIDC; does not change Lambda env). Embeddings job uploads a new JSON to the stable S3 key documented in `SETUP.md`.
 - **Site `ci.yml`** — Unchanged for static deploy; set `NEXT_PUBLIC_RECRUITER_API_URL` from a repo/org variable when the Function URL exists.
 
 ---
