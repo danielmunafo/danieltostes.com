@@ -34,7 +34,6 @@
     "termsModalDescription": "Tienes que aceptar antes de enviar estos datos. Los <terms>términos completos y uso razonable</terms> explican qué ocurre al enviar.",
     "termsModalAccept": "Aceptar y enviar",
     "termsModalCancel": "Cancelar",
-    "termsModalCaptchaHint": "Completa la comprobación siguiente para confirmar que no eres un bot.",
     "captchaFailed": "La comprobación de seguridad falló. Inténtalo de nuevo.",
     "captchaModalTitle": "Comprobación de seguridad",
     "captchaModalContinue": "Continuar",
@@ -60,6 +59,13 @@
     "backToHome": "Volver al portafolio",
     "loadError": "No se pudieron cargar los términos. Actualiza la página o inténtalo más tarde.",
     "loading": "Cargando términos"
+  },
+  "RecruiterAssistantProfessionalContext": {
+    "metaTitle": "Contexto profesional — evidencia del portafolio",
+    "metaDescription": "Temas de evidencia usados por el Asistente de IA para reclutadores en la recuperación y las referencias.",
+    "backToHome": "Volver al portafolio",
+    "loadError": "No se pudo cargar el contexto profesional. Actualiza la página o inténtalo más tarde.",
+    "loading": "Cargando contexto profesional"
   },
   "ThemeToggle": {
     "light": "Cambiar a modo oscuro",
@@ -134,7 +140,10 @@
       "companySize": "Tamaño de Empresa",
       "sector": "Sector",
       "domain": "Dominio",
-      "compliance": "Cumplimiento"
+      "compliance": "Cumplimiento",
+      "regime": "Vínculo laboral",
+      "workMode": "Modalidad",
+      "location": "Ubicación"
     },
     "roles": [
       {
@@ -145,7 +154,7 @@
         "desc": [
           "Diseñé y entregué una plataforma de automatización de reclamaciones de garantía impulsada por IA que sustituyó flujos manuales de soporte por un motor de decisión escalable basado en JSON, integrado con modelos de evaluación por imagen, actualizaciones de casos en Salesforce y automatización de chatbot.",
           "Arquitecté procesamiento asíncrono con BullMQ y workers Redis, usando reintentos acotados, salvaguardas de escalado y coordinación en máquina de estados multifase para que flujos largos de garantía se recuperaran limpiamente entre sistemas externos y handoffs de soporte.",
-          "Fui el enlace de ingeniería entre negocio, cliente, infraestructura, seguridad, soporte, producto e ingeniería en un modelo de entrega 100% remoto, manteniendo alcance, riesgos y puntos de control de integración visibles mediante tickets, especificaciones, talleres y registros de decisión.",
+          "Fui el enlace de ingeniería entre negocio, cliente, infraestructura, seguridad, soporte, producto e ingeniería en un modelo de entrega remote-first, manteniendo alcance, riesgos y puntos de control de integración visibles mediante tickets, especificaciones, talleres y registros de decisión.",
           "Definí y mantuve la capa de pruebas E2E para recorridos críticos del negocio, integrando suites automatizadas en CI para proteger releases mientras las reglas de negocio evolucionaban sin interrumpir producción."
         ],
         "tech": "TypeScript, Node.js, GraphQL (Apollo Federation), BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture, E2E Testing",
@@ -154,7 +163,10 @@
           "companySize": "500+",
           "sector": "E-commerce",
           "domain": "Soporte al Cliente",
-          "compliance": "PII, GDPR"
+          "compliance": "PII, GDPR",
+          "regime": "Contratista",
+          "workMode": "Remoto",
+          "location": "UE"
         }
       },
       {
@@ -199,7 +211,10 @@
           "companySize": "Hasta 100",
           "sector": "Banca & Fintech",
           "domain": "Banca, Facturación & Onboarding Enterprise",
-          "compliance": "PII, GDPR, KYC"
+          "compliance": "PII, GDPR, KYC",
+          "regime": "Empleado",
+          "workMode": "Híbrido",
+          "location": "UE"
         }
       },
       {
@@ -220,7 +235,10 @@
           "companySize": "5.000+",
           "sector": "Banca/Fintech & E-commerce",
           "domain": "Marketing, Mensajería Transaccional & Personalización",
-          "compliance": "PII, PCI, GDPR"
+          "compliance": "PII, PCI, GDPR",
+          "regime": "Empleado",
+          "workMode": "Remoto",
+          "location": "UE"
         }
       },
       {
@@ -243,7 +261,10 @@
           "teamSize": "10",
           "companySize": "5.000+",
           "sector": "Impuestos & E-commerce",
-          "domain": "Experiencia Fiscal del Vendedor, Backoffice & Ingeniería de Plataforma"
+          "domain": "Experiencia Fiscal del Vendedor, Backoffice & Ingeniería de Plataforma",
+          "regime": "Empleado",
+          "workMode": "Remoto",
+          "location": "Brasil"
         }
       },
       {
@@ -262,7 +283,10 @@
           "companySize": "5.000+",
           "sector": "Banca",
           "domain": "Descubierto, Alta Móvil & Operaciones Batch",
-          "compliance": "PII, PCI"
+          "compliance": "PII, PCI",
+          "regime": "Empleado",
+          "workMode": "Remoto",
+          "location": "Brasil"
         }
       },
       {
@@ -281,7 +305,10 @@
           "companySize": "1.000+",
           "sector": "Banca & Fintech",
           "domain": "Soporte al Cliente, Diagnóstico & Respuesta a Incidentes",
-          "compliance": "PII, PCI"
+          "compliance": "PII, PCI",
+          "regime": "Empleado",
+          "workMode": "Presencial",
+          "location": "Brasil"
         }
       },
       {
@@ -301,7 +328,10 @@
           "companySize": "Hasta 30",
           "sector": "Industria Farmacéutica",
           "domain": "Validación de Sistemas, Automatización de QA & Herramientas Internas",
-          "compliance": "Regulaciones GAMP & FDA"
+          "compliance": "Regulaciones GAMP & FDA",
+          "regime": "Empleado",
+          "workMode": "Presencial",
+          "location": "Brasil"
         }
       }
     ],
@@ -320,11 +350,21 @@
       "edu": [
         {
           "degree": "Tecnólogo en Análisis y Desarrollo de Sistemas",
-          "institution": "FATEC José Crespo Gonzales"
+          "institution": "FATEC José Crespo Gonzales",
+          "context": {
+            "duration": "4 años",
+            "level": "Grado superior",
+            "location": "Brasil"
+          }
         },
         {
           "degree": "Técnico en Informática",
-          "institution": "ETEC Fernando Prestes"
+          "institution": "ETEC Fernando Prestes",
+          "context": {
+            "duration": "1,5 años",
+            "level": "Título técnico",
+            "location": "Brasil"
+          }
         }
       ]
     },

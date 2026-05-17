@@ -25,6 +25,9 @@ type RoleContext = {
   sector?: string;
   domain?: string;
   compliance?: string;
+  regime?: string;
+  workMode?: string;
+  location?: string;
 };
 
 type ExperienceRole = {
@@ -45,6 +48,9 @@ const CONTEXT_KEYS: (keyof RoleContext)[] = [
   "sector",
   "domain",
   "compliance",
+  "regime",
+  "workMode",
+  "location",
 ];
 
 function cacheKey(bodyPath: string, locale: string): string {

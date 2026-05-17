@@ -34,7 +34,6 @@
     "termsModalDescription": "Devi accettare prima di inviare questi dati. I <terms>termini completi e uso leale</terms> spiegano cosa succede in caso di invio.",
     "termsModalAccept": "Accetta e invia",
     "termsModalCancel": "Annulla",
-    "termsModalCaptchaHint": "Completa il controllo qui sotto per confermare che non sei un bot.",
     "captchaFailed": "Il controllo di sicurezza non è riuscito. Riprova.",
     "captchaModalTitle": "Controllo di sicurezza",
     "captchaModalContinue": "Continua",
@@ -60,6 +59,13 @@
     "backToHome": "Torna al portfolio",
     "loadError": "Impossibile caricare i termini. Aggiorna la pagina o riprova più tardi.",
     "loading": "Caricamento termini"
+  },
+  "RecruiterAssistantProfessionalContext": {
+    "metaTitle": "Contesto professionale — evidenze del portfolio",
+    "metaDescription": "Temi di evidenza usati dall’Assistente IA per recruiter nel retrieval e nei riferimenti.",
+    "backToHome": "Torna al portfolio",
+    "loadError": "Impossibile caricare il contesto professionale. Aggiorna la pagina o riprova più tardi.",
+    "loading": "Caricamento contesto professionale"
   },
   "ThemeToggle": {
     "light": "Passa alla modalità scura",
@@ -134,7 +140,10 @@
       "companySize": "Dimensione Azienda",
       "sector": "Settore",
       "domain": "Dominio",
-      "compliance": "Compliance"
+      "compliance": "Compliance",
+      "regime": "Rapporto di lavoro",
+      "workMode": "Modalità",
+      "location": "Sede"
     },
     "roles": [
       {
@@ -145,7 +154,7 @@
         "desc": [
           "Ho progettato e consegnato una piattaforma di automazione garanzie guidata dall'IA che ha sostituito flussi manuali di supporto con un motore decisionale scalabile basato su JSON, integrato con modelli di valutazione immagini, aggiornamenti casi Salesforce e automazione chatbot.",
           "Ho architettato elaborazione asincrona con BullMQ e worker Redis, usando retry limitati, salvaguardie di escalation e coordinamento a macchina a stati multifase così i flussi garanzia long-running si recuperassero in modo pulito tra sistemi esterni e handoff al supporto.",
-          "Sono stato il collegamento di ingegneria tra business, cliente, infrastruttura, sicurezza, supporto, prodotto e ingegneria in un modello di delivery full remote, mantenendo perimetro, rischi e checkpoint di integrazione visibili tramite ticket, specifiche, workshop e log decisionali.",
+          "Sono stato il collegamento di ingegneria tra business, cliente, infrastruttura, sicurezza, supporto, prodotto e ingegneria in un modello di delivery remote-first, mantenendo perimetro, rischi e checkpoint di integrazione visibili tramite ticket, specifiche, workshop e log decisionali.",
           "Ho definito e mantenuto lo strato di test E2E per journey critici di business, integrando suite automatizzate in CI per proteggere i release mentre le regole di business evolvevano senza interrompere produzione."
         ],
         "tech": "TypeScript, Node.js, GraphQL (Apollo Federation), BullMQ, Redis, AI Model Integration, Salesforce Integration, Clean Architecture, E2E Testing",
@@ -154,7 +163,10 @@
           "companySize": "500+",
           "sector": "E-commerce",
           "domain": "Supporto Clienti",
-          "compliance": "PII, GDPR"
+          "compliance": "PII, GDPR",
+          "regime": "Collaboratore esterno",
+          "workMode": "Da remoto",
+          "location": "UE"
         }
       },
       {
@@ -199,7 +211,10 @@
           "companySize": "Fino a 100",
           "sector": "Bancario & Fintech",
           "domain": "Banking, Fatturazione & Onboarding Enterprise",
-          "compliance": "PII, GDPR, KYC"
+          "compliance": "PII, GDPR, KYC",
+          "regime": "Dipendente",
+          "workMode": "Ibrido",
+          "location": "UE"
         }
       },
       {
@@ -220,7 +235,10 @@
           "companySize": "5.000+",
           "sector": "Bancario/Fintech & E-commerce",
           "domain": "Marketing, Messaggistica Transazionale & Personalizzazione",
-          "compliance": "PII, PCI, GDPR"
+          "compliance": "PII, PCI, GDPR",
+          "regime": "Dipendente",
+          "workMode": "Da remoto",
+          "location": "UE"
         }
       },
       {
@@ -243,7 +261,10 @@
           "teamSize": "10",
           "companySize": "5.000+",
           "sector": "Fiscale & E-commerce",
-          "domain": "Tax Experience Venditori, Backoffice & Platform Engineering"
+          "domain": "Tax Experience Venditori, Backoffice & Platform Engineering",
+          "regime": "Dipendente",
+          "workMode": "Da remoto",
+          "location": "Brasile"
         }
       },
       {
@@ -262,7 +283,10 @@
           "companySize": "5.000+",
           "sector": "Bancario",
           "domain": "Scoperto, Adesione Mobile & Operazioni Batch",
-          "compliance": "PII, PCI"
+          "compliance": "PII, PCI",
+          "regime": "Dipendente",
+          "workMode": "Da remoto",
+          "location": "Brasile"
         }
       },
       {
@@ -281,7 +305,10 @@
           "companySize": "1.000+",
           "sector": "Bancario & Fintech",
           "domain": "Supporto Clienti, Diagnostica & Incident Response",
-          "compliance": "PII, PCI"
+          "compliance": "PII, PCI",
+          "regime": "Dipendente",
+          "workMode": "In sede",
+          "location": "Brasile"
         }
       },
       {
@@ -301,7 +328,10 @@
           "companySize": "Fino a 30",
           "sector": "Industria Farmaceutica",
           "domain": "Validazione Sistemi, Automazione QA & Strumenti Interni",
-          "compliance": "Regolamenti GAMP & FDA"
+          "compliance": "Regolamenti GAMP & FDA",
+          "regime": "Dipendente",
+          "workMode": "In sede",
+          "location": "Brasile"
         }
       }
     ],
@@ -320,11 +350,21 @@
       "edu": [
         {
           "degree": "Tecnologo in Analisi e Sviluppo di Sistemi",
-          "institution": "FATEC José Crespo Gonzales"
+          "institution": "FATEC José Crespo Gonzales",
+          "context": {
+            "duration": "4 anni",
+            "level": "Laurea",
+            "location": "Brasile"
+          }
         },
         {
           "degree": "Tecnico in Informatica",
-          "institution": "ETEC Fernando Prestes"
+          "institution": "ETEC Fernando Prestes",
+          "context": {
+            "duration": "1,5 anni",
+            "level": "Diploma tecnico",
+            "location": "Brasile"
+          }
         }
       ]
     },

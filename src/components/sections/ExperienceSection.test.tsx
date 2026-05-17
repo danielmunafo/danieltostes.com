@@ -57,6 +57,9 @@ describe("ExperienceSection", () => {
         "Domain: Marketing, Transactional Messaging & Personalization"
       )
     ).toBeInTheDocument();
+    expect(screen.getByText("Employment: contractor")).toBeInTheDocument();
+    expect(screen.getByText("Work Mode: remote")).toBeInTheDocument();
+    expect(screen.getByText("Location: EU")).toBeInTheDocument();
   });
 
   it("renders tech chips for roles", () => {
