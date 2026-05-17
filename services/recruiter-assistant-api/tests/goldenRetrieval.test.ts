@@ -7,20 +7,18 @@ import {
   cosineSimilarity,
   filterChunksByNavigationLocale,
   retrieveMergedTopK,
-  type EmbeddingsFile,
 } from "../src/rag/retrieve.js";
 import { buildRetrievalQueries } from "../src/retrieval/buildRetrievalQueries.js";
 import { RAG_TOP_K } from "../src/constants.js";
-import { resetEmbeddingsCacheForTests } from "../src/embeddings/loadEmbeddings.js";
+import { resetPortfolioCorpusValidationForTests } from "../src/retrieval/corpus/loadPortfolioCorpus.js";
+import { resetLlamaIndexCorpusCacheForTests } from "../src/retrieval/corpus/llamaindexCorpusCache.js";
 import { mergeRetrievalResults } from "../src/retrieval/mergeRetrievalResults.js";
 import { toRetrievedEvidenceChunk } from "../src/retrieval/normalizeEvidence.js";
+import { resetNativeIndexCacheForTests } from "../src/retrieval/llamaindex/loadNativeIndex.js";
+import { resetHydratedIndexCacheForTests } from "../src/retrieval/llamaindex/hydratedIndexCache.js";
+import { loadGoldenEmbeddingsFixture } from "./helpers/goldenLlamaIndexEnv.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const goldenPath = join(__dirname, "fixtures", "embeddings.golden.json");
-
-function loadGoldenCorpus(): EmbeddingsFile {
-  return JSON.parse(readFileSync(goldenPath, "utf8")) as EmbeddingsFile;
-}
 
 vi.mock("../src/retrieval/embedRetrievalQueries.js", () => ({
   embedRetrievalQueries: async (_openai: unknown, queries: readonly string[]) =>
@@ -28,25 +26,12 @@ vi.mock("../src/retrieval/embedRetrievalQueries.js", () => ({
 }));
 
 describe("goldenRetrieval", () => {
-  const prevEmbPath = process.env.EMBEDDINGS_JSON_PATH;
-
-  beforeEach(() => {
-    resetEmbeddingsCacheForTests();
-    process.env.EMBEDDINGS_JSON_PATH = goldenPath;
-  });
-
-  afterEach(() => {
-    resetEmbeddingsCacheForTests();
-    if (prevEmbPath === undefined) delete process.env.EMBEDDINGS_JSON_PATH;
-    else process.env.EMBEDDINGS_JSON_PATH = prevEmbPath;
-  });
-
   it("staff full-stack JD surfaces TypeScript experience", () => {
     const jd = readFileSync(
       join(__dirname, "fixtures", "staff-fullstack-jd.txt"),
       "utf8"
     );
-    const file = loadGoldenCorpus();
+    const file = loadGoldenEmbeddingsFixture();
     const chunks = filterChunksByNavigationLocale(file.chunks, "en");
     const top = retrieveMergedTopK(chunks, [[0.92, 0.08, 0.02, 0.01]], 3);
     expect(top[0]?.id).toBe("en-section-experience-item-0-s0-p0");
@@ -55,7 +40,7 @@ describe("goldenRetrieval", () => {
   it("communication-heavy JD surfaces professional context", () => {
     const jd =
       "Must have fluent English and excellent stakeholder communication. Remote EU work authorization.";
-    const file = loadGoldenCorpus();
+    const file = loadGoldenEmbeddingsFixture();
     const chunks = filterChunksByNavigationLocale(file.chunks, "en");
     const queries = buildRetrievalQueries(jd);
     const queryEmbeddings = queries.map(() => [0.05, 0.88, 0.1, 0.08]);
@@ -65,14 +50,14 @@ describe("goldenRetrieval", () => {
   });
 
   it("AI RAG JD surfaces impact chunk", () => {
-    const file = loadGoldenCorpus();
+    const file = loadGoldenEmbeddingsFixture();
     const chunks = filterChunksByNavigationLocale(file.chunks, "en");
     const top = retrieveMergedTopK(chunks, [[0.1, 0.12, 0.9, 0.05]], RAG_TOP_K);
     expect(top[0]?.metadata?.sectionId).toBe("impact");
   });
 
   it("mergeRetrievalResults matches retrieveMergedTopK ordering for golden corpus", () => {
-    const file = loadGoldenCorpus();
+    const file = loadGoldenEmbeddingsFixture();
     const chunks = filterChunksByNavigationLocale(file.chunks, "en");
     const q1 = [0.92, 0.08, 0.02, 0.01];
     const q2 = [0.1, 0.12, 0.9, 0.05];
@@ -107,17 +92,11 @@ describe("goldenRetrieval", () => {
 });
 
 describe("createRecruiterRetrieverForProvider", () => {
-  const prevEmbPath = process.env.EMBEDDINGS_JSON_PATH;
-
   beforeEach(() => {
-    process.env.EMBEDDINGS_JSON_PATH = goldenPath;
-    resetEmbeddingsCacheForTests();
-  });
-
-  afterEach(() => {
-    resetEmbeddingsCacheForTests();
-    if (prevEmbPath === undefined) delete process.env.EMBEDDINGS_JSON_PATH;
-    else process.env.EMBEDDINGS_JSON_PATH = prevEmbPath;
+    resetPortfolioCorpusValidationForTests();
+    resetLlamaIndexCorpusCacheForTests();
+    resetNativeIndexCacheForTests();
+    resetHydratedIndexCacheForTests();
   });
 
   it("custom adapter returns excerpts from golden corpus", async () => {
@@ -134,6 +113,25 @@ describe("createRecruiterRetrieverForProvider", () => {
     });
     expect(result.topChunks.length).toBeGreaterThan(0);
     expect(result.sourceExcerpts).toContain("###");
+    expect(result.chunksForNavLocale.length).toBe(5);
+  });
+
+  it("llamaindex-native uses only the LlamaIndex index artifact", async () => {
+    const { createRecruiterRetrieverForProvider } =
+      await import("../src/retrieval/createRecruiterRetriever.js");
+    const openai = createOpenAI({
+      apiKey: "test-key",
+      compatibility: "strict",
+    });
+    const retriever = createRecruiterRetrieverForProvider(
+      openai,
+      "llamaindex-native"
+    );
+    const result = await retriever.retrieve({
+      query: "TypeScript React Node staff engineer",
+      navLocale: "en",
+    });
+    expect(result.topChunks.length).toBeGreaterThan(0);
     expect(result.chunksForNavLocale.length).toBe(5);
   });
 });

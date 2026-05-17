@@ -55,7 +55,7 @@ export const RECRUITER_PROFESSIONAL_CONTEXT_ROUTE =
 
 /**
  * DOM id prefix for each `##` section on the professional-context page.
- * Must match `scrollTargetId` in `build-embeddings.mjs` (`…-item-${sidx}`).
+ * Must match `scrollTargetId` in the corpus index builder (`…-item-${sidx}`).
  */
 export const PROFESSIONAL_CONTEXT_SCROLL_TARGET_PREFIX =
   "section-professional-context-item" as const;

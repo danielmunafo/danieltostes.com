@@ -1,5 +1,5 @@
 /**
- * Shared portfolio logical-chunk builder for embeddings.json and LlamaIndex index builds.
+ * Shared portfolio logical-chunk builder for the LlamaIndex corpus index build.
  */
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";

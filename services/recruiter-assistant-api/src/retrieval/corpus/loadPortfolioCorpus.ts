@@ -1,18 +1,21 @@
-import { loadEmbeddingsFile } from "../../embeddings/loadEmbeddings.js";
-import { filterChunksByNavigationLocale } from "../../rag/retrieve.js";
 import type { RecruiterNavLocale } from "../../constants.js";
 import type { PortfolioCorpus } from "../types.js";
+import { llamaindexPortfolioCorpusRepository } from "./llamaindexPortfolioCorpusRepository.js";
+import { validateCorpusEnv } from "./validateCorpusEnv.js";
+
+let validated = false;
 
 export async function loadPortfolioCorpus(
   navLocale: RecruiterNavLocale
 ): Promise<PortfolioCorpus> {
-  const embeddingsFile = await loadEmbeddingsFile();
-  const chunksForNavLocale = filterChunksByNavigationLocale(
-    embeddingsFile.chunks,
-    navLocale
-  );
-  return {
-    allChunks: embeddingsFile.chunks,
-    chunksForNavLocale,
-  };
+  if (!validated) {
+    validateCorpusEnv();
+    validated = true;
+  }
+  return llamaindexPortfolioCorpusRepository.loadCorpus(navLocale);
+}
+
+/** Test helper: re-run env validation on next load. */
+export function resetPortfolioCorpusValidationForTests(): void {
+  validated = false;
 }

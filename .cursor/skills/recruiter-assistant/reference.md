@@ -21,8 +21,8 @@
 | References builder | `services/recruiter-assistant-api/src/rag/references.ts` |
 | Tunables | `services/recruiter-assistant-api/src/constants.ts` (`CHAT_MODEL` defaults to **`gpt-4.1-nano`**; override with Lambda env `RECRUITER_CHAT_MODEL` in AWS, or `.env` locally) |
 | Input guard / intent / rate limit | `services/recruiter-assistant-api/src/security/` |
-| Embeddings load | `services/recruiter-assistant-api/src/embeddings/loadEmbeddings.ts` |
-| Build script | `services/recruiter-assistant-api/scripts/build-embeddings.mjs` |
+| Corpus load | `services/recruiter-assistant-api/src/retrieval/corpus/` |
+| Index build | `services/recruiter-assistant-api/scripts/build-llamaindex-index.mjs` |
 | Local dev server | `services/recruiter-assistant-api/scripts/dev-server.mjs` |
 | Terms route | `src/app/[locale]/recruiter-assistant/terms/page.tsx` |
 | Terms markdown | `public/content/recruiter-assistant/terms/<locale>.md` |
@@ -47,7 +47,7 @@ Keep API `constants.ts` and `src/features/recruiter-assistant/lib/split-thinking
 - **Change model behavior / stage order:** `agents/**/instructions.md`, `agents/*/assemblePrompt.ts`, `runRecruiterAssistantPipeline.ts`, associated tests.
 - **Tune match profile chart:** `agents/chart/assembleChartPrompt.ts`, `chartDataSchema.ts`, `runRecruiterAssistantPipeline.ts` (briefing + chart steps), `syncChartWithPitch.ts`.
 - **Stricter or looser input:** `inputGuard.ts`, `intentGate.ts`, tests.
-- **New indexed content:** ensure the build script picks it up, run embeddings build, upload/update per `SETUP.md` or CI job.
+- **New indexed content:** ensure the build script picks it up, run `npm run build:llamaindex-index`, upload/update per `SETUP.md` or CI job.
 - **New UI copy:** messages JSON (all locales) + components; long legal body in terms `.md` files.
 
 ## Local dev commands

@@ -77,14 +77,14 @@ export function filterChunksForReferenceMatching(
 }
 
 /**
- * Locales used in `build-embeddings.mjs` chunk ids (`<locale>-<scrollTargetId>-s…`).
+ * Locales used in portfolio chunk ids (`<locale>-<scrollTargetId>-s…`).
  * Longest prefix first so `pt-BR` is not parsed as `pt`.
  */
 const EMBEDDINGS_ID_LOCALE_PREFIXES = ["pt-BR", "en", "es", "it"] as const;
 
 /**
  * When chunk metadata omits `locale` / `scrollTargetId` (legacy embeddings),
- * recover them from the stable id format emitted by `build-embeddings.mjs`.
+ * recover them from the stable id format emitted by the corpus index builder.
  */
 function parseLocaleAndScrollTargetFromEmbeddingChunkId(
   id: string

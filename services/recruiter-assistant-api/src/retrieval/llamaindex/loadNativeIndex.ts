@@ -10,7 +10,22 @@ import { ensureLlamaIndexSettings } from "./configureLlamaIndexSettings.js";
 
 const s3 = new S3Client({});
 
+export const LLAMAINDEX_CORPUS_ENVELOPE_FORMAT =
+  "recruiter-llamaindex-corpus-v1" as const;
+
+export type LlamaIndexVectorStoreDict = Parameters<
+  typeof SimpleVectorStore.fromDict
+>[0];
+
+export type LlamaIndexIndexPayload = {
+  format?: typeof LLAMAINDEX_CORPUS_ENVELOPE_FORMAT;
+  model?: string;
+  version?: string;
+  vectorStore: LlamaIndexVectorStoreDict;
+};
+
 let cachedStore: SimpleVectorStore | null = null;
+let cachedPayload: LlamaIndexIndexPayload | null = null;
 let cachedKey = "";
 
 function parseS3Uri(uri: string): { bucket: string; key: string } | null {
@@ -54,10 +69,48 @@ function resolveNativeIndexLocation():
   );
 }
 
+export function parseLlamaIndexIndexJson(raw: string): LlamaIndexIndexPayload {
+  const parsed = JSON.parse(raw) as Record<string, unknown>;
+  if (parsed.vectorStore && typeof parsed.vectorStore === "object") {
+    return parsed as LlamaIndexIndexPayload;
+  }
+  if (parsed.embeddingDict && typeof parsed.embeddingDict === "object") {
+    return { vectorStore: parsed as LlamaIndexVectorStoreDict };
+  }
+  throw new Error("Unrecognized LlamaIndex index JSON shape");
+}
+
+function parseAndCachePayload(
+  raw: string,
+  cacheKey: string
+): LlamaIndexIndexPayload {
+  ensureLlamaIndexSettings();
+  const payload = parseLlamaIndexIndexJson(raw);
+  cachedPayload = payload;
+  cachedStore = SimpleVectorStore.fromDict(payload.vectorStore);
+  cachedKey = cacheKey;
+  return payload;
+}
+
+export async function getNativeIndexCacheKey(): Promise<string> {
+  const location = resolveNativeIndexLocation();
+  if (location.kind === "local") {
+    return `local:${location.path}`;
+  }
+  const head = await s3.send(
+    new HeadObjectCommand({
+      Bucket: location.bucket,
+      Key: location.key,
+    })
+  );
+  const etag = head.ETag ?? "";
+  return `s3://${location.bucket}/${location.key}|${etag}`;
+}
+
 async function loadNativeIndexFromS3(
   bucket: string,
   key: string
-): Promise<SimpleVectorStore> {
+): Promise<LlamaIndexIndexPayload> {
   const head = await s3.send(
     new HeadObjectCommand({
       Bucket: bucket,
@@ -66,8 +119,8 @@ async function loadNativeIndexFromS3(
   );
   const etag = head.ETag ?? "";
   const cacheKey = `s3://${bucket}/${key}|${etag}`;
-  if (cachedStore && cachedKey === cacheKey) {
-    return cachedStore;
+  if (cachedPayload && cachedKey === cacheKey) {
+    return cachedPayload;
   }
 
   const out = await s3.send(
@@ -79,21 +132,10 @@ async function loadNativeIndexFromS3(
   const body = out.Body;
   if (!body) throw new Error("Empty S3 object body for LlamaIndex index");
   const raw = await body.transformToString();
-  return parseAndCacheStore(raw, cacheKey);
+  return parseAndCachePayload(raw, cacheKey);
 }
 
-function parseAndCacheStore(raw: string, cacheKey: string): SimpleVectorStore {
-  ensureLlamaIndexSettings();
-  const dict = JSON.parse(raw) as Parameters<
-    typeof SimpleVectorStore.fromDict
-  >[0];
-  const store = SimpleVectorStore.fromDict(dict);
-  cachedStore = store;
-  cachedKey = cacheKey;
-  return store;
-}
-
-export async function loadNativeVectorStore(): Promise<SimpleVectorStore> {
+export async function loadNativeIndexPayload(): Promise<LlamaIndexIndexPayload> {
   const location = resolveNativeIndexLocation();
   if (location.kind === "s3") {
     try {
@@ -113,15 +155,27 @@ export async function loadNativeVectorStore(): Promise<SimpleVectorStore> {
   }
 
   const cacheKey = `local:${location.path}`;
-  if (cachedStore && cachedKey === cacheKey) {
-    return cachedStore;
+  if (cachedPayload && cachedKey === cacheKey) {
+    return cachedPayload;
   }
 
   const raw = await readFile(location.path, "utf8");
-  return parseAndCacheStore(raw, cacheKey);
+  return parseAndCachePayload(raw, cacheKey);
+}
+
+export async function loadNativeVectorStore(): Promise<SimpleVectorStore> {
+  if (cachedStore && cachedPayload) {
+    return cachedStore;
+  }
+  await loadNativeIndexPayload();
+  if (!cachedStore) {
+    throw new Error("LlamaIndex vector store failed to initialize");
+  }
+  return cachedStore;
 }
 
 export function resetNativeIndexCacheForTests(): void {
   cachedStore = null;
+  cachedPayload = null;
   cachedKey = "";
 }

@@ -204,10 +204,7 @@ export const DIMENSION_SCORING_MAX_TOKENS = 1536;
 /** Tighter cap for chart projection retry after truncation (`finishReason: length`). */
 export const DIMENSION_SCORING_COMPACT_MAX_TOKENS = 1024;
 
-/** Stable S3 object key CI overwrites; Lambda `EMBEDDINGS_S3_URI` should point here. */
-export const EMBEDDINGS_S3_PUBLISH_KEY = "embeddings.json";
-
-/** Stable S3 object key for LlamaIndex native vector store JSON. */
+/** Stable S3 object key for canonical corpus + native LlamaIndex index JSON. */
 export const LLAMAINDEX_INDEX_S3_PUBLISH_KEY = "llamaindex-index.json";
 
 /** Stable S3 object key for optional interests pack; Lambda `INTERESTS_PACK_S3_URI` should point here. */

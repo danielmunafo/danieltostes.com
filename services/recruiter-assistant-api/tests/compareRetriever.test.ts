@@ -1,11 +1,9 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { createOpenAI } from "@ai-sdk/openai";
-import { resetEmbeddingsCacheForTests } from "../src/embeddings/loadEmbeddings.js";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const goldenPath = join(__dirname, "fixtures", "embeddings.golden.json");
+import { resetLlamaIndexCorpusCacheForTests } from "../src/retrieval/corpus/llamaindexCorpusCache.js";
+import { resetNativeIndexCacheForTests } from "../src/retrieval/llamaindex/loadNativeIndex.js";
+import { resetHydratedIndexCacheForTests } from "../src/retrieval/llamaindex/hydratedIndexCache.js";
+import { resetPortfolioCorpusValidationForTests } from "../src/retrieval/corpus/loadPortfolioCorpus.js";
 
 const logInfo = vi.fn();
 vi.mock("../src/logging/logger.js", async (importOriginal) => {
@@ -21,22 +19,20 @@ vi.mock("../src/retrieval/embedRetrievalQueries.js", () => ({
 
 describe("compareRetrieverAdapter", () => {
   const prevProvider = process.env.RECRUITER_RETRIEVER_PROVIDER;
-  const prevEmb = process.env.EMBEDDINGS_JSON_PATH;
 
   beforeEach(() => {
     logInfo.mockClear();
     process.env.RECRUITER_RETRIEVER_PROVIDER = "compare";
-    process.env.EMBEDDINGS_JSON_PATH = goldenPath;
-    resetEmbeddingsCacheForTests();
+    resetPortfolioCorpusValidationForTests();
+    resetLlamaIndexCorpusCacheForTests();
+    resetNativeIndexCacheForTests();
+    resetHydratedIndexCacheForTests();
   });
 
   afterEach(() => {
-    resetEmbeddingsCacheForTests();
     if (prevProvider === undefined)
       delete process.env.RECRUITER_RETRIEVER_PROVIDER;
     else process.env.RECRUITER_RETRIEVER_PROVIDER = prevProvider;
-    if (prevEmb === undefined) delete process.env.EMBEDDINGS_JSON_PATH;
-    else process.env.EMBEDDINGS_JSON_PATH = prevEmb;
   });
 
   it("returns custom results and logs comparison fields", async () => {

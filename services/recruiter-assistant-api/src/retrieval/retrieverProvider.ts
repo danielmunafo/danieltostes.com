@@ -14,7 +14,7 @@ export function parseRecruiterRetrieverProvider(
   if (trimmed && (VALID_PROVIDERS as readonly string[]).includes(trimmed)) {
     return trimmed as RecruiterRetrieverProvider;
   }
-  return "custom";
+  return "llamaindex-native";
 }
 
 export function readRecruiterRetrieverProvider(): RecruiterRetrieverProvider {

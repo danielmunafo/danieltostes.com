@@ -6,8 +6,7 @@
   "scripts": {
     "build": "node scripts/esbuild-build.mjs",
     "build:watch": "node scripts/esbuild-build.mjs --watch",
-    "build:rag": "npm run build:embeddings && node scripts/build-llamaindex-index.mjs --from-embeddings",
-    "build:embeddings": "node scripts/build-embeddings.mjs",
+    "build:rag": "npm run build:llamaindex-index",
     "build:llamaindex-index": "node scripts/build-llamaindex-index.mjs",
     "build:interests-pack": "node scripts/build-interests-pack.mjs",
     "predev": "node scripts/ensure-rag-artifacts.mjs",

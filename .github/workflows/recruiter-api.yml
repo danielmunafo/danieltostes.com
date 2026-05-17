@@ -91,21 +91,21 @@ jobs:
             exit 1
           fi
 
-      - name: Build embeddings
+      - name: Build LlamaIndex corpus index
         working-directory: services/recruiter-assistant-api
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
-        run: node scripts/build-embeddings.mjs
+        run: node scripts/build-llamaindex-index.mjs
 
-      - name: Resolve embeddings path
+      - name: Resolve LlamaIndex index path
         working-directory: services/recruiter-assistant-api
         run: |
-          EMB_FILE=$(ls embeddings/embeddings.v*.json | head -1)
-          if [ -z "$EMB_FILE" ]; then
-            echo "No embeddings/embeddings.v*.json produced by build"
+          IDX_FILE=$(ls embeddings/llamaindex.v*.json | head -1)
+          if [ -z "$IDX_FILE" ]; then
+            echo "No embeddings/llamaindex.v*.json produced by build"
             exit 1
           fi
-          echo "EMBEDDINGS_JSON_PATH=${{ github.workspace }}/services/recruiter-assistant-api/$EMB_FILE" >> "$GITHUB_ENV"
+          echo "LLAMAINDEX_INDEX_JSON_PATH=${{ github.workspace }}/services/recruiter-assistant-api/$IDX_FILE" >> "$GITHUB_ENV"
 
       - name: Start API dev server
         working-directory: services/recruiter-assistant-api
@@ -167,7 +167,7 @@ jobs:
             --zip-file fileb://function.zip \
             --publish
 
-  embeddings:
+  rag-index:
     needs: test-and-build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
@@ -201,32 +201,16 @@ jobs:
             exit 1
           fi
 
-      - name: Build embeddings
+      - name: Build LlamaIndex corpus index
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
-        run: node scripts/build-embeddings.mjs
+        run: node scripts/build-llamaindex-index.mjs
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-1
-
-      - name: Upload embeddings to S3
-        run: |
-          EMB_FILE=$(ls embeddings/embeddings.v*.json | head -1)
-          if [ -z "$EMB_FILE" ]; then
-            echo "No embeddings/embeddings.v*.json produced by build"
-            exit 1
-          fi
-          BUCKET="${{ secrets.RECRUITER_EMBEDDINGS_BUCKET }}"
-          aws s3 cp "$EMB_FILE" "s3://${BUCKET}/embeddings.json"
-          aws s3 cp "$EMB_FILE" "s3://${BUCKET}/$(basename "$EMB_FILE")"
-
-      - name: Build LlamaIndex index
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
-        run: node scripts/build-llamaindex-index.mjs
 
       - name: Upload LlamaIndex index to S3
         run: |

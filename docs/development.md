@@ -25,7 +25,7 @@ npm run build    # Production static export → out/
 npm start        # Serves out/ locally (preview production build)
 ```
 
-**Recruiter assistant API (optional):** in a second terminal, build and run the local Lambda-compatible server from `services/recruiter-assistant-api` (`npm run dev` → port **3001**), set `NEXT_PUBLIC_RECRUITER_API_URL=http://127.0.0.1:3001` for the Next app, and follow [services/recruiter-assistant-api/SETUP.md](../services/recruiter-assistant-api/SETUP.md) for env vars (`OPENAI_API_KEY`, `EMBEDDINGS_JSON_PATH`, `ALLOWED_ORIGIN`).
+**Recruiter assistant API (optional):** in a second terminal, build and run the local Lambda-compatible server from `services/recruiter-assistant-api` (`npm run dev` → port **3001**), set `NEXT_PUBLIC_RECRUITER_API_URL=http://127.0.0.1:3001` for the Next app, and follow [services/recruiter-assistant-api/SETUP.md](../services/recruiter-assistant-api/SETUP.md) for env vars (`OPENAI_API_KEY`, `LLAMAINDEX_INDEX_JSON_PATH`, `ALLOWED_ORIGIN`).
 
 For **CORS**, `ALLOWED_ORIGIN` in the API must list the **exact** `Origin` the browser sends (comma-separated). Next is usually `http://localhost:3000`, but if you open the site at `http://127.0.0.1:3000` that origin is different—include **both** in local `ALLOWED_ORIGIN` unless you always use one URL. In production, list every real `https://…` origin (and `www` vs apex if both exist).
 
@@ -78,7 +78,7 @@ Four scenarios (perfection, ok, bad match, complete mismatch) call the **local**
 
 **Local run (three terminals):**
 
-1. **API corpus** — from `services/recruiter-assistant-api`: copy `.env.example` → `.env`, set `OPENAI_API_KEY`, then `npm run build:embeddings` (writes `embeddings/embeddings.v*.json` and updates `.env.local` with `EMBEDDINGS_JSON_PATH`).
+1. **API corpus** — from `services/recruiter-assistant-api`: copy `.env.example` → `.env`, set `OPENAI_API_KEY`, then `npm run build:llamaindex-index` (writes `embeddings/llamaindex.v*.json` and updates `.env.local` with `LLAMAINDEX_INDEX_JSON_PATH`).
 2. **API server** — same directory: `ALLOWED_ORIGIN=http://localhost:3000 npm run dev` → `http://127.0.0.1:3001` (health: `GET /health`).
 3. **Static site** — repo root: `NEXT_PUBLIC_RECRUITER_API_URL=http://127.0.0.1:3001 npm run build && npx serve out -p 3000`.
 4. **Tests** — repo root: `npm run test:e2e:recruiter` (starts API + static site when not already running; reuses existing servers locally).

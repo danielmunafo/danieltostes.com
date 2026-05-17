@@ -11,7 +11,7 @@ This document is the canonical reference for the recruiter-facing AI chat: archi
 - **Model & SDK:** OpenAI **`gpt-4.1-nano`** (chat default in code; override on each Lambda with env `RECRUITER_CHAT_MODEL` in AWS — `CHAT_MODEL` in `services/recruiter-assistant-api/src/constants.ts`) + **`text-embedding-3-small`** (embeddings) via the [Vercel AI SDK](https://sdk.vercel.ai/) (`ai`, `@ai-sdk/openai`). The site’s React chat uses `@ai-sdk/react` / `useChat`; the Lambda handler uses `streamText` (evaluator, analyst, pitch), optional `generateText` (interests evaluator only), `embed`, `createDataStreamResponse`, and (post-stream) `generateObject` for reference claim extraction.
 - **Repo layout:** Monorepo subdir at `services/recruiter-assistant-api/` with its own `package.json`, `tsconfig.json`, tests, runbook, and GitHub Actions workflow. The marketing site remains **static export** (S3/CloudFront).
 - **No Terraform.** Rarely changing AWS resources use a manual runbook + `aws` CLI in CI.
-- **Vector store:** Flat JSON in a private S3 bucket (`embeddings.json`). Retrieval is behind `RecruiterRetriever` in `src/retrieval/` — default **`custom`** (cosine top-K); optional **LlamaIndex** (`llamaindex-hydrated` / `llamaindex-native`) via `RECRUITER_RETRIEVER_PROVIDER`. No managed vector DB (Pinecone/pgvector).
+- **Vector store:** Canonical corpus in S3/local **`llamaindex-index.json`** (`RECRUITER_CORPUS_PROVIDER=llamaindex`; text + metadata + embeddings reconstructed to `EmbeddingChunk[]`). Retrieval via `RecruiterRetriever` — default **`llamaindex-native`**; optional **`custom`**, **`llamaindex-hydrated`**, **`compare`** via `RECRUITER_RETRIEVER_PROVIDER`. No managed vector DB (Pinecone/pgvector).
 - **Streaming transport:** Lambda **Function URL** with **response streaming** (`InvokeMode = RESPONSE_STREAM`). No API Gateway in v1.
 
 ---
@@ -25,7 +25,7 @@ flowchart LR
     Handler -->|getSecretValue| SM[(Secrets Manager OPENAI_API_KEY)]
     Handler -->|validate + rate limit + guards| Pre[Input guard then intent gate]
     Pre --> Ctx[contextAgent.createContext]
-    Handler -->|GET embeddings JSON| S3E[(S3 embeddings bucket)]
+    Handler -->|GET llamaindex index| S3E[(S3 RAG bucket)]
     Ctx --> RAG[RecruiterRetriever top-K]
     RAG --> Ev[Evaluator streamText]
     Ev --> HG[Hard gates generateObject]
@@ -50,14 +50,14 @@ flowchart LR
     Ref --> OAI2
     Ref -->|append markdown| User
 
-    subgraph BuildTime[Build-time embeddings job]
-        Builder[build-embeddings.mjs] -->|read| Content[src/messages + public/content]
+    subgraph BuildTime[Build-time corpus index]
+        Builder[build-llamaindex-index.mjs] -->|read| Content[src/messages + public/content]
         Builder -->|embed batches| OAI1
         Builder -->|put object| S3E
     end
 ```
 
-- **Local dev:** `npm run dev` in `services/recruiter-assistant-api` runs `scripts/dev-server.mjs` (HTTP wrapper). The Next app uses `NEXT_PUBLIC_RECRUITER_API_URL` (e.g. `http://127.0.0.1:3001`). `.env` / `.env.local` can supply `OPENAI_API_KEY` and optional `EMBEDDINGS_JSON_PATH` for a local embeddings file.
+- **Local dev:** `npm run dev` in `services/recruiter-assistant-api` runs `scripts/dev-server.mjs` (HTTP wrapper). The Next app uses `NEXT_PUBLIC_RECRUITER_API_URL` (e.g. `http://127.0.0.1:3001`). `.env` / `.env.local` supply `OPENAI_API_KEY` and optional `LLAMAINDEX_INDEX_JSON_PATH` for a local index file.
 
 ### Request path — HTTP then pipeline
 
