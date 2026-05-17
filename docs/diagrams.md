@@ -138,6 +138,6 @@ flowchart LR
 - **Static assets** are still served from CloudFront + S3 (`out/`).
 - **Chat** POSTs directly to the **Lambda Function URL** (CORS allowlist); the marketing bucket does not terminate the stream.
 - **Embeddings** are built offline (`services/recruiter-assistant-api/scripts/build-embeddings.mjs`) and uploaded to the embeddings bucket; see [services/recruiter-assistant-api/SETUP.md](../services/recruiter-assistant-api/SETUP.md).
-- **Inside the stream** (see [docs/plans/recruiter-assistant-plan.md](./plans/recruiter-assistant-plan.md)): RAG retrieval → evaluator + analyst **inside thinking markers** → optional interests step **not** sent to the client → pitch **after** thinking closes → post-stream **References** appended to the same response.
+- **Inside the stream** (see [docs/plans/recruiter-assistant-plan.md](./plans/recruiter-assistant-plan.md)): RAG → evaluator → hard gates (server) → optional interests (server log) → analyst **inside thinking markers** → briefing prep + chart JSON → pitch → post-stream **References**.
 
 For a **handler-level** flow (stages, S3 load, post-stream references), use the architecture diagram in [docs/plans/recruiter-assistant-plan.md](./plans/recruiter-assistant-plan.md).

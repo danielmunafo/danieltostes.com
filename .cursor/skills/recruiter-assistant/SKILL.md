@@ -7,7 +7,7 @@ description: Recruiter AI chat (Next.js + Lambda RAG). Invoke for assistant UI, 
 
 ## Purpose
 
-Give the agent a **single entry point** for the optional “AI recruiter assistant” feature: static Next.js site + separate Node Lambda with **vector RAG** (S3 JSON embeddings, cosine top-K), **two streamed segments inside thinking markers** (evidence **evaluator**, then evidence **analyst** synthesis), then recruiter **pitch** outside the close marker, plus **post-stream claim matching** into a `## References` section. When a private **interests pack** is configured, an optional **interests** `generateText` step runs server-side only (not streamed, not in the pitch brief); output is logged for operators (`[recruiter-interests-not-in-response]`).
+Give the agent a **single entry point** for the optional “AI recruiter assistant” feature: static Next.js site + separate Node Lambda with **vector RAG** (S3 JSON embeddings, cosine top-K). **Runtime order** is implemented in `services/recruiter-assistant-api/src/recruiterAssistant/pipeline/runRecruiterAssistantPipeline.ts` (not a monolithic `handler.ts` body): **evaluator** + **hard-gate assessment** (server-only, caps pitch/chart) + optional **interests** `generateText` (server-logged only) + **analyst** inside `THINKING_*` markers → after close: **briefing-prep status** stream + **match-profile chart** JSON (`CHART_DATA_*`, `BRIEFING_PREP_*` markers) → **pitch** (hard-gate clamp) → optional chart re-emit aligned to pitch → **post-stream** `## References`. HTTP entry: `handleChatRequest.ts` → `createRecruiterAssistantStreamResponse.ts`.
 
 This skill is **project-local knowledge**, not runtime RAG. For authoritative architecture and security detail, read the linked docs in order below.
 
@@ -33,10 +33,11 @@ For a **file map and command cheat sheet**, open [reference.md](reference.md).
 
 ## Architecture (one screen)
 
-- **Browser:** `@ai-sdk/react` `useChat` → Function URL (data stream).
-- **Lambda:** validate → rate limit → `getLastUserText` → input guard → intent gate → embed query → `retrieveTopK` from loaded embeddings → **evaluator** `streamText` (requirement coverage + match score guidance) → optional **interests** `generateText` when a pack is loaded (private rubric; **not** merged into stream or pitch brief; logged server-side) → **analyst** `streamText` (synthesis only), wrapped in `THINKING_OPEN_MARKER` / `THINKING_CLOSE_MARKER` from `services/recruiter-assistant-api/src/constants.ts` → **pitch** `streamText` → post-stream `generateObject` + embeddings → `## References` markdown appended to the stream.
-- **Embeddings:** `services/recruiter-assistant-api/scripts/build-embeddings.mjs` writes JSON consumed at runtime (local path or S3 per env).
-- **Interests pack (optional):** `services/recruiter-assistant-api/scripts/build-interests-pack.mjs` from `private/interests.source.md` → JSON; load via `INTERESTS_PACK_JSON_PATH` or S3 env vars (see `SETUP.md`).
+- **Browser:** `@ai-sdk/react` `useChat` → Function URL (data stream). Client splits markers via `src/features/recruiter-assistant/lib/split-thinking-from-body.ts` (must match `constants.ts`).
+- **Lambda HTTP:** `parseAndValidateRecruiterRequest` (input guard, rate limit, CORS, optional reCAPTCHA) → `runIntentGate` → `runRecruiterAssistantPipeline`.
+- **Pipeline (ordered):** `prepareRecruiterContext` (embed + `retrieveTopK`) → **evaluator** `streamText` → **hard gates** (`extractHardGateRows` + `assessHardGates`; not streamed) → optional **interests** `generateText` (`[recruiter-interests-not-in-response]` when non-empty) → **analyst** `streamText` → `THINKING_CLOSE` → **briefing prep** `streamText` + **chart** `generateObject` in parallel (`runBriefingAndChartProjection`) → **pitch** `streamText` (respects hard-gate technical-fit cap; `validateAndClampPitchHardGates`) → `syncChartWithPitch` (may re-emit chart) → **references** (`generateObject` + embed match-back).
+- **Embeddings:** `scripts/build-embeddings.mjs` → JSON at runtime (local path or S3 per env).
+- **Interests pack (optional):** `scripts/build-interests-pack.mjs` from `private/interests.source.md`; load via `INTERESTS_PACK_JSON_PATH` or S3 (see `SETUP.md`).
 
 ## Agent workflow
 

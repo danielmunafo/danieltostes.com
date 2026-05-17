@@ -1,6 +1,6 @@
 # Recruiter AI Assistant — Execution Plan
 
-**Status:** Implemented (see repo). **Last updated:** 2026-05-14.
+**Status:** Implemented (see repo). **Last updated:** 2026-05-17.
 
 This document is the canonical reference for the recruiter-facing AI chat: architecture, security, AWS setup (no Terraform), CI, and repo layout. Future agents: start here, then [services/recruiter-assistant-api/SETUP.md](../../services/recruiter-assistant-api/SETUP.md) for AWS CLI steps.
 
@@ -28,19 +28,24 @@ flowchart LR
     Handler -->|GET embeddings JSON| S3E[(S3 embeddings bucket)]
     OAI1 --> RAG[Cosine top-K on chunks]
     RAG --> Ev[Evaluator streamText]
-    Ev --> OAI2[OpenAI Chat]
+    Ev --> HG[Hard gates generateObject]
     Ev -->|thinking tokens| User
     Ev --> Gate{Interests pack + on-topic?}
     Gate -->|yes| Int[Interests generateText]
     Gate -->|no| S1[Analyst streamText]
     Int --> OAI2
     Int -.->|server-side only| OpsLog[[Operator log]]
+    HG --> S1
     Int --> S1
+    HG -.->|not streamed| User
     S1 --> OAI2
     S1 -->|thinking tokens| User
-    S1 --> Pitch[Pitch streamText]
+    S1 --> Chart[Briefing prep + chart]
+    Chart --> OAI2
+    Chart -->|CHART_DATA markers| User
+    Chart --> Pitch[Pitch streamText]
     Pitch --> OAI2
-    Pitch -->|after thinking close| User
+    Pitch --> User
     Pitch --> Ref[Post-stream claims + References]
     Ref --> OAI2
     Ref -->|append markdown| User
@@ -54,25 +59,34 @@ flowchart LR
 
 - **Local dev:** `npm run dev` in `services/recruiter-assistant-api` runs `scripts/dev-server.mjs` (HTTP wrapper). The Next app uses `NEXT_PUBLIC_RECRUITER_API_URL` (e.g. `http://127.0.0.1:3001`). `.env` / `.env.local` can supply `OPENAI_API_KEY` and optional `EMBEDDINGS_JSON_PATH` for a local embeddings file.
 
-### Request handler (`handler.ts`) — runtime flow
+### Request path — HTTP then pipeline
+
+**HTTP** (`handleChatRequest.ts`, validation in `parseAndValidateRecruiterRequest.ts`):
 
 1. **HTTP surface:** `OPTIONS` → `204` with CORS headers. Only `POST` is accepted for chat (`405` otherwise). Parse JSON body (`messages` array required).
 2. **CORS:** `ALLOWED_ORIGIN` may be a comma-separated allowlist. If non-empty, requests without a matching `Origin` get `403` `forbidden_origin` **without** CORS headers on the error body. If empty/unset, permissive behavior for local dev (handler reflects `Origin` or `*` per `corsHeadersFor`).
 3. **Abuse controls:** In-memory token-bucket **rate limit** per client IP (`checkRateLimit`) → `429` `rate_limited` with CORS on the JSON error.
 4. **Trust boundary — last user text:** `getLastUserText` → `runInputGuard` (length, control chars, injection-ish phrases) → `400` with a stable `error` reason if blocked.
 5. **Message shape:** `convertToCoreMessages` for the full thread; malformed UI messages → `400` `invalid_message_shape`.
-6. **Intent gate:** `runIntentGate` (small bounded chat completion: recruiter-relevant vs off-topic) **after** input guard, **before** any RAG/embeddings work → `400` with reason if off-topic.
-7. **Streaming response:** `createDataStreamResponse` (AI SDK) with Lambda **response streaming** when `globalThis.awslambda` is present (`streamifyResponse` + `HttpResponseStream.from` copying `Response.body` chunks to the Node writable). On uncaught errors while building the `Response`, the streamify path returns `500` JSON `{ error: "internal", message }`.
-8. **Inside the stream (ordered):**
-   - Emit **thinking markers** (`[[THINKING_START]]` / `[[THINKING_END]]` from `constants.ts`) so the UI can show internal reasoning as collapsible “thinking.”
-   - **RAG (before thinking content):** `embed` the guarded user text → `retrieveTopK` (cosine, `RAG_TOP_K`, default **30** in `constants.ts`) over chunks from `loadEmbeddingsFile()` → `formatPortfolioChunks` (localized `### Source` / `### Fonte` / … headers).
-   - **Evidence evaluator (first thinking segment):** `streamText` with `buildEvidenceEvaluatorSystemPrompt` / `buildEvidenceEvaluatorUserPrompt` (JD + excerpts). Merged into the data stream with `experimental_sendFinish: false` so tokens stream to the client for better perceived time-to-first-token; the handler **awaits** `evaluatorResult.text` before the next thinking segment. The evaluator owns **requirement coverage** (must-have / nice-to-have, direct / adjacent / not evidenced / contradictory), **misleading-similarity warnings**, and **`# Match Score Guidance`** including **hard score caps** (see `EVIDENCE_EVALUATOR_HARD_CAP_RULES_EN` in `src/rag/evaluatorPrompt.ts`).
-   - **Interests evaluator (optional, after evaluator text is known):** When `loadInterestsPack()` returns a valid pack and the evaluator output is not the localized off-topic brief, the handler runs `generateText` with `buildInterestsEvaluatorSystemPrompt` / `buildInterestsEvaluatorUserPrompt` (JD + private `criteriaMarkdown`). Output is skipped when empty or `[[INTERESTS_SKIP]]`. **Not** merged into the data stream, the analyst user turn, or the pitch brief; the handler logs non-empty output server-side under `[recruiter-interests-not-in-response]` for operator review. Privacy: prompts forbid quoting private thresholds verbatim.
-   - **Evidence analyst (next thinking segment):** After a markdown `---` separator, `streamText` with `buildEvidenceAnalystSystemPrompt` / `buildEvidenceAnalystUserPrompt` (injects **evaluator** markdown only as authoritative). Synthesis sections only — **no duplicate requirement table**. Merged with `experimental_sendFinish: false`; the handler **awaits** `briefResult.text`, then emits `[[THINKING_END]]`.
-   - **Recruiter pitch:** `streamText` with `buildRecruiterPitchSystemPrompt` on a composed brief (evaluator + analyst, separated by `---`), same `sourceExcerpts`, and `messages: coreMessages`, merged with `experimental_sendStart: false`. The pitch follows **Technical fit** from the evaluator (score ceiling) and must **not** surface private preference scores or headings from the interests stage.
-   - **Post-stream — References:** `buildReferencesMarkdown` runs after `pitchResult.text` is available: structured **claim extraction** (`generateObject` + Zod schema), **embed** claims, cosine-match against the embedding index (including **professional-context** chunks with deep links to `/[locale]/recruiter-assistant/professional-context#section-professional-context-item-N`), preferring chunks from the same RAG retrieval set when scores are close. Emits a `## References` markdown block (with an explicit “lacking vector match” flag per claim under threshold). Appended as plain text parts to the same stream **after** the pitch finishes (not token-interleaved with stage 2).
+6. **Optional reCAPTCHA:** when `RECAPTCHA_SECRET_KEY` is set, require valid `recaptchaToken` → `403 captcha_failed` if missing/invalid.
+7. **Intent gate:** `runIntentGate` (small bounded chat completion: recruiter-relevant vs off-topic) **after** input guard, **before** any RAG/embeddings work → `400` with reason if off-topic.
+8. **Streaming response:** `createRecruiterAssistantStreamResponse` → `createDataStreamResponse` (AI SDK) with Lambda **response streaming** when `globalThis.awslambda` is present (`streamifyResponse` + `HttpResponseStream.from`). On uncaught errors while building the `Response`, the streamify path returns `500` JSON `{ error: "internal", message }`.
 
-**Latency note:** Wall-clock time until the analyst begins includes the full evaluator generation; streaming the evaluator only improves **perceived** time-to-first-token inside the thinking panel, not total pipeline duration.
+**Inside the stream** (`runRecruiterAssistantPipeline.ts`, ordered):
+
+1. **`[[THINKING_START]]`** — UI collapsible “evidence review.”
+2. **RAG:** `prepareRecruiterContext` — `embed` guarded user text → `retrieveTopK` (cosine, `RAG_TOP_K` default **30**) → localized chunk headers.
+3. **Evidence evaluator:** `streamText` (`evaluatorPrompt.ts`) — requirement coverage, misleading-similarity warnings, **`# Match Score Guidance`** with evaluator hard caps. Awaits full text; writes `---` separator.
+4. **Hard gates (server-only):** `extractHardGateRows` + `assessHardGates` (`src/rag/hardGates/`) — deterministic caps on technical fit for pitch and chart; markdown block fed to analyst/pitch prompts, **not** streamed as its own panel.
+5. **Interests evaluator (optional):** `generateText` when interests pack loaded and evaluator not off-topic; output `[[INTERESTS_SKIP]]` or logged under `[recruiter-interests-not-in-response]` — **not** in stream or pitch brief.
+6. **Evidence analyst:** `streamText` (`prompt.ts`) — synthesis only; receives evaluator + hard-gate block. Awaits full text.
+7. **`[[THINKING_END]]`**
+8. **Briefing prep + match profile (skipped when off-topic):** `runBriefingAndChartProjection` — opens `[[CHART_DATA_START]]` / `[[BRIEFING_PREP_START]]`, streams a one-line **briefing prep** status (`briefingPrepStatusPrompt.ts`) in parallel with **`generateObject` chart projection** (`chartProjectionPrompt.ts` / `chartDataSchema.ts`), aligns chart to hard gates, emits JSON + `[[CHART_DATA_END]]`. Client strips prep markers from the final body.
+9. **Recruiter pitch:** `streamText` on evaluator + analyst brief + hard-gate block; `validateAndClampPitchHardGates` on final text.
+10. **Chart sync:** `syncChartWithPitch` may **re-emit** `CHART_DATA_*` if pitch alignment adjusts assessment fields.
+11. **References:** `buildReferencesMarkdown` after pitch — claim `generateObject`, embed match-back, append `## References`.
+
+**Latency note:** The analyst cannot start until evaluator (and hard-gate extraction) finish; streaming the evaluator only improves **perceived** time-to-first-token inside the thinking panel.
 
 ---
 
@@ -91,7 +105,7 @@ flowchart LR
 
 - Landing: centered chat in a full-viewport hero; scrolling reveals the existing parallax CV below.
 - Background layer uses the `assistant` gradient while the viewport center is in the hero; then transitions per existing section logic.
-- **Stream UX:** The client splits the **thinking** phase using `THINKING_OPEN_MARKER` / `THINKING_CLOSE_MARKER` from the API package (`constants.ts`). Inside thinking, the **evaluator** streams first (requirement coverage + match score guidance), then `---`, then **analyst** synthesis — rendered in the same collapsible panel. (Optional interests evaluation runs server-side only; it is not part of the streamed thinking body.) Trailing `## References` content is surfaced for evidence review when present.
+- **Stream UX:** `split-thinking-from-body.ts` parses `THINKING_*`, `BRIEFING_PREP_*`, and `CHART_DATA_*` (values in `constants.ts`). Thinking panel: **evaluator** → `---` → **analyst**. After thinking closes: ephemeral **briefing prep** line + **match profile** chart JSON, then **pitch** markdown, then optional `## References`. Hard gates and interests are server-only.
 
 ---
 

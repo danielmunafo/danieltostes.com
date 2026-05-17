@@ -15,7 +15,7 @@ Read `docs/plans/recruiter-assistant-plan.md` and `services/recruiter-assistant-
 - i18n: `RecruiterAssistant` / `RecruiterAssistantTerms` / `RecruiterAssistantProfessionalContext` in all four `src/messages/*.json`; terms body `public/content/recruiter-assistant/terms/<locale>.md`; professional context `public/content/recruiter-assistant/professional-context/<locale>.md`.
 - `NEXT_PUBLIC_RECRUITER_API_URL` at Next build time; dev default `http://127.0.0.1:3001`.
 - MUI + `sx` (see `components.mdc`).
-- Pipeline: RAG top-K → evaluator + analyst (thinking markers) → pitch + `## References`; optional interests step is server-logged only. Tune caps in `services/recruiter-assistant-api/src/constants.ts`.
+- Pipeline: see `runRecruiterAssistantPipeline.ts` — RAG → evaluator → hard gates (server) → optional interests (server log) → analyst (thinking) → briefing prep + chart markers → pitch → references. Tune caps in `constants.ts`.
 - Deps: root `ai` + `@ai-sdk/react`; service `ai` + `@ai-sdk/openai` — follow `dependencies.mdc` per package.
 
 ## Security
