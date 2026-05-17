@@ -2,6 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
+import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -53,7 +54,10 @@ import {
   thinkingEvidenceMapFromSessionBoot,
   useRecruiterChatSessionPersistence,
 } from "../hooks/useRecruiterChatSessionPersistence";
-import type { RecruiterChatComposerExitPhase } from "../lib/recruiter-chat-session-storage";
+import {
+  clearRecruiterChatSessionSnapshot,
+  type RecruiterChatComposerExitPhase,
+} from "../lib/recruiter-chat-session-storage";
 import { getRecruiterApiBaseUrl } from "../lib/api-url";
 import { recruiterAssistantFetch } from "../lib/recruiter-assistant-fetch";
 import {
@@ -217,6 +221,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     setInput,
     setMessages,
     reload,
+    stop,
   } = useChat({
     api: apiBaseUrl,
     maxSteps: 1,
@@ -693,6 +698,27 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     []
   );
 
+  const handleCleanResponse = useCallback(() => {
+    stop();
+    if (composerExitTimeoutRef.current) {
+      clearTimeout(composerExitTimeoutRef.current);
+      composerExitTimeoutRef.current = null;
+    }
+    setComposerExitPhase("visible");
+    setMessages([]);
+    setInput("");
+    setThinkingEvidenceMarkdownByMessageId(new Map());
+    setLatestEvidencePanelOpen(true);
+    setIsLatestJobContextPanelOpen(true);
+    setCopiedMessageId(null);
+    bestPositioningScrollHandledForMessageIdRef.current = null;
+    clearRecruiterChatSessionSnapshot();
+    const messagesEl = messagesScrollRef.current;
+    if (messagesEl) {
+      messagesEl.scrollTop = 0;
+    }
+  }, [setInput, setMessages, stop]);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       const isSubmitShortcut =
@@ -1071,6 +1097,33 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                                 }}
                               >
                                 <ContentCopyRoundedIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                          <Tooltip
+                            title={t("cleanResponse")}
+                            placement="top"
+                            arrow
+                            describeChild
+                          >
+                            <span>
+                              <IconButton
+                                type="button"
+                                size="small"
+                                aria-label={t("cleanResponse")}
+                                onClick={handleCleanResponse}
+                                sx={{
+                                  color: "text.secondary",
+                                  borderRadius: 1.5,
+                                  width: 32,
+                                  height: 32,
+                                  "&:hover": {
+                                    bgcolor: "action.hover",
+                                    color: "text.primary",
+                                  },
+                                }}
+                              >
+                                <RestartAltRoundedIcon sx={{ fontSize: 18 }} />
                               </IconButton>
                             </span>
                           </Tooltip>
