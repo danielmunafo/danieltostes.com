@@ -43,6 +43,24 @@ export const RECRUITER_TERMS_ACCEPTANCE_STORAGE_KEY =
   "danieltostes.recruiterAssistant.termsAccepted.v4" as const;
 
 /**
+ * sessionStorage: recruiter chat messages and UI state so returning from
+ * in-app reference pages (e.g. professional-context) restores the session.
+ */
+export const RECRUITER_CHAT_SESSION_STORAGE_KEY =
+  "danieltostes.recruiterAssistant.chatSession.v1" as const;
+
+/** Static route segment for professional-context evidence page (no leading slash). */
+export const RECRUITER_PROFESSIONAL_CONTEXT_ROUTE =
+  "recruiter-assistant/professional-context" as const;
+
+/**
+ * DOM id prefix for each `##` section on the professional-context page.
+ * Must match `scrollTargetId` in `build-embeddings.mjs` (`…-item-${sidx}`).
+ */
+export const PROFESSIONAL_CONTEXT_SCROLL_TARGET_PREFIX =
+  "section-professional-context-item" as const;
+
+/**
  * localStorage: incremented when the API rejects input as off-topic / not recruiting
  * (`off_topic`, `intent_unclear`). At `RECRUITER_BAD_PROMPT_MAX_STRIKES`, the assistant locks out.
  */
