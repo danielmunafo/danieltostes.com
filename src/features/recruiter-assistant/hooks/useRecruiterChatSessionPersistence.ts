@@ -147,7 +147,7 @@ export function useRecruiterChatSessionPersistence({
     const el = messagesScrollRef.current;
     if (!el || messages.length === 0) return;
 
-    let scrollTimeoutId: ReturnType<typeof setTimeout> | undefined;
+    let scrollTimeoutId: number | undefined;
     const onScroll = () => {
       if (scrollTimeoutId !== undefined) {
         window.clearTimeout(scrollTimeoutId);
