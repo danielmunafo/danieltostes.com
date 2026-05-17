@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { extractHardGateRows } from "../src/rag/hardGates/index.js";
 import { parseEvaluatorTable } from "../src/rag/hardGates/parseEvaluatorTable.js";
-import { runHardGateAssessment } from "../src/recruiterAssistant/pipeline/runHardGateAssessment.js";
+import { assessHardGates } from "../src/recruiterAssistant/agents/hardGates/assessHardGates.js";
 
 vi.mock("../src/rag/hardGates/index.js", async (importOriginal) => {
   const actual =
@@ -22,15 +22,15 @@ const fiskalyEvaluatorMarkdown = `# Requirement Coverage
 **Recommended match strength:** 7/10
 `;
 
-const mockOpenai = {} as Parameters<typeof runHardGateAssessment>[0]["openai"];
+const mockOpenai = {} as Parameters<typeof assessHardGates>[0]["openai"];
 
-describe("runHardGateAssessment", () => {
+describe("assessHardGates", () => {
   beforeEach(() => {
     vi.mocked(extractHardGateRows).mockReset();
   });
 
   it("skips assessment when evaluation is off-topic", async () => {
-    const result = await runHardGateAssessment({
+    const result = await assessHardGates({
       openai: mockOpenai,
       navLocale: "en",
       userText: "jd text",
@@ -47,7 +47,7 @@ describe("runHardGateAssessment", () => {
     const rows = parseEvaluatorTable(fiskalyEvaluatorMarkdown, "en");
     vi.mocked(extractHardGateRows).mockResolvedValue(rows);
 
-    const result = await runHardGateAssessment({
+    const result = await assessHardGates({
       openai: mockOpenai,
       navLocale: "en",
       userText: "Golang backend Berlin",

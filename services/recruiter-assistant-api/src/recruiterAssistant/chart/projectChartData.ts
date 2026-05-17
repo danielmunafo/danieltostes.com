@@ -12,7 +12,7 @@ import {
 import {
   buildChartProjectionSystemPrompt,
   buildChartProjectionUserPrompt,
-} from "../../rag/chartProjectionPrompt.js";
+} from "../agents/briefingChart/assembleChartPrompt.js";
 import {
   chartDataSchemaForModelOutput,
   type ChartData,

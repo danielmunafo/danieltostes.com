@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { generateText } from "ai";
 import { INTERESTS_OUTPUT_SKIP_SENTINEL } from "../src/constants.js";
 import { logInfo } from "../src/logging/logger.js";
-import { runInterestsEvaluation } from "../src/recruiterAssistant/pipeline/runInterestsEvaluation.js";
+import { evaluateInterests } from "../src/recruiterAssistant/agents/interests/evaluateInterests.js";
 
 vi.mock("ai", async (importOriginal) => {
   const actual = await importOriginal<typeof import("ai")>();
@@ -24,17 +24,17 @@ vi.mock("../src/logging/logger.js", async (importOriginal) => {
 const mockOpenai = vi
   .fn()
   .mockReturnValue("mock-model") as unknown as Parameters<
-  typeof runInterestsEvaluation
+  typeof evaluateInterests
 >[0]["openai"];
 
-describe("runInterestsEvaluation", () => {
+describe("evaluateInterests", () => {
   beforeEach(() => {
     vi.mocked(generateText).mockReset();
     vi.mocked(logInfo).mockReset();
   });
 
   it("does not call generateText when interests pack is missing", async () => {
-    await runInterestsEvaluation({
+    await evaluateInterests({
       openai: mockOpenai,
       navLocale: "en",
       userText: "role",
@@ -49,7 +49,7 @@ describe("runInterestsEvaluation", () => {
       text: INTERESTS_OUTPUT_SKIP_SENTINEL,
     } as Awaited<ReturnType<typeof generateText>>);
 
-    await runInterestsEvaluation({
+    await evaluateInterests({
       openai: mockOpenai,
       navLocale: "en",
       userText: "role",
@@ -70,7 +70,7 @@ describe("runInterestsEvaluation", () => {
       text: "# Preference alignment\n| row |",
     } as Awaited<ReturnType<typeof generateText>>);
 
-    await runInterestsEvaluation({
+    await evaluateInterests({
       openai: mockOpenai,
       navLocale: "en",
       userText: "role",

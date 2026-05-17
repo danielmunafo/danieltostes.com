@@ -1,12 +1,5 @@
 import { buildEvidenceBriefForPitch } from "./buildEvidenceBriefForPitch.js";
-import { prepareRecruiterContext } from "./prepareRecruiterContext.js";
-import { runBriefingAndChartProjection } from "./runBriefingAndChartProjection.js";
-import { runEvidenceAnalysis } from "./runEvidenceAnalysis.js";
-import { runEvidenceEvaluation } from "./runEvidenceEvaluation.js";
-import { runHardGateAssessment } from "./runHardGateAssessment.js";
-import { runInterestsEvaluation } from "./runInterestsEvaluation.js";
-import { runPitchGeneration } from "./runPitchGeneration.js";
-import { runReferencesGeneration } from "./runReferencesGeneration.js";
+import { recruiterAgent } from "../agents/recruiterAgent.js";
 import { syncChartWithPitch } from "../chart/syncChartWithPitch.js";
 import {
   writeThinkingClose,
@@ -22,13 +15,13 @@ export async function runRecruiterAssistantPipeline(
 
   writeThinkingOpen(dataStream);
 
-  const recruiterContext = await prepareRecruiterContext({
+  const recruiterContext = await recruiterAgent.createContext({
     openai,
     navLocale,
     userText,
   });
 
-  const evaluation = await runEvidenceEvaluation({
+  const evaluation = await recruiterAgent.evaluateEvidence({
     openai,
     dataStream,
     navLocale,
@@ -36,7 +29,7 @@ export async function runRecruiterAssistantPipeline(
     sourceExcerpts: recruiterContext.sourceExcerpts,
   });
 
-  const hardGates = await runHardGateAssessment({
+  const hardGates = await recruiterAgent.assessHardGates({
     openai,
     navLocale,
     userText,
@@ -44,7 +37,7 @@ export async function runRecruiterAssistantPipeline(
     isOffTopic: evaluation.isOffTopic,
   });
 
-  runInterestsEvaluation({
+  recruiterAgent.evaluateInterests({
     openai,
     navLocale,
     userText,
@@ -52,7 +45,7 @@ export async function runRecruiterAssistantPipeline(
     interestsPack: recruiterContext.interestsPack,
   });
 
-  const analysis = await runEvidenceAnalysis({
+  const analysis = await recruiterAgent.analyzeEvidence({
     openai,
     dataStream,
     navLocale,
@@ -69,7 +62,7 @@ export async function runRecruiterAssistantPipeline(
     analysis.evidenceAnalysisMarkdown
   );
 
-  const { chartData } = await runBriefingAndChartProjection({
+  const { chartData } = await recruiterAgent.projectBriefingAndChart({
     openai,
     dataStream,
     navLocale,
@@ -81,7 +74,7 @@ export async function runRecruiterAssistantPipeline(
     isOffTopic: evaluation.isOffTopic,
   });
 
-  const pitch = await runPitchGeneration({
+  const pitch = await recruiterAgent.generatePitch({
     openai,
     dataStream,
     request,
@@ -101,7 +94,7 @@ export async function runRecruiterAssistantPipeline(
     isOffTopic: evaluation.isOffTopic,
   });
 
-  await runReferencesGeneration({
+  await recruiterAgent.generateReferences({
     openai,
     dataStream,
     assistantText: pitch.assistantText,
