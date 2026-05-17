@@ -2,4 +2,4 @@ export {
   buildBriefingPrepStatusSystemPrompt,
   buildBriefingPrepStatusUserPrompt,
   normalizeBriefingPrepStatusText,
-} from "../recruiterAssistant/agents/briefingChart/assembleBriefingPrompt.js";
+} from "../recruiterAssistant/agents/briefing/assembleBriefingPrompt.js";

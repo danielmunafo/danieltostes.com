@@ -1,6 +1,6 @@
-import briefingInstructions from "../agents/briefingChart/briefingInstructions.md";
-import chartInstructions from "../agents/briefingChart/chartInstructions.md";
-import chartInstructionsCompact from "../agents/briefingChart/chartInstructionsCompact.md";
+import briefingInstructions from "../agents/briefing/briefingInstructions.md";
+import chartInstructions from "../agents/chart/chartInstructions.md";
+import chartInstructionsCompact from "../agents/chart/chartInstructionsCompact.md";
 import evidenceAnalysisInstructions from "../agents/evidenceAnalysis/instructions.md";
 import evidenceEvaluationInstructions from "../agents/evidenceEvaluation/instructions.md";
 import hardGatesInstructions from "../agents/hardGates/instructions.md";
@@ -9,9 +9,9 @@ import pitchInstructions from "../agents/pitch/instructions.md";
 import claimExtractionInstructions from "../agents/references/claimExtractionInstructions.md";
 
 const INSTRUCTIONS = {
-  "agents/briefingChart/briefingInstructions.md": briefingInstructions,
-  "agents/briefingChart/chartInstructions.md": chartInstructions,
-  "agents/briefingChart/chartInstructionsCompact.md": chartInstructionsCompact,
+  "agents/briefing/briefingInstructions.md": briefingInstructions,
+  "agents/chart/chartInstructions.md": chartInstructions,
+  "agents/chart/chartInstructionsCompact.md": chartInstructionsCompact,
   "agents/evidenceAnalysis/instructions.md": evidenceAnalysisInstructions,
   "agents/evidenceEvaluation/instructions.md": evidenceEvaluationInstructions,
   "agents/hardGates/instructions.md": hardGatesInstructions,

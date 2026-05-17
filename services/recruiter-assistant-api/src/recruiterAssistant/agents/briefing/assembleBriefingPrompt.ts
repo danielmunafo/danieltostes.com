@@ -5,7 +5,7 @@ import {
 import { getAgentInstruction } from "../../prompt/getAgentInstruction.js";
 
 const BRIEFING_PREP_STATIC_RULES = getAgentInstruction(
-  "agents/briefingChart/briefingInstructions.md"
+  "agents/briefing/briefingInstructions.md"
 );
 
 const EVALUATOR_EXCERPT_MAX_CHARS = 2_400;

@@ -9,12 +9,15 @@
 | Home composition | `src/components/HomeContent.tsx` |
 | Section ids / parallax | `src/constants/sections.ts` |
 | Lambda entry | `services/recruiter-assistant-api/src/handler.ts` → `handleChatRequest.ts` |
-| Stream pipeline (edit order here) | `services/recruiter-assistant-api/src/recruiterAssistant/pipeline/runRecruiterAssistantPipeline.ts` |
+| Stream pipeline (orchestrator only) | `services/recruiter-assistant-api/src/recruiterAssistant/pipeline/runRecruiterAssistantPipeline.ts` |
+| Portfolio assistant narrative (RAG) | `public/content/experience/danieltostes-com/<locale>.md` — keep in sync when pipeline/agents change |
+| Agent facades + `.md` instructions | `services/recruiter-assistant-api/src/recruiterAssistant/agents/*/*Agent.ts` (incl. `recruiterAgent` for off-topic, briefing+chart, pitch), `src/recruiterAssistant/prompt/getAgentInstruction.ts` |
 | RAG retrieve | `services/recruiter-assistant-api/src/rag/retrieve.ts` |
 | Hard gates | `services/recruiter-assistant-api/src/rag/hardGates/` |
-| Chart projection | `services/recruiter-assistant-api/src/recruiterAssistant/chart/projectChartData.ts`, `src/rag/chartProjectionPrompt.ts` |
-| Briefing prep stream | `services/recruiter-assistant-api/src/rag/briefingPrepStatusPrompt.ts` |
-| Prompts (evaluator + analyst + pitch) | `services/recruiter-assistant-api/src/rag/evaluatorPrompt.ts`, `services/recruiter-assistant-api/src/rag/prompt.ts` |
+| Chart projection | `services/recruiter-assistant-api/src/recruiterAssistant/agents/chart/` |
+| Briefing prep stream | `services/recruiter-assistant-api/src/recruiterAssistant/agents/briefing/` |
+| Prompt assembly (evaluator + analyst + pitch) | `services/recruiter-assistant-api/src/recruiterAssistant/agents/*/assemblePrompt.ts` + colocated `instructions.md` |
+| Prompt re-exports (tests / legacy imports) | `services/recruiter-assistant-api/src/rag/evaluatorPrompt.ts`, `prompt.ts`, `briefingPrepStatusPrompt.ts`, `chartProjectionPrompt.ts`, `interestsPrompt.ts` |
 | References builder | `services/recruiter-assistant-api/src/rag/references.ts` |
 | Tunables | `services/recruiter-assistant-api/src/constants.ts` (`CHAT_MODEL` defaults to **`gpt-4.1-nano`**; override with Lambda env `RECRUITER_CHAT_MODEL` in AWS, or `.env` locally) |
 | Input guard / intent / rate limit | `services/recruiter-assistant-api/src/security/` |
@@ -41,8 +44,8 @@ Keep API `constants.ts` and `src/features/recruiter-assistant/lib/split-thinking
 ## Typical tasks → where to edit
 
 - **Tune retrieval or references:** `constants.ts` (`RAG_TOP_K`, `REFERENCE_*`, `EVIDENCE_EVALUATOR_MAX_TOKENS`, `EVIDENCE_BRIEF_MAX_TOKENS`, thresholds), then `retrieve.ts` / `references.ts` / tests under `services/recruiter-assistant-api/tests/`.
-- **Change model behavior / stage order:** `evaluatorPrompt.ts`, `prompt.ts`, modules under `recruiterAssistant/pipeline/`, associated tests.
-- **Tune match profile chart:** `chartProjectionPrompt.ts`, `chartDataSchema.ts`, `runBriefingAndChartProjection.ts`, `syncChartWithPitch.ts`.
+- **Change model behavior / stage order:** `agents/**/instructions.md`, `agents/*/assemblePrompt.ts`, `runRecruiterAssistantPipeline.ts`, associated tests.
+- **Tune match profile chart:** `agents/chart/assembleChartPrompt.ts`, `chartDataSchema.ts`, `runRecruiterAssistantPipeline.ts` (briefing + chart steps), `syncChartWithPitch.ts`.
 - **Stricter or looser input:** `inputGuard.ts`, `intentGate.ts`, tests.
 - **New indexed content:** ensure the build script picks it up, run embeddings build, upload/update per `SETUP.md` or CI job.
 - **New UI copy:** messages JSON (all locales) + components; long legal body in terms `.md` files.

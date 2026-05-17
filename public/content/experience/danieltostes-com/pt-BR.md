@@ -6,7 +6,8 @@ Entregar um **portfólio static-first** (S3 + CloudFront) que ainda suporte um *
 
 - **Site**: export estático Next.js, temas claro/escuro MUI, i18n em quatro idiomas, seções parallax, busca gerada no build, Vitest + Playwright, CI com GitHub Actions.
 - **Assistente**: chat no browser para uma pequena **AWS Lambda** atrás de Function URL com **streaming de resposta**; embeddings offline como JSON versionado no S3; RAG por cosseno top-K, **input guard** determinístico e **intent gate** por LLM antes da recuperação, rate limit em memória por IP e CORS com allowlist para produção.
-- **Formato da resposta**: **três** estágios de chat em stream num único fluxo—primeiro um **avaliador de evidências** (cobertura de requisitos com obrigatório vs desejável, evidência direta/adjacente/não evidenciada/contraditória, alertas de similaridade enganosa e **orientação de pontuação** com tetos para que similaridade vetorial não infle aderência sozinha), depois um **analista** (apenas síntese, no mesmo bloco “thinking”, sem contradizer o avaliador), por fim a **avaliação para o recrutador** (intensidade do match respeita o teto do avaliador). **Marcadores ASCII de “thinking”** envolvem avaliador + analista para a UI separar raciocínio interno da resposta principal; após o fim do stream, **extração estruturada de claims** e reencontro por vetores geram um bloco opcional de **Referências** para citações fundamentadas.
+- **Camada de agentes (Lambda)**: cada estágio do pipeline é um **agente por tema** em `services/recruiter-assistant-api/src/recruiterAssistant/agents/` (`contextAgent`, `evidenceEvaluationAgent`, `hardGatesAgent`, `interestsAgent`, `evidenceAnalysisAgent`, `recruiterAgent`, `referencesAgent`, com `briefingAgent` / `chartAgent` delegados dentro de `recruiterAgent`). Regras de comportamento ficam em **`instructions.md`** colocalizados, carregados no bundle via `getAgentInstruction.ts`; o TypeScript monta prompts sensíveis ao locale e aplica schemas. **`runRecruiterAssistantPipeline.ts`** é o único orquestrador—não embute texto de prompt.
+- **Formato da resposta (stream)**: dentro dos marcadores **`THINKING_*`**—**avaliador de evidências** (cobertura de requisitos, níveis de evidência, alertas de similaridade enganosa, orientação de pontuação com tetos) e **analista** (apenas síntese; não pode contradizer o avaliador). Após fechar o thinking: linhas efêmeras de **briefing prep** (`BRIEFING_PREP_*`), JSON do **gráfico de perfil** (`CHART_DATA_*`), depois o **pitch para recrutador** (aderência técnica respeita o teto de hard gates; clamp pós-geração). Reemissão opcional do gráfico alinhada ao pitch. **Somente servidor (não vai no stream):** avaliação de hard gates, avaliação opcional de **interesses** privados (agendada em background para não bloquear o que o usuário vê). Após o stream: extração estruturada de claims e match vetorial geram **Referências** opcionais.
 - **Transparência**: notas de arquitetura no repositório, página de termos para recrutadores, UI de revisão de evidências e textos de racional para que trade-offs fiquem auditáveis.
 
 ### Fluxo de construção (código gerado por IA)
@@ -15,28 +16,51 @@ Entregar um **portfólio static-first** (S3 + CloudFront) que ainda suporte um *
 
 ### Pilares técnicos
 
-- Respostas ancoradas na recuperação com referências pós-hoc explícitas; geração em estágios (**avaliador** com cobertura de requisitos + tetos, **analista** em síntese, **pitch** para recrutador) e citações checadas por similaridade.
+- Respostas ancoradas na recuperação com referências pós-hoc explícitas; geração em estágios (**avaliador** → **analista** → **pitch**) com tetos determinísticos de hard gates no fit e no gráfico.
+- Manutenção orientada a agentes: comportamento em markdown; orquestração e contratos em TypeScript.
 - Padrões conscientes de segurança para texto não confiável de recrutadores (formatação, classificação de intenção, system prompts rígidos, erros JSON fail-closed antes do streaming).
-- Simplicidade operacional: bundle estático no S3/CloudFront; Lambda para inferência; streaming via Vercel AI SDK (streamText e resposta em formato de data stream), com segredos e passos de deploy documentados.
+- Simplicidade operacional: bundle estático no S3/CloudFront; Lambda para inferência; streaming via Vercel AI SDK, com segredos e passos de deploy documentados.
 
-### Arquitetura do assistente
+### Implantação do assistente
 
 ```mermaid
 flowchart LR
-    User[Recruiter browser chat] -->|streaming POST| Lambda[AWS Lambda]
-    Lambda -->|guards + staged prompts| OpenAI[OpenAI chat APIs]
-    Lambda -->|embed query| OpenAI
-    Lambda -->|load index| S3[(S3 embeddings JSON)]
-    Lambda -->|stream response| User
+    User[Chat recrutador no browser] -->|POST em stream| Lambda[AWS Lambda]
+    Lambda -->|guards + pipeline de agentes| OpenAI[APIs de chat OpenAI]
+    Lambda -->|embed da query| OpenAI
+    Lambda -->|carrega índice| S3[(JSON de embeddings no S3)]
+    Lambda -->|resposta em stream| User
 
-    subgraph StaticSite[Static portfolio site]
+    subgraph StaticSite[Site estático do portfólio]
         Site[S3 + CloudFront]
     end
 
-    User -->|browse| Site
+    User -->|navega| Site
 ```
 
 A UI do portfólio continua sendo entregue como assets estáticos no S3 e na CloudFront; o tráfego do chat em stream segue o caminho da Lambda no diagrama.
+
+### Orquestração do pipeline (agentes)
+
+`runRecruiterAssistantPipeline` chama agentes por tema em ordem; não implementa a lógica dos modelos.
+
+```mermaid
+flowchart TD
+    pipeline[runRecruiterAssistantPipeline]
+
+    pipeline --> context[contextAgent.createContext]
+    context --> eval[evidenceEvaluationAgent.evaluateEvidence]
+    eval --> offTopic[recruiterAgent.evaluateOffTopic]
+    offTopic --> hardGates[hardGatesAgent.assessHardGates]
+    hardGates --> interests[interestsAgent.scheduleEvaluation]
+    hardGates --> analyst[evidenceAnalysisAgent.analyzeEvidence]
+    interests -.->|background sem bloqueio| analyst
+    analyst --> thinkClose[THINKING_CLOSE]
+    thinkClose --> briefChart[recruiterAgent.projectBriefingAndChart]
+    briefChart --> pitch[recruiterAgent.generatePitch]
+    pitch --> chartSync[recruiterAgent.syncChartWithPitch]
+    chartSync --> refs[referencesAgent.generateReferences]
+```
 
 ### Tech stack
 

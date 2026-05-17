@@ -25,12 +25,12 @@ Brevity (required — output must fit in one JSON object):
 - Example rewrite: instead of "Senior engineering and communication are well supported, but the role's core interview-facilitation function and key practical engagement requirements remain unproven", write "Senior engineering and communication are well supported, but interview facilitation and practical engagement requirements were not found in the retrieved portfolio evidence".`;
 
 const CHART_INSTRUCTIONS_BASE = getAgentInstruction(
-  "agents/briefingChart/chartInstructions.md"
+  "agents/chart/chartInstructions.md"
 );
 
 export function buildChartProjectionSystemPrompt(compact = false): string {
   const compactAppendix = compact
-    ? getAgentInstruction("agents/briefingChart/chartInstructionsCompact.md")
+    ? getAgentInstruction("agents/chart/chartInstructionsCompact.md")
     : "";
 
   return [

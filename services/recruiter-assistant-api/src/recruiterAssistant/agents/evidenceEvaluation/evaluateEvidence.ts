@@ -2,7 +2,6 @@ import { formatDataStreamPart, streamText } from "ai";
 import {
   CHAT_MODEL,
   EVIDENCE_EVALUATOR_MAX_TOKENS,
-  isRecruiterOffTopicBriefMarkdown,
   recruiterStreamTextSmoothTransform,
   type RecruiterNavLocale,
 } from "../../../constants.js";
@@ -46,6 +45,5 @@ export async function evaluateEvidence(params: {
 
   return {
     evidenceEvaluationMarkdown,
-    isOffTopic: isRecruiterOffTopicBriefMarkdown(evidenceEvaluationMarkdown),
   };
 }

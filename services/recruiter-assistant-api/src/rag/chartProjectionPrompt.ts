@@ -1,4 +1,4 @@
 export {
   buildChartProjectionSystemPrompt,
   buildChartProjectionUserPrompt,
-} from "../recruiterAssistant/agents/briefingChart/assembleChartPrompt.js";
+} from "../recruiterAssistant/agents/chart/assembleChartPrompt.js";

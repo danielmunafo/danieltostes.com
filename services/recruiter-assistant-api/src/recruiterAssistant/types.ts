@@ -3,7 +3,6 @@ import { createDataStreamResponse, type CoreMessage, type Message } from "ai";
 import type { RecruiterNavLocale } from "../constants.js";
 import type { InterestsPack } from "../interests/loadInterestsPack.js";
 import type { HardGateAssessment } from "../rag/hardGates/index.js";
-import type { ChartData } from "../rag/chartDataSchema.js";
 import type { EmbeddingChunk } from "../rag/retrieve.js";
 
 export type OpenAiProvider = ReturnType<typeof createOpenAI>;
@@ -45,7 +44,6 @@ export type RecruiterContext = {
 
 export type EvidenceEvaluationResult = {
   evidenceEvaluationMarkdown: string;
-  isOffTopic: boolean;
 };
 
 export type HardGatePipelineResult = {
@@ -56,10 +54,6 @@ export type HardGatePipelineResult = {
 
 export type EvidenceAnalysisResult = {
   evidenceAnalysisMarkdown: string;
-};
-
-export type BriefingAndChartResult = {
-  chartData: ChartData | null;
 };
 
 export type PitchGenerationResult = {
