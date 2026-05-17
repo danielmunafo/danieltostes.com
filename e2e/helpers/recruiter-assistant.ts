@@ -30,6 +30,7 @@ const ROLE_CONTEXT_LABEL = "Role Context";
 const JOB_DESCRIPTION_SECTION = "Job description";
 const BRIEFING_SECTION_HEADING = "Candidate fit briefing";
 const COPY_BRIEFING_BUTTON = "Copy";
+const CAPTCHA_MODAL_TITLE = "Security check";
 const UNAVAILABLE_ALERT = /Assistant is not configured/i;
 
 function recruiterE2eSetupHint(): string {
@@ -99,6 +100,15 @@ export async function submitJobDescription(
   try {
     await chatPost;
   } catch {
+    const captchaDialog = page.getByRole("dialog", {
+      name: CAPTCHA_MODAL_TITLE,
+    });
+    if (await captchaDialog.isVisible()) {
+      throw new Error(
+        `${recruiterE2eSetupHint()} reCAPTCHA blocked Send (Security check dialog). ` +
+          "Use npm run test:e2e:recruiter:stack so the build omits NEXT_PUBLIC_RECAPTCHA_SITE_KEY."
+      );
+    }
     throw new Error(
       `${recruiterE2eSetupHint()} No recruiter API POST within ${RECRUITER_CHAT_POST_TIMEOUT_MS}ms after Send.`
     );

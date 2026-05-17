@@ -31,7 +31,14 @@ if (existsSync(envTestPath)) {
   );
 }
 
-const env = { ...process.env, PLAYWRIGHT_RECRUITER_STACK: "1" };
+/** E2E must not bake `.env.local` reCAPTCHA keys into the static export or API. */
+const env = {
+  ...process.env,
+  PLAYWRIGHT_RECRUITER_STACK: "1",
+  RECRUITER_E2E: "1",
+  NEXT_PUBLIC_RECAPTCHA_SITE_KEY: "",
+  RECAPTCHA_SECRET_KEY: "",
+};
 
 execSync("npm run build", { cwd: repoRoot, stdio: "inherit", env });
 execSync("npx playwright test --project=recruiter-assistant", {

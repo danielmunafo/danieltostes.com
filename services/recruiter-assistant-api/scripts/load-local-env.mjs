@@ -43,7 +43,11 @@ export function loadServiceEnvFiles() {
     let text = readFileSync(absPath, "utf8");
     if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
     const parsed = parseDotEnvLines(text);
+    const isRecruiterE2e = process.env.RECRUITER_E2E === "1";
     for (const [key, val] of Object.entries(parsed)) {
+      if (isRecruiterE2e && override && key === "RECAPTCHA_SECRET_KEY") {
+        continue;
+      }
       if (override || process.env[key] === undefined) {
         process.env[key] = val;
       }

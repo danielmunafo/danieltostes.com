@@ -51,6 +51,8 @@ export default defineConfig({
           env: {
             PORT: String(recruiterTestEnv.apiPort),
             ALLOWED_ORIGIN: recruiterTestEnv.siteOrigin,
+            RECRUITER_E2E: "1",
+            RECAPTCHA_SECRET_KEY: "",
           },
         },
         {
