@@ -24,6 +24,22 @@ test("recruiter assistant terms page loads", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("recruiter assistant professional-context page loads with section anchors", async ({
+  page,
+}) => {
+  await page.goto(
+    `${defaultLocalePath}/recruiter-assistant/professional-context`
+  );
+  await expect(
+    page.getByRole("heading", {
+      name: /Professional context — portfolio evidence themes/i,
+    })
+  ).toBeVisible();
+  await expect(
+    page.locator("#section-professional-context-item-0")
+  ).toBeAttached();
+});
+
 test("summary remains reachable after scrolling past assistant", async ({
   page,
 }) => {
