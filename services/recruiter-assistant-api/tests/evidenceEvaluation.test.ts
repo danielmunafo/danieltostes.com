@@ -44,6 +44,14 @@ describe("evidence evaluation scaffolding (fixtures)", () => {
     );
   });
 
+  it("evaluator system prompt treats professional-context excerpts as first-class evidence", () => {
+    const system = buildEvidenceEvaluatorSystemPrompt("en");
+    expect(system).toContain("professional-context");
+    expect(system).toContain("first-class evidence");
+    expect(system).toContain("written/oral English communication");
+    expect(system).toContain("regulated-domain");
+  });
+
   it("analyst user prompt chains evaluator markdown for staff full-stack fixture", () => {
     const jd = readFixture("staff-fullstack-jd.txt");
     const fakeEval =

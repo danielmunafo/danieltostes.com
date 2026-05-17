@@ -9,9 +9,12 @@ import {
   type RecruiterReferencesLabels,
   RECRUITER_OFF_TOPIC_BRIEF_HEADING_REGEX,
   RECRUITER_REFERENCES_LABELS,
+  PROFESSIONAL_CONTEXT_SECTION_ID,
+  RECRUITER_PROFESSIONAL_CONTEXT_ROUTE,
   REFERENCE_EXCERPT_CHARS,
   REFERENCE_MATCH_THRESHOLD,
   REFERENCE_MAX_CLAIMS,
+  REFERENCE_RETRIEVAL_PREFERENCE_SCORE_DELTA,
 } from "../constants.js";
 import { logWarn } from "../logging/logger.js";
 import { cosineSimilarity, type EmbeddingChunk } from "./retrieve.js";
@@ -44,28 +47,29 @@ const claimsSchema = z.object({
         .string()
         .min(4)
         .describe(
-          "A short label for an important skill, experience, or constraint the assessment identified as missing or not evidenced in the portfolio."
+          "A short, neutral label for an important skill, experience, or constraint that was not found in the retrieved portfolio evidence. Phrase as an evidence gap, not a candidate capability verdict."
         )
     )
     .max(REFERENCE_MAX_CLAIMS),
 });
 
-/** Editorial / thematic chunks excluded from recruiter-facing reference links. */
-const REFERENCE_EXCLUDED_SECTION_IDS = new Set<string>(["ragEvidence"]);
+/** Legacy section id from pre–professional-context embeddings (never cite). */
+const REFERENCE_LEGACY_EXCLUDED_SECTION_IDS = new Set<string>(["ragEvidence"]);
 
-function isConcreteEvidenceChunk(chunk: EmbeddingChunk): boolean {
+function isReferenceEligibleChunk(chunk: EmbeddingChunk): boolean {
   const sectionId = chunk.metadata?.sectionId?.trim();
   if (!sectionId) return true;
-  return !REFERENCE_EXCLUDED_SECTION_IDS.has(sectionId);
+  return !REFERENCE_LEGACY_EXCLUDED_SECTION_IDS.has(sectionId);
 }
 
 /**
- * Chunks eligible for the post-response References section (excludes rag-evidence).
+ * Chunks eligible for the post-response References section (includes
+ * `professionalContext`; excludes legacy `ragEvidence` only).
  */
 export function filterChunksForReferenceMatching(
   chunks: readonly EmbeddingChunk[]
 ): EmbeddingChunk[] {
-  return chunks.filter(isConcreteEvidenceChunk);
+  return chunks.filter(isReferenceEligibleChunk);
 }
 
 /**
@@ -95,8 +99,9 @@ function parseLocaleAndScrollTargetFromEmbeddingChunkId(
 
 /**
  * Extracts the most concrete claims from a streamed assistant response, matches
- * each against **concrete** portfolio chunks (experience, impact, summary, etc. —
- * not `ragEvidence` editorial sections) via cosine similarity, and returns a
+ * each against portfolio chunks (experience, impact, professional context, etc.)
+ * via cosine similarity, preferring chunks from the same RAG retrieval set when
+ * scores are close, and returns a
  * `## References` markdown block. Low scores add a caveat; no concrete chunk
  * yields a manual-review flag.
  *
@@ -107,7 +112,8 @@ export async function buildReferencesMarkdown(
   openai: OpenAiClient,
   assistantText: string,
   chunks: readonly EmbeddingChunk[],
-  navLocale: RecruiterNavLocale
+  navLocale: RecruiterNavLocale,
+  retrievedChunks: readonly EmbeddingChunk[] = []
 ): Promise<string> {
   const trimmed = assistantText.trim();
   if (!trimmed || RECRUITER_OFF_TOPIC_BRIEF_HEADING_REGEX.test(trimmed))
@@ -149,9 +155,14 @@ export async function buildReferencesMarkdown(
   }
 
   const concreteChunks = filterChunksForReferenceMatching(chunks);
+  const retrievedIds = new Set(retrievedChunks.map((c) => c.id));
   const items: ReferenceItem[] = claims.map((claim, i) => ({
     claim,
-    ...findBestMatch(concreteChunks, embeddings[i]),
+    ...findBestMatchPreferringRetrieved(
+      concreteChunks,
+      retrievedIds,
+      embeddings[i]
+    ),
   }));
 
   return renderReferencesMarkdown(items, navLocale, gaps);
@@ -175,9 +186,9 @@ export function splitSentencesForTest(text: string): string[] {
 }
 
 function buildClaimExtractionPrompt(assistantText: string): string {
-  return `Extract the most concrete positive evidence-style claims AND important gaps from this assessment.
+  return `Extract the most concrete positive evidence-style claims AND important portfolio-evidence gaps from this assessment.
 
-**claims** — a specific **positive** factual statement about what the candidate demonstrably did, built, owned, or led — something that can be verified by a portfolio source.
+**claims** — a specific **positive** factual statement about what the portfolio evidence says the candidate did, built, owned, led, communicated, aligned, or delivered — something that can be verified by a portfolio source.
 
 Do NOT put these in claims:
 - Absence claims, gap statements, or negative assessments (e.g. "Golang ownership is not evidenced", "no evidence of X", "X is missing from the portfolio", "X is not found").
@@ -189,24 +200,27 @@ Examples of good claims:
 - "Production fintech engineering at Klarna"
 - "Architectural ownership of distributed workflow orchestration"
 - "Cross-functional collaboration with product and infrastructure teams"
+- "Written and oral English communication through specifications, tickets, workshops, and stakeholder reporting"
 - "Observability and SLO practice in high-traffic systems"
 
-**gaps** — short labels for important skills, experiences, or hard constraints the assessment identifies as **missing, not evidenced, or not demonstrated** in the portfolio. These are the decisive gaps that limit the score or constitute practical fit risks.
+**gaps** — short, neutral labels for important skills, experiences, or hard constraints that were **not found in the retrieved portfolio evidence** and materially limit the score or require early validation. Phrase gaps as portfolio evidence gaps, not as final judgments about the candidate's real-world ability.
 
 Examples of good gaps:
-- "Production Golang ownership"
-- "Go runtime/concurrency optimization"
-- "German fluency"
-- "Formal Staff-level RFC author/reviewer scope"
+- "Production Golang ownership not found in retrieved portfolio evidence"
+- "Go runtime/concurrency optimization not shown in excerpts"
+- "German fluency not found in retrieved portfolio evidence"
+- "Formal Staff-level RFC author/reviewer scope not shown in excerpts"
 
 Do NOT put in gaps:
-- Items that are evidenced (even partially).
+- Items that are evidenced, even partially, by practical senior-engineering evidence such as specifications, tickets, RFC-style write-ups, workshops, stakeholder reporting, brainstorm sessions, remote collaboration, rollout ownership, production feedback loops, architecture ownership, or regulated-domain delivery.
 - Generic weaknesses not specific to this assessment.
+- Verdict-like labels such as "unproven", "failed to demonstrate", "lacks", "not qualified", "weak", or "deficient".
+- Soft omissions that did not materially affect the score or recommendation.
 
 Constraints:
 - Always return both top-level arrays: \`claims\` and \`gaps\`. Use an empty array when there are no important gaps.
 - Return at most ${REFERENCE_MAX_CLAIMS} claims and at most ${REFERENCE_MAX_CLAIMS} gaps.
-- One factual unit per entry, short and self-contained.
+- One factual unit per entry, short and self-contained; use light evidence-assistant wording.
 - Use the language of the assessment.
 
 Assessment:
@@ -230,6 +244,30 @@ export function findBestMatch(
     }
   }
   return { chunk: bestChunk, score: bestChunk ? bestScore : 0 };
+}
+
+/**
+ * Picks the best chunk for a claim, preferring RAG-retrieved chunks when their
+ * score is within {@link REFERENCE_RETRIEVAL_PREFERENCE_SCORE_DELTA} of global best.
+ */
+export function findBestMatchPreferringRetrieved(
+  concreteChunks: readonly EmbeddingChunk[],
+  retrievedIds: ReadonlySet<string>,
+  queryEmbedding: number[]
+): MatchResult {
+  const global = findBestMatch(concreteChunks, queryEmbedding);
+  if (retrievedIds.size === 0) return global;
+
+  const fromRetrieval = concreteChunks.filter((c) => retrievedIds.has(c.id));
+  if (fromRetrieval.length === 0) return global;
+
+  const local = findBestMatch(fromRetrieval, queryEmbedding);
+  if (!local.chunk) return global;
+  if (!global.chunk) return local;
+
+  const scoreDelta = global.score - local.score;
+  if (scoreDelta <= REFERENCE_RETRIEVAL_PREFERENCE_SCORE_DELTA) return local;
+  return global;
 }
 
 /**
@@ -310,6 +348,12 @@ export function renderReferencesMarkdown(
 
   if (gaps.length > 0) {
     lines.push(`## ${L.notEvidencedHeading}`, "");
+    lines.push(
+      navLocale === "en"
+        ? "These items were not found in the retrieved portfolio evidence and may be worth validating early:"
+        : L.intro,
+      ""
+    );
     for (const gap of gaps) {
       lines.push(`- ${gap}`);
     }
@@ -334,17 +378,21 @@ function formatSourceLabel(
 }
 
 /**
- * Deep link to the static portfolio page section that produced this chunk
- * (same convention as search / embeddings: `/<locale>#<scrollTargetId>`).
+ * Deep link to the static page section that produced this chunk
+ * (`/<locale>#…` for portfolio sections; professional-context uses its route).
  */
 function buildChunkSourceHref(chunk: EmbeddingChunk): string | null {
   let locale = chunk.metadata?.locale?.trim();
   let scrollTargetId = chunk.metadata?.scrollTargetId?.trim();
+  const sectionId = chunk.metadata?.sectionId?.trim();
   if (!locale || !scrollTargetId) {
     const parsed = parseLocaleAndScrollTargetFromEmbeddingChunkId(chunk.id);
     if (!parsed) return null;
     locale = parsed.locale;
     scrollTargetId = parsed.scrollTargetId;
+  }
+  if (sectionId === PROFESSIONAL_CONTEXT_SECTION_ID) {
+    return `/${locale}/${RECRUITER_PROFESSIONAL_CONTEXT_ROUTE}#${scrollTargetId}`;
   }
   return `/${locale}#${scrollTargetId}`;
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   filterChunksForReferenceMatching,
   findBestMatch,
+  findBestMatchPreferringRetrieved,
   referenceSupportLevelKey,
   renderReferencesMarkdown,
   buildClaimExtractionPromptForTest,
@@ -24,15 +25,27 @@ const klarnaChunk: EmbeddingChunk = {
   },
 };
 
-const sagaChunk: EmbeddingChunk = {
-  id: "saga",
-  text: "Distributed Systems — Event-Driven Coordination and Failure Isolation. SAGA patterns with deterministic state machines for multi-step workflows.",
+const professionalContextChunk: EmbeddingChunk = {
+  id: "en-section-professional-context-item-0-s0-p0",
+  text: "Technical Leadership — Engineering Practices. Mentored engineers, platform scaffolds, architecture guidance, stakeholder reporting in excellent written and oral English.",
+  embedding: [0, 1, 0],
+  metadata: {
+    locale: "en",
+    sectionId: "professionalContext",
+    title: "Technical Leadership — Engineering Practices and Team Impact",
+    category: "technical-leadership",
+    scrollTargetId: "section-professional-context-item-6",
+  },
+};
+
+const legacyRagEvidenceChunk: EmbeddingChunk = {
+  id: "legacy-rag",
+  text: "Legacy rag-evidence chunk.",
   embedding: [0, 1, 0],
   metadata: {
     locale: "en",
     sectionId: "ragEvidence",
     title: "Distributed Systems",
-    category: "distributed-systems",
     scrollTargetId: "section-rag-evidence-en",
   },
 };
@@ -46,7 +59,7 @@ const titlelessChunk: EmbeddingChunk = {
 describe("findBestMatch", () => {
   it("returns the chunk with the highest cosine similarity", () => {
     const result = findBestMatch(
-      [klarnaChunk, sagaChunk, titlelessChunk],
+      [klarnaChunk, professionalContextChunk, titlelessChunk],
       [0.9, 0.1, 0]
     );
     expect(result.chunk?.id).toBe("klarna");
@@ -124,28 +137,60 @@ describe("renderReferencesMarkdown", () => {
     expect(md).not.toContain("Lacking vector matching evidence");
   });
 
-  it("skips rag-evidence when the best concrete match scores lower than rag would", () => {
-    const ragChunk: EmbeddingChunk = {
-      ...sagaChunk,
-      embedding: [1, 0, 0],
-    };
-    const expChunk: EmbeddingChunk = {
-      ...klarnaChunk,
-      embedding: [0.5, 0.5, 0],
-    };
-    const queryEmbedding = [1, 0, 0];
-    const concrete = filterChunksForReferenceMatching([ragChunk, expChunk]);
-    const result = findBestMatch(concrete, queryEmbedding);
-    expect(result.chunk?.id).toBe("klarna");
-    const md = renderReferencesMarkdown([
-      { claim: "Distributed systems ownership", ...result },
-    ]);
-    expect(md).toContain("section-experience-item-0");
+  it("links professional-context chunks to the professional-context route", () => {
+    const items: ReferenceItem[] = [
+      {
+        claim: "Technical leadership and mentoring",
+        chunk: professionalContextChunk,
+        score: 0.78,
+      },
+    ];
+    const md = renderReferencesMarkdown(items);
+    expect(md).toContain(
+      "[\\[technical-leadership\\]](/en/recruiter-assistant/professional-context#section-professional-context-item-6)"
+    );
     expect(md).not.toContain("section-rag-evidence-en");
   });
 
-  it("renders lacking evidence when the corpus has only rag-evidence chunks", () => {
-    const concrete = filterChunksForReferenceMatching([sagaChunk]);
+  it("includes professionalContext in reference matching pool", () => {
+    const concrete = filterChunksForReferenceMatching([
+      professionalContextChunk,
+      klarnaChunk,
+    ]);
+    expect(concrete.map((c) => c.id)).toContain(
+      "en-section-professional-context-item-0-s0-p0"
+    );
+    const result = findBestMatch(concrete, [0, 1, 0]);
+    expect(result.chunk?.metadata?.sectionId).toBe("professionalContext");
+  });
+
+  it("excludes legacy ragEvidence chunks from reference matching", () => {
+    const concrete = filterChunksForReferenceMatching([legacyRagEvidenceChunk]);
+    expect(concrete).toHaveLength(0);
+  });
+
+  it("prefers retrieved chunk when within score delta of global best", () => {
+    const retrieved: EmbeddingChunk = {
+      ...professionalContextChunk,
+      embedding: [0.92, 0.38, 0],
+    };
+    const other: EmbeddingChunk = {
+      ...klarnaChunk,
+      embedding: [0.95, 0.31, 0],
+    };
+    const query = [1, 0, 0];
+    const concrete = filterChunksForReferenceMatching([retrieved, other]);
+    const retrievedIds = new Set([retrieved.id]);
+    const biased = findBestMatchPreferringRetrieved(
+      concrete,
+      retrievedIds,
+      query
+    );
+    expect(biased.chunk?.id).toBe(retrieved.id);
+  });
+
+  it("renders lacking evidence when no eligible chunks exist", () => {
+    const concrete = filterChunksForReferenceMatching([legacyRagEvidenceChunk]);
     const result = findBestMatch(concrete, [1, 0, 0]);
     expect(result.chunk).toBeNull();
     const md = renderReferencesMarkdown([
@@ -157,11 +202,14 @@ describe("renderReferencesMarkdown", () => {
 
   it("falls back to sectionId or generic label when category is missing", () => {
     const noCategoryChunk: EmbeddingChunk = {
-      ...sagaChunk,
+      id: "impact-no-cat",
+      text: "Impact narrative without category metadata.",
+      embedding: [0, 1, 0],
       metadata: {
         locale: "en",
         sectionId: "impact",
         title: "Architectural ownership",
+        scrollTargetId: "section-impact-item-1",
       },
     };
     const items: ReferenceItem[] = [
@@ -169,7 +217,8 @@ describe("renderReferencesMarkdown", () => {
       { claim: "Untyped content", chunk: titlelessChunk, score: 0.55 },
     ];
     const md = renderReferencesMarkdown(items);
-    expect(md).toContain("[impact] Architectural ownership");
+    expect(md).toContain("Architectural ownership");
+    expect(md).toContain("section-impact-item-1");
     expect(md).toContain("Portfolio source");
   });
 
