@@ -10,8 +10,8 @@
     "ariaLabel": "Cerca contenuti del sito"
   },
   "RecruiterAssistant": {
-    "title": "Assistente IA per recruiter",
-    "subtitle": "Valutazione tecnica da evidenze del portfolio — copertura dei requisiti, punteggio con tetti e focus colloquio.",
+    "title": "Briefing di aderenza del candidato",
+    "subtitle": "Analisi basata sul recupero dell'adeguatezza tecnica, delle capacità ingegneristiche e dei segnali di assunzione dalle evidenze del portfolio.",
     "briefingLabel": "Briefing di aderenza del candidato",
     "copyBriefing": "Copia",
     "copyBriefingCopied": "Copiato",

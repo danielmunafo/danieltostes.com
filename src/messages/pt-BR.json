@@ -10,8 +10,8 @@
     "ariaLabel": "Buscar conteúdo do site"
   },
   "RecruiterAssistant": {
-    "title": "Assistente de IA para recrutadores",
-    "subtitle": "Avaliação técnica com base no portfólio — cobertura de requisitos, pontuação com tetos e sinais para entrevista.",
+    "title": "Briefing de aderência do candidato",
+    "subtitle": "Análise fundamentada em recuperação sobre aderência técnica, capacidade de engenharia e sinais de contratação com base em evidências do portfólio.",
     "briefingLabel": "Briefing de aderência ao candidato",
     "copyBriefing": "Copiar",
     "copyBriefingCopied": "Copiado",

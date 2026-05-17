@@ -10,8 +10,8 @@
     "ariaLabel": "Search site content"
   },
   "RecruiterAssistant": {
-    "title": "AI Recruiter Assistant",
-    "subtitle": "Technical evaluation from portfolio evidence — requirement coverage, capped match score, and interview signals.",
+    "title": "Candidate Fit Briefing",
+    "subtitle": "Retrieval-grounded analysis of technical fit, engineering capability, and hiring signals from portfolio evidence.",
     "briefingLabel": "Candidate fit briefing",
     "copyBriefing": "Copy",
     "copyBriefingCopied": "Copied",

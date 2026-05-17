@@ -10,8 +10,8 @@
     "ariaLabel": "Buscar contenido del sitio"
   },
   "RecruiterAssistant": {
-    "title": "Asistente de IA para reclutadores",
-    "subtitle": "Evaluación técnica desde evidencias del portfolio — cobertura de requisitos, puntuación con techos y foco de entrevista.",
+    "title": "Briefing de encaje del candidato",
+    "subtitle": "Análisis fundamentado en recuperación del encaje técnico, la capacidad de ingeniería y las señales de contratación a partir de evidencias del portfolio.",
     "briefingLabel": "Briefing de encaje del candidato",
     "copyBriefing": "Copiar",
     "copyBriefingCopied": "Copiado",
