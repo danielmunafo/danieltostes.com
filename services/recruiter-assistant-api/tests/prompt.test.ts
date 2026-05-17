@@ -401,7 +401,9 @@ describe("buildRecruiterPitchSystemPrompt", () => {
       "Do **not** output **Strong pursue** or **Pursue** when **multiple**"
     );
     expect(s).toContain("required spoken language or other practical gate");
-    expect(s).toContain("not** a strong match for the role **as written**");
+    expect(s).toContain(
+      "does not confirm the role's hard-gate requirements as written"
+    );
   });
 
   it("labels mandatory language and stack gaps as Major in Main Risks", () => {
