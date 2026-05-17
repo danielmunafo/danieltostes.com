@@ -1,9 +1,39 @@
 import { describe, expect, it } from "vitest";
 import {
+  hasBestPositioningAngleSectionStarted,
   splitBriefingMarkdown,
   splitExecutiveBriefMarkdown,
   splitPitchAndReferencesMarkdown,
 } from "./split-briefing-markdown";
+
+describe("hasBestPositioningAngleSectionStarted", () => {
+  it("is false before the localized h1 line is complete", () => {
+    expect(
+      hasBestPositioningAngleSectionStarted(
+        "# Verdict\nGo\n\n# Best Positioning",
+        "en"
+      )
+    ).toBe(false);
+  });
+
+  it("is true once the English heading line is present", () => {
+    expect(
+      hasBestPositioningAngleSectionStarted(
+        "# Verdict\n\n# Best Positioning Angle\n\nParagraph.",
+        "en"
+      )
+    ).toBe(true);
+  });
+
+  it("uses Italian heading for it locale", () => {
+    expect(
+      hasBestPositioningAngleSectionStarted(
+        "# Verdetto\n\n# Miglior angolo di posizionamento\n",
+        "it"
+      )
+    ).toBe(true);
+  });
+});
 
 describe("splitPitchAndReferencesMarkdown", () => {
   it("splits pitch from localized references heading", () => {

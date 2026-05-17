@@ -628,7 +628,8 @@ export async function handleChatRequest(
           openai,
           assistantText,
           chunksForNavLocale,
-          navLocale
+          navLocale,
+          topChunks
         );
         if (referencesMd) {
           dataStream.write(

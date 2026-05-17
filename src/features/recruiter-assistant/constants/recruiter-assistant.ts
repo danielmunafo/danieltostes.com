@@ -43,6 +43,24 @@ export const RECRUITER_TERMS_ACCEPTANCE_STORAGE_KEY =
   "danieltostes.recruiterAssistant.termsAccepted.v4" as const;
 
 /**
+ * sessionStorage: recruiter chat messages and UI state so returning from
+ * in-app reference pages (e.g. professional-context) restores the session.
+ */
+export const RECRUITER_CHAT_SESSION_STORAGE_KEY =
+  "danieltostes.recruiterAssistant.chatSession.v1" as const;
+
+/** Static route segment for professional-context evidence page (no leading slash). */
+export const RECRUITER_PROFESSIONAL_CONTEXT_ROUTE =
+  "recruiter-assistant/professional-context" as const;
+
+/**
+ * DOM id prefix for each `##` section on the professional-context page.
+ * Must match `scrollTargetId` in `build-embeddings.mjs` (`…-item-${sidx}`).
+ */
+export const PROFESSIONAL_CONTEXT_SCROLL_TARGET_PREFIX =
+  "section-professional-context-item" as const;
+
+/**
  * localStorage: incremented when the API rejects input as off-topic / not recruiting
  * (`off_topic`, `intent_unclear`). At `RECRUITER_BAD_PROMPT_MAX_STRIKES`, the assistant locks out.
  */
@@ -114,6 +132,9 @@ export const RECRUITER_COMPOSER_EXIT_TRANSLATE_Y_PX = 16;
 /** Approximate reCAPTCHA v2 checkbox widget size (px) for loading placeholders. */
 export const RECRUITER_CHECKBOX_RECAPTCHA_WIDTH_PX = 304;
 export const RECRUITER_CHECKBOX_RECAPTCHA_HEIGHT_PX = 78;
+
+/** Extra skeleton visibility after script ready so the checkbox can paint in. */
+export const RECRUITER_CHECKBOX_RECAPTCHA_SKELETON_HOLD_MS = 2000;
 
 /** Pixels of window scroll over which the “scroll for more” cue fades out. */
 export const ASSISTANT_SCROLL_CUE_FADE_DISTANCE_PX = 160;

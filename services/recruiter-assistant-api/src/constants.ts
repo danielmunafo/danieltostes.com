@@ -127,6 +127,19 @@ export const REFERENCE_MATCH_THRESHOLD = 0.4;
 /** Max characters quoted from a portfolio chunk in the References section. */
 export const REFERENCE_EXCERPT_CHARS = 220;
 
+/** Embedding `metadata.sectionId` for professional-context thematic evidence. */
+export const PROFESSIONAL_CONTEXT_SECTION_ID = "professionalContext" as const;
+
+/** URL path segment (no leading slash) for professional-context deep links. */
+export const RECRUITER_PROFESSIONAL_CONTEXT_ROUTE =
+  "recruiter-assistant/professional-context" as const;
+
+/**
+ * When a retrieved chunk is within this cosine delta of the global best match,
+ * References prefer the retrieved chunk (keeps citations aligned with RAG context).
+ */
+export const REFERENCE_RETRIEVAL_PREFERENCE_SCORE_DELTA = 0.03;
+
 /** Max tokens for the claim-extraction structured call (post-stream). */
 export const CLAIM_EXTRACTION_MAX_TOKENS = 512;
 

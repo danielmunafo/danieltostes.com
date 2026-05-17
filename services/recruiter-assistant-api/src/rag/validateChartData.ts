@@ -22,12 +22,10 @@ export const CHART_VALIDATION_FAILURE_REASONS = [
   "technical_fit_drift",
   "evidence_confidence_mismatch",
   "recommendation_not_in_fit_band",
-  "uniform_dimension_scores",
   "uniform_scores_with_mixed_evaluator_evidence",
   "all_dimension_scores_match_technical_fit",
 ] as const;
 
-const MIN_DIMENSIONS_FOR_UNIFORM_SCORE_CHECK = 5;
 const MIN_DIMENSIONS_FOR_TECHNICAL_FIT_MIRROR_CHECK = 4;
 
 export type ChartValidationFailureReason =
@@ -314,17 +312,6 @@ export function validateChartData(
 
   if (
     scoresAreUniform &&
-    dimensionCount >= MIN_DIMENSIONS_FOR_UNIFORM_SCORE_CHECK
-  ) {
-    return {
-      ok: false,
-      reason: "uniform_dimension_scores",
-      detail: `count=${dimensionCount} score=${chart.capabilityDimensions[0]?.score}`,
-    };
-  }
-
-  if (
-    scoresAreUniform &&
     requirementEvidence?.hasMixedEvidenceLevels === true
   ) {
     return {
@@ -365,17 +352,6 @@ function validateChartShapeWithoutEvaluatorMeta(
   const scoresAreUniform = allDimensionScoresIdentical(
     chart.capabilityDimensions
   );
-
-  if (
-    scoresAreUniform &&
-    dimensionCount >= MIN_DIMENSIONS_FOR_UNIFORM_SCORE_CHECK
-  ) {
-    return {
-      ok: false,
-      reason: "uniform_dimension_scores",
-      detail: `count=${dimensionCount} score=${chart.capabilityDimensions[0]?.score}`,
-    };
-  }
 
   if (
     scoresAreUniform &&

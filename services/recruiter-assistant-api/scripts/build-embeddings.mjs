@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Builds a single embeddings JSON file from locale messages, impact markdown,
- * and rag-evidence markdown (semantic section chunking + soft-break slicing).
+ * and professional-context markdown (semantic section chunking + soft-break slicing).
  * Run from repo root: `node services/recruiter-assistant-api/scripts/build-embeddings.mjs`
  * Requires OPENAI_API_KEY.
  */
@@ -19,7 +19,13 @@ const REPO_ROOT = resolve(__dirname, "..", "..", "..");
 const LOCALES = ["en", "pt-BR", "es", "it"];
 const MESSAGES_DIR = join(REPO_ROOT, "src", "messages");
 const CONTENT_DIR = join(REPO_ROOT, "public", "content", "impact");
-const RAG_EVIDENCE_DIR = join(REPO_ROOT, "public", "content", "rag-evidence");
+const PROFESSIONAL_CONTEXT_DIR = join(
+  REPO_ROOT,
+  "public",
+  "content",
+  "recruiter-assistant",
+  "professional-context"
+);
 const CHUNK_MAX_CHARS = 900;
 const EMBEDDING_MODEL = "text-embedding-3-small";
 const EMBEDDINGS_JSON_PATH_KEY = "EMBEDDINGS_JSON_PATH";
@@ -87,6 +93,37 @@ function collectStrings(val, out = []) {
   return out;
 }
 
+/** Keys mirrored in ExperienceSection CONTEXT_KEYS for labeled RAG context. */
+const EXPERIENCE_CONTEXT_KEYS = [
+  "teamSize",
+  "companySize",
+  "sector",
+  "domain",
+  "compliance",
+  "regime",
+  "workMode",
+  "location",
+];
+
+function formatLabeledRoleContext(context, contextLabels) {
+  if (!context || typeof context !== "object") return "";
+  return EXPERIENCE_CONTEXT_KEYS.map((key) => {
+    const value = context[key];
+    const label = contextLabels?.[key];
+    if (!value || !label) return "";
+    return `${label}: ${value}`;
+  })
+    .filter(Boolean)
+    .join(" ");
+}
+
+function experienceRoleEmbeddingText(role, contextLabels) {
+  const { context, ...rest } = role;
+  const body = collectStrings(rest).filter(Boolean).join(" ");
+  const labeledContext = formatLabeledRoleContext(context, contextLabels);
+  return [body, labeledContext].filter(Boolean).join(" ");
+}
+
 const SECTION_SPEC = [
   {
     sectionId: "summary",
@@ -124,6 +161,7 @@ function stripMarkdownForSearch(md) {
 
 function buildEntriesFromSpec(messages) {
   const entries = [];
+  const experienceContextLabels = messages.Experience?.contextLabels;
   for (const spec of SECTION_SPEC) {
     const value = getAtPath(messages, spec.path);
     if (value === undefined) continue;
@@ -133,11 +171,15 @@ function buildEntriesFromSpec(messages) {
 
     if (spec.type === "array" && Array.isArray(value)) {
       value.forEach((item, i) => {
+        const text =
+          spec.sectionId === "experience"
+            ? experienceRoleEmbeddingText(item, experienceContextLabels)
+            : collectStrings(item).filter(Boolean).join(" ");
         entries.push({
           sectionId: spec.sectionId,
           scrollTargetId: scrollId(i),
           title: titleFrom(item),
-          text: collectStrings(item).filter(Boolean).join(" "),
+          text,
         });
       });
       continue;
@@ -294,26 +336,31 @@ function deriveCategoryFromTitle(title) {
     .replace(/-{2,}/g, "-");
 }
 
-function buildEntriesFromRagEvidence(locale) {
-  const mdPath = join(RAG_EVIDENCE_DIR, `${locale}.md`);
+function buildEntriesFromProfessionalContext(locale) {
+  const mdPath = join(PROFESSIONAL_CONTEXT_DIR, `${locale}.md`);
   if (!existsSync(mdPath)) return [];
   const raw = readFileSync(mdPath, "utf8");
   const sections = getMarkdownSections(raw, 2, 2);
   const entries = [];
-  sections.forEach((sectionText, sidx) => {
+  let itemIndex = 0;
+  for (const sectionText of sections) {
+    const firstLine = sectionText.split(/\r?\n/)[0]?.trim() ?? "";
+    const isThematicH2 = /^##\s/.test(firstLine);
+    if (!isThematicH2) continue;
     const stripped = stripMarkdownForSearch(sectionText);
-    if (!stripped) return;
+    if (!stripped) continue;
     const title =
-      titleFromSectionFirstLine(sectionText) || "Portfolio AI workflow";
+      titleFromSectionFirstLine(sectionText) || "Professional context";
     entries.push({
-      sectionId: "ragEvidence",
-      scrollTargetId: `section-rag-evidence-${locale}`,
-      subSection: sidx,
+      sectionId: "professionalContext",
+      scrollTargetId: `section-professional-context-item-${itemIndex}`,
+      subSection: itemIndex,
       title,
       text: stripped,
       category: deriveCategoryFromTitle(title),
     });
-  });
+    itemIndex += 1;
+  }
   return entries;
 }
 
@@ -344,8 +391,8 @@ async function main() {
     const fromSpec = buildEntriesFromSpec(messages);
     const impactItems = messages.Summary?.impact;
     const fromMd = buildEntriesFromImpactMd(locale, impactItems);
-    const fromRag = buildEntriesFromRagEvidence(locale);
-    for (const entry of [...fromSpec, ...fromMd, ...fromRag]) {
+    const fromProfessionalContext = buildEntriesFromProfessionalContext(locale);
+    for (const entry of [...fromSpec, ...fromMd, ...fromProfessionalContext]) {
       const combined = `${entry.title}\n${entry.text}`.trim();
       const parts = sliceIntoChunksPreferSoftBreak(combined, CHUNK_MAX_CHARS);
       const sub = entry.subSection ?? 0;

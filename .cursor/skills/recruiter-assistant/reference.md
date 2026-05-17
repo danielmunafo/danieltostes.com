@@ -19,6 +19,8 @@
 | Local dev server | `services/recruiter-assistant-api/scripts/dev-server.mjs` |
 | Terms route | `src/app/[locale]/recruiter-assistant/terms/page.tsx` |
 | Terms markdown | `public/content/recruiter-assistant/terms/<locale>.md` |
+| Professional context route | `src/app/[locale]/recruiter-assistant/professional-context/page.tsx` |
+| Professional context markdown | `public/content/recruiter-assistant/professional-context/<locale>.md` |
 | CI (API) | `.github/workflows/recruiter-api.yml` |
 | Site CI var | `.github/workflows/ci.yml` (`NEXT_PUBLIC_RECRUITER_API_URL` / `vars.RECRUITER_API_URL`) |
 

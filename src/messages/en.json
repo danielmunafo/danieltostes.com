@@ -34,7 +34,6 @@
     "termsModalDescription": "You must agree before this text is submitted. The <terms>full terms and fair use</terms> explain what happens when you send it.",
     "termsModalAccept": "Agree and send",
     "termsModalCancel": "Cancel",
-    "termsModalCaptchaHint": "Complete the check below to confirm you are not a bot.",
     "captchaFailed": "Security check failed. Please try again.",
     "captchaModalTitle": "Security check",
     "captchaModalContinue": "Continue",
@@ -60,6 +59,13 @@
     "backToHome": "Back to portfolio",
     "loadError": "Terms could not be loaded. Refresh the page or try again later.",
     "loading": "Loading terms"
+  },
+  "RecruiterAssistantProfessionalContext": {
+    "metaTitle": "Professional context — portfolio evidence",
+    "metaDescription": "Thematic evidence themes used by the AI Recruiter Assistant for retrieval and reference citations.",
+    "backToHome": "Back to portfolio",
+    "loadError": "Professional context could not be loaded. Refresh the page or try again later.",
+    "loading": "Loading professional context"
   },
   "ThemeToggle": {
     "light": "Switch to dark mode",
@@ -140,7 +146,10 @@
       "companySize": "Company Size",
       "sector": "Sector",
       "domain": "Domain",
-      "compliance": "Compliance"
+      "compliance": "Compliance",
+      "regime": "Employment",
+      "workMode": "Work Mode",
+      "location": "Location"
     },
     "roles": [
       {
@@ -160,7 +169,10 @@
           "companySize": "500+",
           "sector": "E-commerce",
           "domain": "Customer Support",
-          "compliance": "PII, GDPR"
+          "compliance": "PII, GDPR",
+          "regime": "contractor",
+          "workMode": "remote",
+          "location": "EU"
         }
       },
       {
@@ -205,7 +217,10 @@
           "companySize": "Up to 100",
           "sector": "Banking & Fintech",
           "domain": "Banking, Invoicing & Enterprise Onboarding",
-          "compliance": "PII, GDPR, KYC"
+          "compliance": "PII, GDPR, KYC",
+          "regime": "Employee",
+          "workMode": "Hybrid",
+          "location": "EU"
         }
       },
       {
@@ -226,7 +241,10 @@
           "companySize": "5,000+",
           "sector": "Banking/Fintech & E-commerce",
           "domain": "Marketing, Transactional Messaging & Personalization",
-          "compliance": "PII, PCI, GDPR"
+          "compliance": "PII, PCI, GDPR",
+          "regime": "Employee",
+          "workMode": "Remote",
+          "location": "EU"
         }
       },
       {
@@ -249,7 +267,10 @@
           "teamSize": "10",
           "companySize": "5,000+",
           "sector": "Taxes & E-commerce",
-          "domain": "Seller Tax Experience, Backoffice & Platform Engineering"
+          "domain": "Seller Tax Experience, Backoffice & Platform Engineering",
+          "regime": "Employee",
+          "workMode": "Remote",
+          "location": "Brazil"
         }
       },
       {
@@ -268,7 +289,10 @@
           "companySize": "5,000+",
           "sector": "Banking",
           "domain": "Overdraft, Mobile Enrollment & Batch Operations",
-          "compliance": "PII, PCI"
+          "compliance": "PII, PCI",
+          "regime": "Employee",
+          "workMode": "Remote",
+          "location": "Brazil"
         }
       },
       {
@@ -287,7 +311,10 @@
           "companySize": "1,000+",
           "sector": "Banking & Fintech",
           "domain": "Customer Support, Diagnostics & Incident Response",
-          "compliance": "PII, PCI"
+          "compliance": "PII, PCI",
+          "regime": "Employee",
+          "workMode": "On Site",
+          "location": "Brazil"
         }
       },
       {
@@ -307,7 +334,10 @@
           "companySize": "Up to 30",
           "sector": "Pharmaceutical Industry",
           "domain": "System Validation, QA Automation & Internal Tools",
-          "compliance": "GAMP & FDA Systems Regulations"
+          "compliance": "GAMP & FDA Systems Regulations",
+          "regime": "Employee",
+          "workMode": "On Site",
+          "location": "Brazil"
         }
       }
     ],
@@ -326,11 +356,21 @@
       "edu": [
         {
           "degree": "Technologist in Systems Analysis and Development",
-          "institution": "FATEC José Crespo Gonzales"
+          "institution": "FATEC José Crespo Gonzales",
+          "context": {
+            "duration": "4y",
+            "level": "Superior Degree",
+            "location": "Brazil"
+          }
         },
         {
           "degree": "Technician in Informatics",
-          "institution": "ETEC Fernando Prestes"
+          "institution": "ETEC Fernando Prestes",
+          "context": {
+            "duration": "1.5y",
+            "level": "Technical Degree",
+            "location": "Brazil"
+          }
         }
       ]
     },

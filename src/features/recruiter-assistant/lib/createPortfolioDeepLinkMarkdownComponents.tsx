@@ -5,23 +5,37 @@ import NextLink from "next/link";
 import type { Components } from "react-markdown";
 import type { MouseEvent } from "react";
 import { isValidLocale, LOCALES, type Locale } from "@/i18n/request";
+import { flushRecruiterChatSession } from "./recruiter-chat-session-flush";
 
-const LOCALE_PATH_PATTERN = new RegExp(
+const LOCALE_PORTFOLIO_HASH_PATTERN = new RegExp(
   `^\\/(${LOCALES.join("|")})(#[\\w-]*)?$`
 );
 
+const LOCALE_RECRUITER_README_PATTERN = new RegExp(
+  `^\\/(${LOCALES.join("|")})\\/recruiter-assistant\\/(terms|professional-context)(#[\\w-]*)?$`
+);
+
 /**
- * Rewrites `/<locale>#hash` portfolio deep links to the visitor's active locale
- * so links stay in-language when chunk metadata used another locale.
+ * Rewrites `/<locale>#hash` and `/<locale>/recruiter-assistant/…#hash` deep links
+ * to the visitor's active locale so links stay in-language when chunk metadata
+ * used another locale.
  */
 export function rewritePortfolioDeepLinkHref(
   href: string,
   currentLocale: Locale
 ): string {
-  const match = LOCALE_PATH_PATTERN.exec(href);
-  if (!match) return href;
-  const hash = match[2] ?? "";
-  return `/${currentLocale}${hash}`;
+  const portfolioMatch = LOCALE_PORTFOLIO_HASH_PATTERN.exec(href);
+  if (portfolioMatch) {
+    const hash = portfolioMatch[2] ?? "";
+    return `/${currentLocale}${hash}`;
+  }
+  const readmeMatch = LOCALE_RECRUITER_README_PATTERN.exec(href);
+  if (readmeMatch) {
+    const subroute = readmeMatch[2];
+    const hash = readmeMatch[3] ?? "";
+    return `/${currentLocale}/recruiter-assistant/${subroute}${hash}`;
+  }
+  return href;
 }
 
 function normalizePortfolioPathname(pathname: string): string {
@@ -90,6 +104,7 @@ export function createPortfolioDeepLinkMarkdownComponents(
             underline="hover"
             className={className}
             onClick={(e) => {
+              flushRecruiterChatSession();
               scrollToSameHashPortfolioTarget(e, resolvedHref);
               propsOnClick?.(e);
             }}

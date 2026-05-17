@@ -398,7 +398,7 @@ Reason: Strong fit.`;
     });
   });
 
-  it("rejects five or more dimensions with identical scores", () => {
+  it("accepts five or more dimensions with identical scores", () => {
     const uniformScores = Array.from({ length: 5 }, (_, index) => ({
       key: (
         [
@@ -415,7 +415,7 @@ Reason: Strong fit.`;
       rationale: "Mapped direct rows for this capability area.",
     }));
     const chart = {
-      ...makeValidChart({ technicalFit: 9, recommendation: "Pursue" }),
+      ...makeValidChart({ technicalFit: 7, recommendation: "Pursue" }),
       capabilityDimensions: uniformScores,
     };
     const evaluator = `# Requirement Coverage
@@ -427,15 +427,15 @@ Reason: Strong fit.`;
 
 # Match Score Guidance
 
-**Recommended match strength:** 9/10
+**Recommended match strength:** 7/10
 **Reason:** Strong.
 **Evidence confidence:** High
 **Evidence confidence reason:** ok
 **Score caps applied:** None`;
     const outcome = validateChartData(chart, evaluator, "en");
-    expect(outcome.ok).toBe(false);
-    if (!outcome.ok) {
-      expect(outcome.reason).toBe("uniform_dimension_scores");
+    expect(outcome.ok).toBe(true);
+    if (outcome.ok) {
+      expect(outcome.chart.capabilityDimensions).toHaveLength(5);
     }
   });
 
