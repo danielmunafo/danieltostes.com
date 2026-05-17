@@ -142,19 +142,12 @@ export async function waitForRecruiterPipelineComplete(
     log.getByRole("button", { name: EVIDENCE_REVIEW_LABEL })
   ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
 
-  // Loaded chart UI only (skeleton / pitch markdown must not satisfy this).
+  // Loaded chart only: skeleton uses briefingMatchProfileLabel, not this heading.
   await expect(
-    log
-      .filter({
-        has: log.getByRole("heading", { name: ASSESSMENT_SUMMARY_HEADING }),
-      })
-      .filter({ has: log.getByText(TECHNICAL_FIT_LABEL) })
+    log.getByRole("heading", { name: ASSESSMENT_SUMMARY_HEADING })
   ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
 
   const summary = assessmentSummaryRegion(page);
-  await expect(
-    summary.getByRole("heading", { name: ASSESSMENT_SUMMARY_HEADING })
-  ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
   await expect(summary.getByText(TECHNICAL_FIT_LABEL)).toBeVisible({
     timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS,
   });
