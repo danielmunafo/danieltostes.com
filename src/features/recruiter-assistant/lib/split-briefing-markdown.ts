@@ -14,6 +14,14 @@ export const RECRUITER_REFERENCE_SECTION_LINE: Record<string, string> = {
   it: "## Riferimenti",
 };
 
+/** `# …` title per locale (must match API `RECRUITER_EXECUTIVE_BRIEF_HEADINGS.bestPositioning`). */
+export const RECRUITER_BEST_POSITIONING_HEADING: Record<string, string> = {
+  en: "Best Positioning Angle",
+  "pt-BR": "Melhor ângulo de posicionamento",
+  es: "Mejor ángulo de posicionamiento",
+  it: "Miglior angolo di posizionamento",
+};
+
 export type PitchAndReferencesSplit = {
   readonly pitchMarkdown: string;
   readonly referencesMarkdown: string | null;
@@ -29,6 +37,27 @@ function findReferencesHeadingIndex(markdown: string, refLine: string): number {
   const pattern = new RegExp(`^##\\s+${escapeRegExp(headingText)}\\s*$`, "m");
   const match = pattern.exec(markdown);
   return match?.index ?? -1;
+}
+
+function findH1HeadingIndex(markdown: string, title: string): number {
+  const trimmedTitle = title.trim();
+  if (!trimmedTitle) return -1;
+  const pattern = new RegExp(`^#\\s+${escapeRegExp(trimmedTitle)}\\s*$`, "m");
+  const match = pattern.exec(markdown);
+  return match?.index ?? -1;
+}
+
+/**
+ * True once the streamed pitch includes the localized `# Best Positioning Angle` line.
+ */
+export function hasBestPositioningAngleSectionStarted(
+  markdown: string,
+  locale: string
+): boolean {
+  const title =
+    RECRUITER_BEST_POSITIONING_HEADING[locale] ??
+    RECRUITER_BEST_POSITIONING_HEADING.en;
+  return findH1HeadingIndex(markdown, title) !== -1;
 }
 
 /**
