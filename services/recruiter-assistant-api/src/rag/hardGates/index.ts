@@ -6,7 +6,7 @@ export {
   type HardGateRequirementRow,
 } from "./schema.js";
 export { computeHardGateAssessment } from "./computeHardGateAssessment.js";
-export { extractHardGateRows } from "./extractHardGateRows.js";
+export { extractHardGateRows } from "../../recruiterAssistant/agents/hardGates/extractHardGateRows.js";
 export { parseEvaluatorTable } from "./parseEvaluatorTable.js";
 export { parseEvaluatorRecommendedFit } from "./parseEvaluatorRecommendedFit.js";
 export {

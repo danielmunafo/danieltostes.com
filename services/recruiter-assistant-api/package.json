@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/index.cjs --format=cjs --sourcemap",
-    "build:watch": "esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/index.cjs --format=cjs --sourcemap --watch",
+    "build": "esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/index.cjs --format=cjs --sourcemap --loader:.md=text",
+    "build:watch": "esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/index.cjs --format=cjs --sourcemap --loader:.md=text --watch",
     "build:embeddings": "node scripts/build-embeddings.mjs",
     "build:interests-pack": "node scripts/build-interests-pack.mjs",
     "dev": "node scripts/dev-with-watch.mjs",

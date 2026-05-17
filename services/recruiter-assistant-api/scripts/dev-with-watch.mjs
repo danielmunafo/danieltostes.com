@@ -22,6 +22,7 @@ const esbuildArgs = [
   "--outfile=dist/index.cjs",
   "--format=cjs",
   "--sourcemap",
+  "--loader:.md=text",
   "--watch",
 ];
 
