@@ -42,7 +42,7 @@ For a **file map and command cheat sheet**, open [reference.md](reference.md).
 
 1. Confirm whether the change is **UI-only**, **API-only**, **content/embeddings**, or **infra/CI**; read the minimum files from [reference.md](reference.md) for that track.
 2. Respect **security**: do not log secrets or full prompts in production; keep CORS allowlist aligned in prod.
-3. **i18n:** user-visible strings under `RecruiterAssistant` / `RecruiterAssistantTerms` in **all four** `src/messages/*.json` (see `.cursor/rules/i18n.mdc`).
+3. **i18n:** user-visible strings under `RecruiterAssistant` / `RecruiterAssistantTerms` / `RecruiterAssistantProfessionalContext` in **all four** `src/messages/*.json` (see `.cursor/rules/i18n.mdc`).
 4. After edits, run checks listed in **Verification** on the relevant package (root and/or service).
 
 ## Verification
