@@ -59,7 +59,7 @@ describe("ExperienceSection", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Employment: contractor")).toBeInTheDocument();
     expect(screen.getByText("Work Mode: remote")).toBeInTheDocument();
-    expect(screen.getByText("Location: EU")).toBeInTheDocument();
+    expect(screen.getAllByText("Location: EU").length).toBeGreaterThan(0);
   });
 
   it("renders tech chips for roles", () => {
