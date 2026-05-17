@@ -2,24 +2,24 @@
 
 **In vigore dal:** 15 maggio 2026
 
-Questi termini si applicano quando usi l’**Assistente IA per recruiter** su questo sito portfolio (l’“**Assistente**”). Descrivono un uso leale, cosa succede alle informazioni che invii e cosa puoi aspettarti dall’output. **Non** costituiscono consulenza legale; per la tua organizzazione rivolgiti a un professionista abilitato.
+Questi termini si applicano quando usi l’**Assistente IA per recruiter** su questo sito portfolio (l’“**Assistente**”). Descrivono un uso leale, come vengono trattate le informazioni che invii e cosa puoi ragionevolmente aspettarti dall’output. Se la tua organizzazione richiede una revisione legale, rivolgiti a un professionista abilitato.
 
 ## 1. Cos’è l’Assistente
 
-L’Assistente è uno strumento **sperimentale e informativo**. Confronta il testo che fornisci (in genere una job description o un brief da recruiter) con **prove pubbliche del portfolio** recuperate dal software del titolare del sito e genera un riassunto in linguaggio naturale per aiutarti a valutare l’aderenza. **Non** automatizza decisioni di assunzione, verifiche dei precedenti né esiti di conformità.
+L’Assistente è uno strumento **sperimentale e informativo**. Confronta il testo che fornisci (in genere una job description o un brief da recruiter) con **prove pubbliche del portfolio** recuperate dal software del titolare del sito e, quindi, genera un riassunto strutturato in linguaggio naturale per aiutarti a valutare l’aderenza. **Non** automatizza decisioni di assunzione, verifiche dei precedenti né esiti di conformità.
 
-## 2. Come vengono trattati i tuoi input (trasparenza orientata al GDPR)
+## 2. Come vengono trattati i tuoi input
 
-- **Cosa puoi inviare:** Testo che scegli di incollare (ad esempio descrizione del ruolo, responsabilità, requisiti, sede o fascia retributiva). Evita dati personali non necessari su candidati o terzi.
+- **Cosa puoi inviare:** Testo che scegli di incollare (ad esempio descrizione del ruolo, responsabilità, competenze obbligatorie, sede o fascia retributiva). Evita di incollare dati personali non necessari su candidati o terzi. Non inviare informazioni riservate o proprietarie che normalmente non condivideresti con sistemi di IA di terze parti.
 - **Cosa succede tecnicamente:** Il testo viene inviato a un **servizio backend** controllato dal titolare del sito e, per l’inferenza del modello, a **fornitori di IA terzi** (ad esempio OpenAI) secondo i loro termini e l’informativa privacy. Il trattamento è limitato a **produrre una risposta** alla tua richiesta e a far funzionare il servizio (ad esempio sicurezza, rate limit e log di breve durata, secondo la configurazione).
 - **Protezione anti-bot:** Prima di inviare una job description, il sito può chiederti di completare **Google reCAPTCHA** (prevenzione abusi). Il servizio è soggetto all’[Informativa privacy](https://policies.google.com/privacy) e ai [Termini di servizio](https://policies.google.com/terms) di Google.
-- **Conservazione:** Il titolare mira a mantenere la conservazione **minima** (ad esempio elaborazione transitoria e log operativi). La conservazione effettiva dipende dall’hosting e dalle impostazioni del fornitore; non fare affidamento sull’Assistente per conservare o recuperare a lungo termine ciò che invii.
-- **Base giuridica (impostazione tipo SEE/Regno Unito):** A seconda del contesto, il trattamento può basarsi sull’**esecuzione del servizio che richiedi** (rispondere al prompt), **interessi legittimi** (gestire e proteggere una demo portfolio di piccola scala, migliorare l’affidabilità) e, ove richiesto, su altre basi. **Non** inviare categorie particolari di dati personali; se l’incolla include dati sensibili, non usare l’Assistente per quel contenuto.
-- **Trasferimenti internazionali:** I fornitori possono elaborare dati al di fuori del tuo Paese. Ove rilevante possono applicarsi clausole contrattuali standard o altri meccanismi nei programmi del fornitore.
+- **Conservazione:** Il titolare mira a mantenere la conservazione **minima** (ad esempio elaborazione transitoria e log operativi). La conservazione effettiva dipende dall’hosting e dalle impostazioni del fornitore. L’Assistente non è pensato per funzionare come sistema di archiviazione documentale a lungo termine.
+- **Base giuridica (impostazione tipo SEE/Regno Unito):** A seconda del contesto, il trattamento può basarsi sull’**esecuzione del servizio che richiedi** (rispondere al prompt), **interessi legittimi** (gestire e proteggere una demo portfolio di piccola scala, migliorare l’affidabilità) e, ove richiesto, su altre basi. **Le categorie sensibili di dati personali** non devono essere inviate; se l’incolla include dati di categoria particolare, non usare l’Assistente per quel contenuto.
+- **Trasferimenti internazionali:** I fornitori possono elaborare dati al di fuori del tuo Paese. I fornitori terzi possono basarsi su clausole contrattuali standard o meccanismi simili per i trasferimenti internazionali di dati.
 
 ## 3. Uso leale
 
-Accetti di usare l’Assistente in modo **ragionevole** e in buona fede: valutazioni occasionali in stile recruiter o hiring manager, esplorazione di materiale portfolio pubblico e usi simili non abusivi. **Non puoi:** fare scraping o automatizzare l’endpoint ad alto volume; testare o aggirare la sicurezza; tentare prompt injection, jailbreak o esfiltrazione di prompt di sistema o dati non pubblici; usare l’Assistente per generare contenuti illeciti, discriminatori, molesti o fuorvianti; o imporre un carico sproporzionato all’infrastruttura.
+Accetti di usare l’Assistente in modo **ragionevole** e in buona fede: valutazioni occasionali in stile recruiter o hiring manager, esplorazione di materiale portfolio pubblico e usi simili non abusivi. **Non puoi:** fare scraping o automatizzare l’endpoint ad alto volume; testare o aggirare la sicurezza; tentare di aggirare le salvaguardie, estrarre istruzioni nascoste o accedere a dati non pubblici; usare l’Assistente per generare contenuti illeciti, discriminatori, molesti o fuorvianti; o imporre un carico sproporzionato all’infrastruttura.
 
 Il titolare del sito può **applicare limiti di frequenza, bloccare o modificare** la funzione senza preavviso.
 
@@ -35,7 +35,7 @@ Gli output sono **generati da IA** e possono essere incompleti, obsoleti o errat
 
 ## 6. Proprietà intellettuale
 
-I contenuti del portfolio e il branding restano dei rispettivi titolari. Non ricevi alcuna licenza oltre a quella necessaria per leggere le risposte nel browser per il tuo flusso di valutazione.
+I contenuti del portfolio e il branding restano dei rispettivi titolari.
 
 ## 7. Esclusione di garanzie; limitazione di responsabilità
 
@@ -43,7 +43,7 @@ L’Assistente è fornito **“così com’è”**. Nella misura massima consent
 
 ## 8. Modifiche
 
-Questi termini possono essere aggiornati; la data in cima cambierà. L’uso continuato dopo gli aggiornamenti costituisce accettazione dei termini rivisti ove consentito dalla legge.
+Questi termini possono essere aggiornati periodicamente; la data in cima cambierà. L’uso continuato dopo gli aggiornamenti costituisce accettazione dei termini rivisti ove consentito dalla legge.
 
 ## 9. Contatto
 
