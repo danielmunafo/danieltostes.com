@@ -21,7 +21,20 @@ Entregar un **portafolio static-first** (S3 + CloudFront) que aun así soporte u
 
 ### Arquitectura del asistente
 
-![Arquitectura del asistente de reclutamiento: chat en el navegador, AWS Lambda con controles y streaming, APIs de chat y embeddings de OpenAI, bucket S3 con JSON de embeddings.](/content/diagrams/recruiter-assistant-architecture.svg)
+```mermaid
+flowchart LR
+    User[Recruiter browser chat] -->|streaming POST| Lambda[AWS Lambda]
+    Lambda -->|guards + staged prompts| OpenAI[OpenAI chat APIs]
+    Lambda -->|embed query| OpenAI
+    Lambda -->|load index| S3[(S3 embeddings JSON)]
+    Lambda -->|stream response| User
+
+    subgraph StaticSite[Static portfolio site]
+        Site[S3 + CloudFront]
+    end
+
+    User -->|browse| Site
+```
 
 La UI del portafolio sigue sirviéndose como assets estáticos desde S3 y CloudFront; el chat en streaming sigue el camino de Lambda del diagrama.
 

@@ -19,6 +19,7 @@ import { join, relative } from "node:path";
 const CONTENT_DIR = "public/content";
 const DIAGRAMS_DIR = join(CONTENT_DIR, "diagrams");
 const MERMAID_BLOCK_RE = /```mermaid\n([\s\S]*?)```/g;
+const DIAGRAM_IMG_RE = /!\[[^\]]*\]\(\/content\/diagrams\/[^)]+\)/;
 
 /**
  * Derives a flat SVG filename from the relative .md path and block index.
@@ -41,9 +42,18 @@ async function main() {
 
   const fileResults = [];
 
+  const staleDiagramRefs = [];
+
   for (const filePath of mdFiles) {
     const original = readFileSync(filePath, "utf8");
     const relPath = relative(CONTENT_DIR, filePath);
+
+    if (DIAGRAM_IMG_RE.test(original) && !MERMAID_BLOCK_RE.test(original)) {
+      staleDiagramRefs.push(relPath);
+      MERMAID_BLOCK_RE.lastIndex = 0;
+      continue;
+    }
+    MERMAID_BLOCK_RE.lastIndex = 0;
     let index = 0;
     const diagrams = [];
 
@@ -57,6 +67,19 @@ async function main() {
     if (diagrams.length > 0) {
       fileResults.push({ filePath, updated, diagrams });
     }
+  }
+
+  if (staleDiagramRefs.length > 0) {
+    console.error(
+      "render-mermaid: markdown has pre-rendered diagram image refs but no ```mermaid blocks."
+    );
+    console.error(
+      "Restore fenced mermaid in source (git should not commit build-time image refs):"
+    );
+    for (const rel of staleDiagramRefs) {
+      console.error(`  - ${join(CONTENT_DIR, rel)}`);
+    }
+    process.exit(1);
   }
 
   if (fileResults.length === 0) {

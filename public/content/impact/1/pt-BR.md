@@ -16,11 +16,46 @@ O serviço foi construído como um microsserviço containerizado em Node.js/Type
 - Habilitei seleção de campanhas mais adaptativa ao comparar embeddings de comportamento do cliente com vetores de campanhas ativas em vez de depender apenas de regras estáticas de segmentação.
 - Protegi a confiabilidade do email transacional com caminhos de fallback determinísticos, para que personalização lenta, indisponível ou com falha nunca bloqueasse a mensagem principal de confirmação de compra.
 
-![diagram](/content/diagrams/impact-1-pt-BR-0.svg)
+```mermaid
+flowchart LR
+    CP[Communication Platform] --> MS[Marketing Service]
+
+    MS --> DE[Decision Engine]
+
+    DE -->|Match Campaign| MS
+
+    CDP[(Customer Data Platform)]
+    CDP -->|Async Data Sync| DE
+
+    MS --> CP
+```
 
 ### Diagrama de Sequência — Fluxo de Personalização com Fallback
 
-![diagram](/content/diagrams/impact-1-pt-BR-1.svg)
+```mermaid
+sequenceDiagram
+    participant CP as Communication Platform
+    participant MS as Marketing Service
+    participant DE as Decision Engine
+    participant CDP as Customer Data Platform
+
+    CP->>MS: Request Transactional Email Content
+
+    MS->>DE: Request Personalized Block (active campaigns)
+
+    Note over CDP,DE: Customer embeddings synced asynchronously
+
+    DE->>DE: Evaluate embeddings vs campaign vectors
+
+    alt Match Found
+        DE-->>MS: Return Personalized Content
+    else No Match
+        DE-->>MS: Return No-Match
+        MS->>MS: Select Fallback Block
+    end
+
+    MS-->>CP: Final Email Payload
+```
 
 ### Arquitetura do Motor de Decisão
 
