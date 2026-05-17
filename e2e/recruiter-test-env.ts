@@ -3,6 +3,9 @@ import { resolve } from "node:path";
 
 const ENV_TEST_FILE = ".env.test";
 
+/** Per-test budget for one full recruiter pipeline (evaluator → chart → pitch) in CI. */
+export const RECRUITER_E2E_TEST_TIMEOUT_MS = 240_000;
+
 let isEnvTestLoaded = false;
 
 /** Loads repo-root `.env.test` once (Node 20.12+ `process.loadEnvFile`). */

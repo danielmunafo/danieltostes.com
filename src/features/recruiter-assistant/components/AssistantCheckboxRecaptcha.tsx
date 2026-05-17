@@ -3,17 +3,10 @@
 import Box from "@mui/material/Box";
 import Skeleton from "@mui/material/Skeleton";
 import { useTranslations } from "next-intl";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type MutableRefObject,
-} from "react";
+import { useCallback, useEffect, useState, type MutableRefObject } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import {
   RECRUITER_CHECKBOX_RECAPTCHA_HEIGHT_PX,
-  RECRUITER_CHECKBOX_RECAPTCHA_SKELETON_HOLD_MS,
   RECRUITER_CHECKBOX_RECAPTCHA_WIDTH_PX,
 } from "../constants/recruiter-assistant";
 
@@ -33,44 +26,22 @@ export function AssistantCheckboxRecaptcha({
   onErrored,
 }: AssistantCheckboxRecaptchaProps) {
   const t = useTranslations("RecruiterAssistant");
-  const [isSkeletonVisible, setIsSkeletonVisible] = useState(true);
-  const [isWidgetMounted, setIsWidgetMounted] = useState(false);
-  const skeletonHoldTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
-
-  const clearSkeletonHoldTimeout = useCallback(() => {
-    if (skeletonHoldTimeoutRef.current !== null) {
-      clearTimeout(skeletonHoldTimeoutRef.current);
-      skeletonHoldTimeoutRef.current = null;
-    }
-  }, []);
+  const [isWidgetReady, setIsWidgetReady] = useState(false);
 
   const markWidgetReady = useCallback(() => {
     requestAnimationFrame(() => {
-      setIsWidgetMounted(true);
-      clearSkeletonHoldTimeout();
-      skeletonHoldTimeoutRef.current = setTimeout(() => {
-        skeletonHoldTimeoutRef.current = null;
-        requestAnimationFrame(() => {
-          setIsSkeletonVisible(false);
-        });
-      }, RECRUITER_CHECKBOX_RECAPTCHA_SKELETON_HOLD_MS);
+      setIsWidgetReady(true);
     });
-  }, [clearSkeletonHoldTimeout]);
-
-  useEffect(() => clearSkeletonHoldTimeout, [clearSkeletonHoldTimeout]);
+  }, []);
 
   const handleScriptLoad = useCallback(() => {
     markWidgetReady();
   }, [markWidgetReady]);
 
   const handleErrored = useCallback(() => {
-    clearSkeletonHoldTimeout();
-    setIsWidgetMounted(true);
-    setIsSkeletonVisible(false);
+    setIsWidgetReady(true);
     onErrored?.();
-  }, [clearSkeletonHoldTimeout, onErrored]);
+  }, [onErrored]);
 
   useEffect(() => {
     const isWindowUndefined = typeof window === "undefined";
@@ -96,7 +67,7 @@ export function AssistantCheckboxRecaptcha({
         py: 1,
       }}
     >
-      {isSkeletonVisible ? (
+      {!isWidgetReady ? (
         <Skeleton
           variant="rounded"
           width={RECRUITER_CHECKBOX_RECAPTCHA_WIDTH_PX}
@@ -106,9 +77,9 @@ export function AssistantCheckboxRecaptcha({
           aria-label={t("captchaLoading")}
           sx={{
             position: "absolute",
-            zIndex: 1,
             borderRadius: 1,
             maxWidth: "100%",
+            pointerEvents: "none",
           }}
         />
       ) : null}
@@ -117,18 +88,7 @@ export function AssistantCheckboxRecaptcha({
           display: "flex",
           justifyContent: "center",
           width: "100%",
-          ...(!isWidgetMounted
-            ? {
-                position: "absolute",
-                width: 1,
-                height: 1,
-                overflow: "hidden",
-                clip: "rect(0 0 0 0)",
-                whiteSpace: "nowrap",
-              }
-            : {}),
         }}
-        aria-hidden={!isWidgetMounted}
       >
         <ReCAPTCHA
           ref={recaptchaRef}

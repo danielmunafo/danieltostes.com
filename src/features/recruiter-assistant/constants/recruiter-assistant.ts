@@ -133,9 +133,6 @@ export const RECRUITER_COMPOSER_EXIT_TRANSLATE_Y_PX = 16;
 export const RECRUITER_CHECKBOX_RECAPTCHA_WIDTH_PX = 304;
 export const RECRUITER_CHECKBOX_RECAPTCHA_HEIGHT_PX = 78;
 
-/** Extra skeleton visibility after script ready so the checkbox can paint in. */
-export const RECRUITER_CHECKBOX_RECAPTCHA_SKELETON_HOLD_MS = 2000;
-
 /** Pixels of window scroll over which the “scroll for more” cue fades out. */
 export const ASSISTANT_SCROLL_CUE_FADE_DISTANCE_PX = 160;
 

@@ -1348,6 +1348,8 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
           maxWidth="sm"
           fullWidth
           aria-labelledby="recruiter-assistant-terms-dialog-title"
+          disableAutoFocus
+          disableEnforceFocus
           onKeyDownCapture={handleTermsDialogKeyDownCapture}
         >
           <DialogTitle id="recruiter-assistant-terms-dialog-title">
@@ -1400,6 +1402,8 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
           maxWidth="sm"
           fullWidth
           aria-labelledby="recruiter-assistant-captcha-dialog-title"
+          disableAutoFocus
+          disableEnforceFocus
           onKeyDownCapture={handleCaptchaDialogKeyDownCapture}
         >
           <DialogTitle id="recruiter-assistant-captcha-dialog-title">

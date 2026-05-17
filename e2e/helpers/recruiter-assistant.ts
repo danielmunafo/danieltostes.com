@@ -1,5 +1,8 @@
 import { expect, type Locator, type Page } from "@playwright/test";
-import { getRecruiterTestEnv } from "../recruiter-test-env";
+import {
+  getRecruiterTestEnv,
+  RECRUITER_E2E_TEST_TIMEOUT_MS,
+} from "../recruiter-test-env";
 import type { RecruiterMatchExpectation } from "./recruiter-assistant-expectations";
 
 const RECRUITER_E2E_LOCALE = "en";
@@ -7,7 +10,7 @@ const RECRUITER_E2E_LOCALE = "en";
 export const RECRUITER_TERMS_ACCEPTANCE_STORAGE_KEY =
   "danieltostes.recruiterAssistant.termsAccepted.v4" as const;
 
-export const RECRUITER_E2E_PIPELINE_TIMEOUT_MS = 120_000;
+export const RECRUITER_E2E_PIPELINE_TIMEOUT_MS = RECRUITER_E2E_TEST_TIMEOUT_MS;
 
 const ASSISTANT_HEADING = /AI Recruiter Assistant/i;
 const JOB_DESCRIPTION_PROMPT = /paste the job description/i;
@@ -96,10 +99,11 @@ export async function submitJobDescription(
   }
 }
 
+/** Stack that wraps the assessment summary heading and summary cards. */
 function assessmentSummaryRegion(page: Page): Locator {
   return recruiterConversationLog(page)
     .getByRole("heading", { name: ASSESSMENT_SUMMARY_HEADING })
-    .locator("xpath=ancestor::*[self::div or self::section][1]");
+    .locator("xpath=..");
 }
 
 export async function waitForRecruiterPipelineComplete(
@@ -138,11 +142,18 @@ export async function waitForRecruiterPipelineComplete(
     log.getByRole("button", { name: EVIDENCE_REVIEW_LABEL })
   ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
 
+  // Loaded chart UI only (skeleton / pitch markdown must not satisfy this).
   await expect(
-    log.getByRole("heading", { name: ASSESSMENT_SUMMARY_HEADING })
+    log.filter({
+      has: log.getByRole("heading", { name: ASSESSMENT_SUMMARY_HEADING }),
+      has: log.getByText(TECHNICAL_FIT_LABEL),
+    })
   ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
 
   const summary = assessmentSummaryRegion(page);
+  await expect(
+    summary.getByRole("heading", { name: ASSESSMENT_SUMMARY_HEADING })
+  ).toBeVisible({ timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS });
   await expect(summary.getByText(TECHNICAL_FIT_LABEL)).toBeVisible({
     timeout: RECRUITER_E2E_PIPELINE_TIMEOUT_MS,
   });
