@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  hasBestPositioningAngleSectionFinished,
   hasBestPositioningAngleSectionStarted,
   splitBriefingMarkdown,
   splitExecutiveBriefMarkdown,
@@ -30,6 +31,38 @@ describe("hasBestPositioningAngleSectionStarted", () => {
       hasBestPositioningAngleSectionStarted(
         "# Verdetto\n\n# Miglior angolo di posizionamento\n",
         "it"
+      )
+    ).toBe(true);
+  });
+});
+
+describe("hasBestPositioningAngleSectionFinished", () => {
+  it("is false while the section is still streaming", () => {
+    expect(
+      hasBestPositioningAngleSectionFinished(
+        "# Verdict\n\n# Best Positioning Angle\n\nStill drafting",
+        "en",
+        false
+      )
+    ).toBe(false);
+  });
+
+  it("is true once the references block starts", () => {
+    expect(
+      hasBestPositioningAngleSectionFinished(
+        "# Verdict\n\n# Best Positioning Angle\n\nDone.\n\n## References\n\n1. **x**",
+        "en",
+        false
+      )
+    ).toBe(true);
+  });
+
+  it("is true when streaming completes with section body and no references", () => {
+    expect(
+      hasBestPositioningAngleSectionFinished(
+        "# Verdict\n\n# Best Positioning Angle\n\nFinal paragraph.",
+        "en",
+        true
       )
     ).toBe(true);
   });

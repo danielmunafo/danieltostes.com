@@ -37,6 +37,7 @@ import {
   RECRUITER_ASSISTANT_BOTTOM_DOCK_MIN_HEIGHT_PX,
   RECRUITER_ASSISTANT_SECTION_BLOCK_GAP,
   RECRUITER_BAD_PROMPT_MAX_STRIKES,
+  RECRUITER_BEST_POSITIONING_SCROLL_DELAY_MS,
   RECRUITER_CHAT_MAX_WIDTH_PX,
   RECRUITER_COMPOSER_BORDER_RADIUS_PX,
   RECRUITER_COMPOSER_EXIT_DURATION_MS,
@@ -77,7 +78,7 @@ import {
   mergedThinkingMarkdownForEvidence,
   shouldMountEvidenceReviewPanel,
 } from "../lib/sync-recruiter-assistant-thinking-cache";
-import { hasBestPositioningAngleSectionStarted } from "../lib/split-briefing-markdown";
+import { hasBestPositioningAngleSectionFinished } from "../lib/split-briefing-markdown";
 import {
   CHART_DATA_CLOSE_MARKER,
   CHART_DATA_OPEN_MARKER,
@@ -94,7 +95,6 @@ import { RecruiterModalRecaptchaField } from "./RecruiterModalRecaptchaField";
 import { RecruiterRecaptchaPreload } from "./RecruiterRecaptchaPreload";
 import { AssistantBriefingBody } from "./AssistantBriefingBody";
 import { AssistantBriefingProgress } from "./AssistantBriefingProgress";
-import { AssistantBriefingStreamingLine } from "./AssistantBriefingStreamingLine";
 import { AssistantEvidenceReview } from "./AssistantEvidenceReview";
 import { AssistantJobContextPanel } from "./AssistantJobContextPanel";
 import { AssistantMatchProfileSkeleton } from "./AssistantMatchProfileSkeleton";
@@ -163,10 +163,11 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   const isRecaptchaEnabled = isRecruiterRecaptchaConfigured();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const wasChatBusyRef = useRef(false);
-  /** After scrolling to top when `# Best Positioning Angle` starts, skip pin-to-bottom for that turn. */
+  /** After scheduling scroll-to-top when `# Best Positioning Angle` finishes, skip pin-to-bottom for that turn. */
   const bestPositioningScrollHandledForMessageIdRef = useRef<string | null>(
     null
   );
+  const bestPositioningScrollTimeoutRef = useRef<number | undefined>(undefined);
   const modalRecaptchaRef = useRef<ReCAPTCHA | null>(null);
   const captchaModalRecaptchaRef = useRef<ReCAPTCHA | null>(null);
   const {
@@ -645,6 +646,13 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     const el = messagesScrollRef.current;
     if (!el) return;
 
+    const clearBestPositioningScrollTimeout = () => {
+      if (bestPositioningScrollTimeoutRef.current !== undefined) {
+        window.clearTimeout(bestPositioningScrollTimeoutRef.current);
+        bestPositioningScrollTimeoutRef.current = undefined;
+      }
+    };
+
     const wasBusy = wasChatBusyRef.current;
     wasChatBusyRef.current = isBusy;
 
@@ -652,12 +660,14 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
       wasBusy && !isBusy && status === "ready";
 
     if (assistantJustFinishedSuccessfully) {
+      clearBestPositioningScrollTimeout();
       bestPositioningScrollHandledForMessageIdRef.current = null;
       el.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
     if (!isBusy) {
+      clearBestPositioningScrollTimeout();
       bestPositioningScrollHandledForMessageIdRef.current = null;
       return;
     }
@@ -668,17 +678,25 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
         const split = splitThinkingFromBody(
           getRecruiterAssistantMessagePlainText(lastMessage)
         );
-        const bestPositioningStarted = hasBestPositioningAngleSectionStarted(
+        const bestPositioningFinished = hasBestPositioningAngleSectionFinished(
           split.body,
-          locale
+          locale,
+          false
         );
 
         if (
-          bestPositioningStarted &&
+          bestPositioningFinished &&
           bestPositioningScrollHandledForMessageIdRef.current !== lastMessage.id
         ) {
           bestPositioningScrollHandledForMessageIdRef.current = lastMessage.id;
-          el.scrollTo({ top: 0, behavior: "smooth" });
+          clearBestPositioningScrollTimeout();
+          bestPositioningScrollTimeoutRef.current = window.setTimeout(() => {
+            messagesScrollRef.current?.scrollTo({
+              top: 0,
+              behavior: "smooth",
+            });
+            bestPositioningScrollTimeoutRef.current = undefined;
+          }, RECRUITER_BEST_POSITIONING_SCROLL_DELAY_MS);
           return;
         }
 
@@ -695,6 +713,8 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     }
 
     el.scrollTop = el.scrollHeight;
+
+    return clearBestPositioningScrollTimeout;
   }, [messages, isBusy, status, locale]);
 
   const handleCopyBriefing = useCallback(
@@ -725,6 +745,10 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     setLatestEvidencePanelOpen(true);
     setIsLatestJobContextPanelOpen(true);
     setCopiedMessageId(null);
+    if (bestPositioningScrollTimeoutRef.current !== undefined) {
+      window.clearTimeout(bestPositioningScrollTimeoutRef.current);
+      bestPositioningScrollTimeoutRef.current = undefined;
+    }
     bestPositioningScrollHandledForMessageIdRef.current = null;
     clearRecruiterChatSessionSnapshot();
     const messagesEl = messagesScrollRef.current;
@@ -869,8 +893,6 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
               !hasBriefingRenderableBelowEvidence;
             const assistantBriefingCompactHeight =
               isLastMessage && showEvidenceReview && !latestEvidencePanelOpen;
-            const showStreamedPrepThinking =
-              isPostEvidenceBriefingPhase && !showMatchProfileSkeleton;
             const hasBriefingToCopy =
               !isUser &&
               mainBody.trim() !== "" &&
@@ -1040,15 +1062,6 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                             : {}),
                         }}
                       >
-                        {showStreamedPrepThinking ? (
-                          <AssistantBriefingStreamingLine
-                            text={split?.briefingPrep ?? ""}
-                            isStreaming={
-                              (split?.isBriefingPrepStreaming ?? false) ||
-                              (split?.briefingPrep?.length ?? 0) === 0
-                            }
-                          />
-                        ) : null}
                         {showMatchProfileSkeleton ? (
                           <AssistantMatchProfileSkeleton />
                         ) : null}

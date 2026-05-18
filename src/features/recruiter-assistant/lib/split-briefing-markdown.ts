@@ -60,6 +60,45 @@ export function hasBestPositioningAngleSectionStarted(
   return findH1HeadingIndex(markdown, title) !== -1;
 }
 
+function getBestPositioningSectionBody(
+  pitchMarkdown: string,
+  locale: string
+): string {
+  const title =
+    RECRUITER_BEST_POSITIONING_HEADING[locale] ??
+    RECRUITER_BEST_POSITIONING_HEADING.en;
+  const headingIdx = findH1HeadingIndex(pitchMarkdown, title);
+  if (headingIdx === -1) return "";
+  const fromHeading = pitchMarkdown.slice(headingIdx);
+  const lines = fromHeading.split(/\r?\n/);
+  return lines.slice(1).join("\n").trim();
+}
+
+/**
+ * True once the localized `# Best Positioning Angle` section has finished streaming
+ * (references block started, or pitch stream ended with non-empty section body).
+ */
+export function hasBestPositioningAngleSectionFinished(
+  markdown: string,
+  locale: string,
+  isStreamingComplete: boolean
+): boolean {
+  if (!hasBestPositioningAngleSectionStarted(markdown, locale)) {
+    return false;
+  }
+  const { pitchMarkdown, referencesMarkdown } = splitPitchAndReferencesMarkdown(
+    markdown,
+    locale
+  );
+  if (referencesMarkdown !== null) {
+    return true;
+  }
+  if (!isStreamingComplete) {
+    return false;
+  }
+  return getBestPositioningSectionBody(pitchMarkdown, locale).length > 0;
+}
+
 /**
  * Separates the streamed pitch from the post-stream `## References` block when present.
  */

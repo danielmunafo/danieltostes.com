@@ -10,6 +10,9 @@ export const CHAT_HERO_TOPBAR_OFFSET_MD_PX = 64;
 /** Max width for the recruiter chat column (common assistant UI width). */
 export const RECRUITER_CHAT_MAX_WIDTH_PX = 768;
 
+/** Delay before scrolling the messages column to top after `# Best Positioning Angle` completes. */
+export const RECRUITER_BEST_POSITIONING_SCROLL_DELAY_MS = 1000;
+
 /** Height of the capability radar chart in the match profile (px). */
 export const RECRUITER_MATCH_PROFILE_CHART_HEIGHT_PX = 260;
 
