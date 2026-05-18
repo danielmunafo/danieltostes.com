@@ -18,7 +18,7 @@ function createPipelineDeadline(totalMs: number): () => number {
   return () => Math.max(5_000, endsAt - Date.now());
 }
 
-const ASSISTANT_HEADING = /AI Recruiter Assistant/i;
+const ASSISTANT_HEADING = /Candidate Fit Briefing/i;
 const JOB_DESCRIPTION_PROMPT = /paste the job description/i;
 const SEND_BUTTON = "Send";
 const ASSESSMENT_SUMMARY_HEADING = "Assessment summary";
