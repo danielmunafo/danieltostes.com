@@ -6,7 +6,7 @@ We are hiring a Staff-level engineer to own delivery across TypeScript, Node.js,
 
 Must-have:
 - Production TypeScript / React / Node.js experience at scale (Next.js static sites and SPAs)
-- API design, performance, and reliability (observability, SLOs, on-call)
+- API design, performance, and production observability (metrics, tracing, structured logging, CI/CD quality gates)
 - Retrieval-grounded AI product features: vector RAG, staged LLM workflows, streaming UX, score calibration
 - Ownership of cross-team technical initiatives and architecture documentation
 

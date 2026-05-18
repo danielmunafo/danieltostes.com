@@ -49,7 +49,8 @@ export default defineConfig({
             "node scripts/ensure-rag-artifacts.mjs && npm run build && npm run dev:server",
           cwd: "services/recruiter-assistant-api",
           url: recruiterTestEnv.recruiterApiHealthUrl,
-          reuseExistingServer: false,
+          // Local: reuse manual `npm run dev` on :3001 when healthy. CI always starts fresh.
+          reuseExistingServer: !isCi,
           timeout: 180_000,
           env: {
             PORT: String(recruiterTestEnv.apiPort),
@@ -61,6 +62,7 @@ export default defineConfig({
         {
           command: `npx serve out -p ${recruiterTestEnv.sitePort}`,
           url: recruiterTestEnv.playwrightBaseUrl,
+          // Must serve this build's `out/` (not `next dev` on the same port).
           reuseExistingServer: false,
           timeout: 60_000,
         },

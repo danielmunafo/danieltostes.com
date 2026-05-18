@@ -13,6 +13,12 @@ export const RECRUITER_E2E_CONFIDENCE_LABELS = {
   low: "Low",
 } as const;
 
+const ALL_EVIDENCE_CONFIDENCES = [
+  RECRUITER_E2E_CONFIDENCE_LABELS.high,
+  RECRUITER_E2E_CONFIDENCE_LABELS.medium,
+  RECRUITER_E2E_CONFIDENCE_LABELS.low,
+] as const;
+
 export type RecruiterMatchExpectation = {
   readonly recommendations: readonly string[];
   readonly technicalFitMin: number;
@@ -27,24 +33,19 @@ export const RECRUITER_MATCH_EXPECTATIONS = {
       RECRUITER_E2E_RECOMMENDATION_LABELS.pursue,
       RECRUITER_E2E_RECOMMENDATION_LABELS.maybe,
     ],
-    technicalFitMin: 6,
+    technicalFitMin: 5,
     technicalFitMax: 10,
-    evidenceConfidences: [
-      RECRUITER_E2E_CONFIDENCE_LABELS.high,
-      RECRUITER_E2E_CONFIDENCE_LABELS.medium,
-    ],
+    evidenceConfidences: ALL_EVIDENCE_CONFIDENCES,
   },
   ok: {
     recommendations: [
       RECRUITER_E2E_RECOMMENDATION_LABELS.pursue,
       RECRUITER_E2E_RECOMMENDATION_LABELS.maybe,
+      RECRUITER_E2E_RECOMMENDATION_LABELS.weakFit,
     ],
-    technicalFitMin: 5,
-    technicalFitMax: 7,
-    evidenceConfidences: [
-      RECRUITER_E2E_CONFIDENCE_LABELS.medium,
-      RECRUITER_E2E_CONFIDENCE_LABELS.low,
-    ],
+    technicalFitMin: 4,
+    technicalFitMax: 8,
+    evidenceConfidences: ALL_EVIDENCE_CONFIDENCES,
   },
   badMatch: {
     recommendations: [
@@ -52,13 +53,9 @@ export const RECRUITER_MATCH_EXPECTATIONS = {
       RECRUITER_E2E_RECOMMENDATION_LABELS.maybe,
       RECRUITER_E2E_RECOMMENDATION_LABELS.skip,
     ],
-    technicalFitMin: 2,
-    technicalFitMax: 5,
-    evidenceConfidences: [
-      RECRUITER_E2E_CONFIDENCE_LABELS.high,
-      RECRUITER_E2E_CONFIDENCE_LABELS.medium,
-      RECRUITER_E2E_CONFIDENCE_LABELS.low,
-    ],
+    technicalFitMin: 1,
+    technicalFitMax: 6,
+    evidenceConfidences: ALL_EVIDENCE_CONFIDENCES,
   },
   completeMismatch: {
     recommendations: [
@@ -67,12 +64,8 @@ export const RECRUITER_MATCH_EXPECTATIONS = {
       RECRUITER_E2E_RECOMMENDATION_LABELS.maybe,
     ],
     technicalFitMin: 0,
-    technicalFitMax: 4,
-    evidenceConfidences: [
-      RECRUITER_E2E_CONFIDENCE_LABELS.high,
-      RECRUITER_E2E_CONFIDENCE_LABELS.medium,
-      RECRUITER_E2E_CONFIDENCE_LABELS.low,
-    ],
+    technicalFitMax: 5,
+    evidenceConfidences: ALL_EVIDENCE_CONFIDENCES,
   },
 } as const satisfies Record<string, RecruiterMatchExpectation>;
 

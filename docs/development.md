@@ -79,13 +79,13 @@ Four scenarios (perfection, ok, bad match, complete mismatch) call the **local**
 **Local run (three terminals):**
 
 1. **API corpus** — from `services/recruiter-assistant-api`: copy `.env.example` → `.env`, set `OPENAI_API_KEY`, then `npm run build:llamaindex-index` (writes `embeddings/llamaindex.v*.json` and updates `.env.local` with `LLAMAINDEX_INDEX_JSON_PATH`).
-2. **API server** — same directory: `ALLOWED_ORIGIN=http://localhost:3000 npm run dev` → `http://127.0.0.1:3001` (health: `GET /health`).
+2. **API server** — copy repo [`.env.test.example`](./.env.test.example) → `.env.test` at the repo root (includes `ALLOWED_ORIGIN`, empty `RECAPTCHA_SECRET_KEY`, `RECRUITER_E2E=1`). From `services/recruiter-assistant-api` run `npm run dev:e2e` → `http://127.0.0.1:3001` (health: `GET /health`). Plain `npm run dev` still uses only this service’s `.env` / `.env.local`.
 3. **Static site** — repo root: `NEXT_PUBLIC_RECRUITER_API_URL=http://127.0.0.1:3001 npm run build && npx serve out -p 3000`.
 4. **Tests** — repo root: `npm run test:e2e:recruiter` (starts API + static site when not already running; reuses existing servers locally).
 
 One-shot (build + stack + tests): `npm run test:e2e:recruiter:stack`.
 
-**Troubleshooting slow recruiter E2E:** Stop any manual `npm run dev` on port 3001 before `test:e2e:recruiter:stack` — Playwright used to reuse that process, including `.env.local` reCAPTCHA (requests fail with `captcha_failed`) and esbuild watch churn while `node_modules` changes. The stack now starts a fresh `build` + `dev:server` with reCAPTCHA disabled. Local pipeline waits default to 3 minutes per test (10 minutes in CI); override with `RECRUITER_E2E_TEST_TIMEOUT_MS`.
+**Troubleshooting recruiter E2E stack:** Playwright **reuses** a healthy API on `:3001` when you run `npm run dev:e2e` (reads repo `.env.test` for CORS + no reCAPTCHA). Stop `next dev` on `:3000` so `serve out` can bind there. **CI** already sets `ALLOWED_ORIGIN`, `RECRUITER_E2E`, and empty `RECAPTCHA_SECRET_KEY` in the workflow — no new GitHub variables. Local pipeline waits default to 3 minutes per test (10 minutes in CI); override with `RECRUITER_E2E_TEST_TIMEOUT_MS`.
 
 Collapsible panels (**Evidence review**, **Role Context**) expose titles as `button`, not `heading` — E2E selectors match that.
 

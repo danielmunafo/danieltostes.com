@@ -159,10 +159,14 @@ export async function waitForRecruiterPipelineComplete(
     log.getByRole("button", { name: EVIDENCE_REVIEW_LABEL })
   ).toBeVisible({ timeout: remainingMs() });
 
-  // Loaded chart only: skeleton uses briefingMatchProfileLabel, not this heading.
-  await expect(
-    log.getByRole("heading", { name: ASSESSMENT_SUMMARY_HEADING })
-  ).toBeVisible({ timeout: remainingMs() });
+  // Loaded chart only (skeleton uses "Capability match profile", not this heading).
+  const assessmentSummaryHeading = log.getByRole("heading", {
+    name: ASSESSMENT_SUMMARY_HEADING,
+  });
+  await assessmentSummaryHeading.scrollIntoViewIfNeeded();
+  await expect(assessmentSummaryHeading).toBeVisible({
+    timeout: remainingMs(),
+  });
 
   const summary = assessmentSummaryRegion(page);
   await expect(summary.getByText(TECHNICAL_FIT_LABEL)).toBeVisible({

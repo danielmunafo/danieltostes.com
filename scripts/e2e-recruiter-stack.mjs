@@ -40,6 +40,33 @@ const env = {
   RECAPTCHA_SECRET_KEY: "",
 };
 
+const apiPort = process.env.RECRUITER_API_PORT ?? "3001";
+const sitePort = process.env.PLAYWRIGHT_SITE_PORT ?? "3000";
+const apiHealthUrl =
+  process.env.RECRUITER_API_HEALTH_URL ?? `http://127.0.0.1:${apiPort}/health`;
+
+async function probeHealth(url) {
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(2_000) });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+const apiAlreadyUp = await probeHealth(apiHealthUrl);
+if (apiAlreadyUp) {
+  console.warn(
+    `e2e-recruiter-stack: reusing API on :${apiPort} (Playwright will not start a second server). ` +
+      "If Send fails or chat stalls, stop manual `npm run dev` and re-run, or start the API with " +
+      "RECAPTCHA_SECRET_KEY= and ALLOWED_ORIGIN=http://localhost:3000."
+  );
+} else {
+  console.warn(
+    `e2e-recruiter-stack: ensure port :${sitePort} is free for \`serve out\` (stop \`next dev\` if needed).`
+  );
+}
+
 execSync("npm run build", { cwd: repoRoot, stdio: "inherit", env });
 execSync("npx playwright test --project=recruiter-assistant", {
   cwd: repoRoot,

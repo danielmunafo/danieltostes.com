@@ -837,15 +837,15 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
             const mainBody = split?.body ?? rawBody;
             const isEvidenceReviewStreaming =
               split?.isThinkingStreaming ?? false;
-            const isBriefingPipelineActive =
+            const isPostEvidenceBriefingPhase =
               !isUser &&
               isStreamingThisMessage &&
               showEvidenceReview &&
-              !isEvidenceReviewStreaming &&
-              mainBody.trim() === "";
-            const isPostEvidenceBriefingPhase = isBriefingPipelineActive;
-            const showMatchProfileSkeleton =
-              isBriefingPipelineActive && split?.chartData == null;
+              !isEvidenceReviewStreaming;
+            const isAwaitingMatchProfileChart =
+              isPostEvidenceBriefingPhase && split?.chartData == null;
+            const showMatchProfileSkeleton = isAwaitingMatchProfileChart;
+            const shouldMountBriefingBody = !isAwaitingMatchProfileChart;
             const isDraftingBriefing =
               !isUser &&
               isStreamingThisMessage &&
@@ -858,7 +858,8 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
               !showEvidenceReview;
             const hasBriefingRenderableBelowEvidence =
               Boolean(split?.chartData) ||
-              (mainBody.trim() !== "" &&
+              (shouldMountBriefingBody &&
+                mainBody.trim() !== "" &&
                 !showBodySkeleton &&
                 !showMatchProfileSkeleton);
             const evidenceStretchRemainingColumn =
@@ -1054,7 +1055,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                         {showBodySkeleton ? (
                           <AssistantThinkingIndicator />
                         ) : mainBody.trim() === "" &&
-                          !split?.chartData ? null : (
+                          !split?.chartData ? null : shouldMountBriefingBody ? (
                           <AssistantBriefingBody
                             markdown={mainBody}
                             contentSx={markdownSx}
@@ -1062,7 +1063,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                             referencesPanelTitle={t("evidenceReferencesLabel")}
                             chartData={split?.chartData ?? null}
                           />
-                        )}
+                        ) : null}
                         {isDraftingBriefing ? (
                           <AssistantBriefingProgress
                             message={t("briefingDraftingLabel")}
