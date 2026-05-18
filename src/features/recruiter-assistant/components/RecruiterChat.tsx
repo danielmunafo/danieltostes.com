@@ -77,10 +77,7 @@ import {
   mergedThinkingMarkdownForEvidence,
   shouldMountEvidenceReviewPanel,
 } from "../lib/sync-recruiter-assistant-thinking-cache";
-import {
-  hasBestPositioningAngleSectionFinished,
-  hasScoresSectionFinished,
-} from "../lib/split-briefing-markdown";
+import { hasBestPositioningAngleSectionStarted } from "../lib/split-briefing-markdown";
 import {
   CHART_DATA_CLOSE_MARKER,
   CHART_DATA_OPEN_MARKER,
@@ -96,6 +93,7 @@ import { AssistantCheckboxRecaptcha } from "./AssistantCheckboxRecaptcha";
 import { RecruiterModalRecaptchaField } from "./RecruiterModalRecaptchaField";
 import { RecruiterRecaptchaPreload } from "./RecruiterRecaptchaPreload";
 import { AssistantBriefingBody } from "./AssistantBriefingBody";
+import { AssistantBriefingProgress } from "./AssistantBriefingProgress";
 import { AssistantBriefingStreamingLine } from "./AssistantBriefingStreamingLine";
 import { AssistantEvidenceReview } from "./AssistantEvidenceReview";
 import { AssistantJobContextPanel } from "./AssistantJobContextPanel";
@@ -165,7 +163,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   const isRecaptchaEnabled = isRecruiterRecaptchaConfigured();
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const wasChatBusyRef = useRef(false);
-  /** After scrolling to top when `# Best Positioning Angle` finishes, skip pin-to-bottom for that turn. */
+  /** After scrolling to top when `# Best Positioning Angle` starts, skip pin-to-bottom for that turn. */
   const bestPositioningScrollHandledForMessageIdRef = useRef<string | null>(
     null
   );
@@ -670,13 +668,13 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
         const split = splitThinkingFromBody(
           getRecruiterAssistantMessagePlainText(lastMessage)
         );
-        const bestPositioningFinished = hasBestPositioningAngleSectionFinished(
+        const bestPositioningStarted = hasBestPositioningAngleSectionStarted(
           split.body,
           locale
         );
 
         if (
-          bestPositioningFinished &&
+          bestPositioningStarted &&
           bestPositioningScrollHandledForMessageIdRef.current !== lastMessage.id
         ) {
           bestPositioningScrollHandledForMessageIdRef.current = lastMessage.id;
@@ -846,23 +844,20 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
               !isEvidenceReviewStreaming &&
               mainBody.trim() === "";
             const isPostEvidenceBriefingPhase = isBriefingPipelineActive;
-            const isMatchProfileReady =
-              !split?.chartData ||
-              !isStreamingThisMessage ||
-              hasScoresSectionFinished(mainBody, locale);
             const showMatchProfileSkeleton =
+              isBriefingPipelineActive && split?.chartData == null;
+            const isDraftingBriefing =
               !isUser &&
               isStreamingThisMessage &&
-              (split?.chartData == null
-                ? isPostEvidenceBriefingPhase
-                : !isMatchProfileReady);
+              split?.chartData != null &&
+              mainBody.trim() === "";
             const showBodySkeleton =
               !isUser &&
               isStreamingThisMessage &&
               mainBody.trim() === "" &&
               !showEvidenceReview;
             const hasBriefingRenderableBelowEvidence =
-              Boolean(split?.chartData && isMatchProfileReady) ||
+              Boolean(split?.chartData) ||
               (mainBody.trim() !== "" &&
                 !showBodySkeleton &&
                 !showMatchProfileSkeleton);
@@ -1065,14 +1060,14 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                             contentSx={markdownSx}
                             locale={locale}
                             referencesPanelTitle={t("evidenceReferencesLabel")}
-                            chartData={
-                              isMatchProfileReady
-                                ? (split?.chartData ?? null)
-                                : null
-                            }
-                            matchProfileReady={isMatchProfileReady}
+                            chartData={split?.chartData ?? null}
                           />
                         )}
+                        {isDraftingBriefing ? (
+                          <AssistantBriefingProgress
+                            message={t("briefingDraftingLabel")}
+                          />
+                        ) : null}
                       </Box>
                       {hasBriefingToCopy ? (
                         <Box

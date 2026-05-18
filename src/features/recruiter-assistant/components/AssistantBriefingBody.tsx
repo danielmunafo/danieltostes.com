@@ -10,10 +10,7 @@ import { createPortfolioDeepLinkMarkdownComponents } from "../lib/createPortfoli
 import { RECRUITER_ASSISTANT_SECTION_BLOCK_GAP } from "../constants/recruiter-assistant";
 import type { ChartData } from "../lib/chart-data-types";
 import { extractScoresReasonAndStripScoresSection } from "../lib/extractScoresReasonFromPitchMarkdown";
-import {
-  splitPitchAndReferencesMarkdown,
-  trimPitchMarkdownBeforeMatchProfileReady,
-} from "../lib/split-briefing-markdown";
+import { splitPitchAndReferencesMarkdown } from "../lib/split-briefing-markdown";
 import { AssistantCollapsiblePanel } from "./AssistantCollapsiblePanel";
 import { AssistantMatchProfile } from "./AssistantMatchProfile";
 
@@ -43,8 +40,6 @@ type AssistantBriefingBodyProps = {
   readonly referencesPanelTitle: string;
   /** Validated match profile from chart marker block; omitted when skipped or streaming. */
   readonly chartData?: ChartData | null;
-  /** When false, hold chart/rationale and only stream pitch content before `# Scores`. */
-  readonly matchProfileReady?: boolean;
 };
 
 /** Strips the first `## Title` line so the collapsible panel supplies the title. */
@@ -58,7 +53,6 @@ export function AssistantBriefingBody({
   locale,
   referencesPanelTitle,
   chartData = null,
-  matchProfileReady = true,
 }: AssistantBriefingBodyProps) {
   const markdownLinkComponents = useMemo(
     () => createPortfolioDeepLinkMarkdownComponents(locale),
@@ -78,13 +72,9 @@ export function AssistantBriefingBody({
       ? splitPitchAndReferencesMarkdown(markdown, locale)
       : { pitchMarkdown: "", referencesMarkdown: null as string | null };
 
-    const pitchInput = matchProfileReady
-      ? split.pitchMarkdown
-      : trimPitchMarkdownBeforeMatchProfileReady(split.pitchMarkdown, locale);
-
-    let pitchForRender = pitchInput;
+    let pitchForRender = split.pitchMarkdown;
     let scoresReasonForProfile: string | null = null;
-    if (matchProfileReady && chartData && split.pitchMarkdown.trim()) {
+    if (chartData && split.pitchMarkdown.trim()) {
       const extracted = extractScoresReasonAndStripScoresSection(
         split.pitchMarkdown,
         locale
@@ -99,7 +89,7 @@ export function AssistantBriefingBody({
       scoresReasonForProfile,
       hasPitchContent: hasContent,
     };
-  }, [chartData, markdown, locale, matchProfileReady]);
+  }, [chartData, markdown, locale]);
 
   if (!hasPitchContent && !chartData) {
     return null;

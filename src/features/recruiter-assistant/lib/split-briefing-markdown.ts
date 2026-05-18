@@ -1,6 +1,3 @@
-import { extractScoresSectionRange } from "./extractScoresReasonFromPitchMarkdown";
-import { RECRUITER_SCORES_SECTION_HEADING } from "./recruiterScoresSectionHeadings";
-
 export type BriefingSections = {
   readonly intro: string;
   readonly sections: readonly {
@@ -50,14 +47,6 @@ function findH1HeadingIndex(markdown: string, title: string): number {
   return match?.index ?? -1;
 }
 
-function hasH1SectionFinished(markdown: string, title: string): boolean {
-  const idx = findH1HeadingIndex(markdown, title);
-  if (idx === -1) return false;
-  const needle = `# ${title}`;
-  const afterHeading = markdown.slice(idx + needle.length);
-  return /\n# [^#]/.test(afterHeading);
-}
-
 /**
  * True once the streamed pitch includes the localized `# Best Positioning Angle` line.
  */
@@ -69,57 +58,6 @@ export function hasBestPositioningAngleSectionStarted(
     RECRUITER_BEST_POSITIONING_HEADING[locale] ??
     RECRUITER_BEST_POSITIONING_HEADING.en;
   return findH1HeadingIndex(markdown, title) !== -1;
-}
-
-/**
- * True once the `# Best Positioning Angle` block has ended (next level-1 heading or references).
- */
-export function hasBestPositioningAngleSectionFinished(
-  markdown: string,
-  locale: string
-): boolean {
-  const title =
-    RECRUITER_BEST_POSITIONING_HEADING[locale] ??
-    RECRUITER_BEST_POSITIONING_HEADING.en;
-  const sectionIdx = findH1HeadingIndex(markdown, title);
-  if (sectionIdx === -1) return false;
-  if (hasH1SectionFinished(markdown, title)) return true;
-
-  const refLine =
-    RECRUITER_REFERENCE_SECTION_LINE[locale] ??
-    RECRUITER_REFERENCE_SECTION_LINE.en;
-  const afterSection = markdown.slice(sectionIdx);
-  return findReferencesHeadingIndex(afterSection, refLine) !== -1;
-}
-
-/**
- * True once the pitch `# Scores` block has ended (next level-1 heading started).
- */
-export function hasScoresSectionFinished(
-  markdown: string,
-  locale: string
-): boolean {
-  const scoresTitle =
-    RECRUITER_SCORES_SECTION_HEADING[locale] ??
-    RECRUITER_SCORES_SECTION_HEADING.en;
-  return hasH1SectionFinished(markdown, scoresTitle);
-}
-
-/**
- * While the match profile is still loading, keep only pitch content before `# Scores`.
- */
-export function trimPitchMarkdownBeforeMatchProfileReady(
-  pitchMarkdown: string,
-  locale: string
-): string {
-  const scoresTitle =
-    RECRUITER_SCORES_SECTION_HEADING[locale] ??
-    RECRUITER_SCORES_SECTION_HEADING.en;
-  const range = extractScoresSectionRange(pitchMarkdown, scoresTitle);
-  if (!range) {
-    return pitchMarkdown;
-  }
-  return pitchMarkdown.slice(0, range.start).trimEnd();
 }
 
 /**
