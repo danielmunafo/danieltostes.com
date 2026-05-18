@@ -56,40 +56,23 @@ Then re-run `npm run render-mermaid`. On constrained CI sandboxes, the script al
 
 ## Scripts
 
-| Script                             | Purpose                                                                                |
-| ---------------------------------- | -------------------------------------------------------------------------------------- |
-| `npm run dev`                      | Next.js dev server with hot reload                                                     |
-| `npm run dev:with-diagrams`        | Renders Mermaid under `public/content/`, then starts the dev server (see above)        |
-| `npm run render-mermaid`           | Renders Mermaid in `public/content/**/*.md` → SVGs + image refs in those files         |
-| `npm run build`                    | Renders Mermaid diagrams, runs Next.js static export; restores `public/content/` after |
-| `npm run start`                    | Serves the `out/` directory (preview production)                                       |
-| `npm run lint`                     | ESLint                                                                                 |
-| `npm run format`                   | Prettier (write)                                                                       |
-| `npm run format:check`             | Prettier (check only)                                                                  |
-| `npm run test`                     | Vitest unit tests                                                                      |
-| `npm run test:watch`               | Vitest watch mode                                                                      |
-| `npm run test:e2e`                 | Build, serve `out/`, run Playwright smoke e2e (`--project=smoke`)                      |
-| `npm run test:e2e:recruiter`       | Recruiter match e2e (auto-starts API :3001 + `serve` :3000 when free)                  |
-| `npm run test:e2e:recruiter:stack` | Build site with local API URL, then recruiter e2e                                      |
+| Script                      | Purpose                                                                                |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| `npm run dev`               | Next.js dev server with hot reload                                                     |
+| `npm run dev:with-diagrams` | Renders Mermaid under `public/content/`, then starts the dev server (see above)        |
+| `npm run render-mermaid`    | Renders Mermaid in `public/content/**/*.md` → SVGs + image refs in those files         |
+| `npm run build`             | Renders Mermaid diagrams, runs Next.js static export; restores `public/content/` after |
+| `npm run start`             | Serves the `out/` directory (preview production)                                       |
+| `npm run lint`              | ESLint                                                                                 |
+| `npm run format`            | Prettier (write)                                                                       |
+| `npm run format:check`      | Prettier (check only)                                                                  |
+| `npm run test`              | Vitest unit tests                                                                      |
+| `npm run test:watch`        | Vitest watch mode                                                                      |
+| `npm run test:e2e`          | Build, serve `out/`, run Playwright smoke e2e (`--project=smoke`)                      |
 
-## Recruiter assistant match E2E
+## Recruiter assistant manual check
 
-Four scenarios (perfection, ok, bad match, complete mismatch) call the **local** API dev server and OpenAI with real job descriptions under `e2e/fixtures/job-descriptions/`. They assert UI stages and match-profile recommendation / evidence-confidence **bands** (not exact LLM wording).
-
-**Local run (three terminals):**
-
-1. **API corpus** — from `services/recruiter-assistant-api`: copy `.env.example` → `.env`, set `OPENAI_API_KEY`, then `npm run build:llamaindex-index` (writes `embeddings/llamaindex.v*.json` and updates `.env.local` with `LLAMAINDEX_INDEX_JSON_PATH`).
-2. **API server** — copy repo [`.env.test.example`](./.env.test.example) → `.env.test` at the repo root (includes `ALLOWED_ORIGIN`, empty `RECAPTCHA_SECRET_KEY`, `RECRUITER_E2E=1`). From `services/recruiter-assistant-api` run `npm run dev:e2e` → `http://127.0.0.1:3001` (health: `GET /health`). Plain `npm run dev` still uses only this service’s `.env` / `.env.local`.
-3. **Static site** — repo root: `NEXT_PUBLIC_RECRUITER_API_URL=http://127.0.0.1:3001 npm run build && npx serve out -p 3000`.
-4. **Tests** — repo root: `npm run test:e2e:recruiter` (starts API + static site when not already running; reuses existing servers locally).
-
-One-shot (build + stack + tests): `npm run test:e2e:recruiter:stack`.
-
-**Troubleshooting recruiter E2E stack:** Playwright **reuses** a healthy API on `:3001` locally when you run `npm run dev:e2e` (reads repo `.env.test` for CORS + no reCAPTCHA). Stop `next dev` on `:3000` so `serve out` can bind there. **CI** uses the same `PLAYWRIGHT_RECRUITER_STACK=1` path as `test:e2e:recruiter:ci` (Playwright starts API + `serve out`; workflow only needs `OPENAI_API_KEY` plus the index build — no extra GitHub vars). reCAPTCHA is off when `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` and `RECAPTCHA_SECRET_KEY` are empty at site build and API start; `GET /health` returns `recaptchaVerification: "disabled"`, and `scripts/verify-recruiter-e2e-no-captcha.mjs` scans `out/` after build. Per-test timeout defaults to **3 minutes** (`RECRUITER_E2E_TEST_TIMEOUT_MS`, default `180000`).
-
-Collapsible panels (**Evidence review**, **Role Context**) expose titles as `button`, not `heading` — E2E selectors match that.
-
-Set `SKIP_RECRUITER_E2E=1` to skip the recruiter Playwright project. CI runs these in the [Recruiter API workflow](.github/workflows/recruiter-api.yml) (`recruiter-e2e` job), not in the Frontend smoke job.
+Live OpenAI match E2E was removed from CI (non-deterministic latency and scores). Validate the assistant manually: API `npm run dev:e2e` in `services/recruiter-assistant-api` (see [`.env.test.example`](./.env.test.example)), site `NEXT_PUBLIC_RECRUITER_API_URL=http://127.0.0.1:3001 npm run build && npx serve out -p 3000`, then exercise the chat on `/en`. API unit tests remain in [recruiter-api.yml](.github/workflows/recruiter-api.yml).
 
 ## Git hooks
 
