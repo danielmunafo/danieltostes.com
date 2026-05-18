@@ -62,7 +62,14 @@ const markdownComponents: Components = {
     </Typography>
   ),
   ul: ({ children }) => (
-    <Box component="ul" sx={{ pl: 3, my: 1 }}>
+    <Box
+      component="ul"
+      sx={{
+        pl: 3,
+        my: 1,
+        "& ul": { pl: 2.5, my: 0.5 },
+      }}
+    >
       {children}
     </Box>
   ),
@@ -202,6 +209,8 @@ const markdownComponentsWithDiagrams: Components = {
             fontFamily: "monospace",
             display: "inline",
             fontSize: "0.9em",
+            whiteSpace: "normal",
+            wordBreak: "break-word",
           }}
           {...props}
         >

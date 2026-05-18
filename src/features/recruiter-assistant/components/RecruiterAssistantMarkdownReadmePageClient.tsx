@@ -21,7 +21,19 @@ import { createPortfolioDeepLinkMarkdownComponents } from "../lib/createPortfoli
 const markdownSx = {
   "& p": { mb: 1.5, "&:last-child": { mb: 0 } },
   "& ul, & ol": { pl: 2.5, my: 1 },
+  "& ul ul, & ol ol": { pl: 2.5, my: 0.5 },
   "& li": { mb: 0.5 },
+  "& code": {
+    fontFamily:
+      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+    fontSize: "0.875em",
+    px: 0.5,
+    py: 0.125,
+    borderRadius: 0.5,
+    bgcolor: "action.hover",
+    whiteSpace: "normal",
+    wordBreak: "break-word",
+  },
   "& h1": {
     mt: 0,
     mb: 2,

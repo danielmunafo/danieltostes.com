@@ -6,8 +6,16 @@ Entregar um **portfólio static-first** (S3 + CloudFront) que ainda suporte um *
 
 - **Site**: export estático Next.js, temas claro/escuro MUI, i18n em quatro idiomas, seções parallax, busca gerada no build, Vitest + Playwright, CI com GitHub Actions.
 - **Assistente**: chat no browser para uma pequena **AWS Lambda** atrás de Function URL com **streaming de resposta**; embeddings offline como JSON versionado no S3; RAG por cosseno top-K, **input guard** determinístico e **intent gate** por LLM antes da recuperação, rate limit em memória por IP e CORS com allowlist para produção.
-- **Camada de agentes (Lambda)**: cada estágio do pipeline é um **agente por tema** em `services/recruiter-assistant-api/src/recruiterAssistant/agents/` (`contextAgent`, `evidenceEvaluationAgent`, `hardGatesAgent`, `interestsAgent`, `evidenceAnalysisAgent`, `recruiterAgent`, `referencesAgent`, com `briefingAgent` / `chartAgent` delegados dentro de `recruiterAgent`). Regras de comportamento ficam em **`instructions.md`** colocalizados, carregados no bundle via `getAgentInstruction.ts`; o TypeScript monta prompts sensíveis ao locale e aplica schemas. **`runRecruiterAssistantPipeline.ts`** é o único orquestrador—não embute texto de prompt.
-- **Formato da resposta (stream)**: dentro dos marcadores **`THINKING_*`**—**avaliador de evidências** (cobertura de requisitos, níveis de evidência, alertas de similaridade enganosa, orientação de pontuação com tetos) e **analista** (apenas síntese; não pode contradizer o avaliador). Após fechar o thinking: linhas efêmeras de **briefing prep** (`BRIEFING_PREP_*`), JSON do **gráfico de perfil** (`CHART_DATA_*`), depois o **pitch para recrutador** (aderência técnica respeita o teto de hard gates; clamp pós-geração). Reemissão opcional do gráfico alinhada ao pitch. **Somente servidor (não vai no stream):** avaliação de hard gates, avaliação opcional de **interesses** privados (agendada em background para não bloquear o que o usuário vê). Após o stream: extração estruturada de claims e match vetorial geram **Referências** opcionais.
+- **Camada de agentes (Lambda)**:
+  - Cada estágio do pipeline é um **agente por tema** em `services/recruiter-assistant-api/src/recruiterAssistant/agents/`.
+  - **Agentes:** contextAgent, evidenceEvaluationAgent, hardGatesAgent, interestsAgent, evidenceAnalysisAgent, recruiterAgent, referencesAgent; briefingAgent e chartAgent delegam a partir de recruiterAgent.
+  - **Comportamento:** `instructions.md` colocalizado por agente, carregado no bundle via `getAgentInstruction.ts`; TypeScript monta prompts sensíveis ao locale e aplica schemas.
+  - **Orquestração:** apenas `runRecruiterAssistantPipeline.ts`—sem texto de prompt embutido.
+- **Formato da resposta (stream)**:
+  - **Thinking** (`THINKING_*`): avaliador de evidências (cobertura de requisitos, níveis de evidência, alertas de similaridade enganosa, orientação de pontuação com tetos), depois analista (apenas síntese; não pode contradizer o avaliador).
+  - **Após fechar o thinking:** linhas de briefing prep (`BRIEFING_PREP_*`), JSON do gráfico de perfil (`CHART_DATA_*`), pitch para recrutador (aderência técnica respeita o teto de hard gates; clamp pós-geração). Reemissão opcional do gráfico alinhada ao pitch.
+  - **Somente servidor:** avaliação de hard gates; avaliação opcional de interesses privados (em background—não bloqueia o que o usuário vê).
+  - **Após o stream:** extração estruturada de claims e match vetorial geram **Referências** opcionais.
 - **Transparência**: notas de arquitetura no repositório, página de termos para recrutadores, UI de revisão de evidências e textos de racional para que trade-offs fiquem auditáveis.
 
 ### Fluxo de construção (código gerado por IA)

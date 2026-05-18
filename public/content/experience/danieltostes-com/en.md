@@ -6,8 +6,16 @@ Ship a **static-first portfolio** (S3 + CloudFront) that still supports a seriou
 
 - **Site**: Next.js static export, MUI light/dark themes, four-locale i18n, parallax sections, build-time site search, Vitest + Playwright, GitHub Actions CI.
 - **Assistant**: browser chat to a small **AWS Lambda** behind a Function URL with **response streaming**; offline embeddings as versioned JSON in S3; cosine top-K RAG, deterministic **input guard** plus **LLM intent gate** before retrieval, in-memory IP rate limits, and CORS allowlist support for production.
-- **Agent layer (Lambda)**: each pipeline stage is a **topic agent** under `services/recruiter-assistant-api/src/recruiterAssistant/agents/` (`contextAgent`, `evidenceEvaluationAgent`, `hardGatesAgent`, `interestsAgent`, `evidenceAnalysisAgent`, `recruiterAgent`, `referencesAgent`, plus `briefingAgent` / `chartAgent` delegated inside `recruiterAgent`). Behavioral rules live in colocated **`instructions.md`** files, loaded at bundle time via `getAgentInstruction.ts`; TypeScript agents assemble locale-aware prompts and enforce schemas. **`runRecruiterAssistantPipeline.ts`** is the sole orchestrator—it does not embed prompt prose.
-- **Answer shape (streamed)**: inside **`THINKING_*` markers**—**evidence evaluator** (requirement coverage, evidence levels, misleading-similarity callouts, match score guidance with hard caps) then **evidence analyst** (synthesis only; must not contradict the evaluator). After thinking closes: ephemeral **briefing-prep** lines (`BRIEFING_PREP_*`), **match-profile chart** JSON (`CHART_DATA_*`), then the **recruiter-facing pitch** (technical fit respects hard-gate ceiling; post-hoc clamp). Optional chart re-emit aligned to pitch scores. **Server-only (not streamed):** hard-gate assessment, optional private **interests** evaluation (scheduled in the background so it does not block the user-visible stream). After the stream completes: structured claim extraction and vector match-back produce optional **References**.
+- **Agent layer (Lambda)**:
+  - Each pipeline stage is a **topic agent** under `services/recruiter-assistant-api/src/recruiterAssistant/agents/`.
+  - **Agents:** contextAgent, evidenceEvaluationAgent, hardGatesAgent, interestsAgent, evidenceAnalysisAgent, recruiterAgent, referencesAgent; briefingAgent and chartAgent delegate from recruiterAgent.
+  - **Behavior:** colocated `instructions.md` per agent, loaded at bundle time via `getAgentInstruction.ts`; TypeScript assembles locale-aware prompts and enforces schemas.
+  - **Orchestration:** `runRecruiterAssistantPipeline.ts` only—no embedded prompt prose.
+- **Answer shape (streamed)**:
+  - **Thinking** (`THINKING_*`): evidence evaluator (requirement coverage, evidence levels, misleading-similarity callouts, match score guidance with hard caps), then evidence analyst (synthesis only; must not contradict the evaluator).
+  - **After thinking closes:** briefing-prep lines (`BRIEFING_PREP_*`), match-profile chart JSON (`CHART_DATA_*`), recruiter-facing pitch (technical fit respects hard-gate ceiling; post-hoc clamp). Optional chart re-emit aligned to pitch scores.
+  - **Server-only:** hard-gate assessment; optional private interests evaluation (background—does not block the user-visible stream).
+  - **After stream:** structured claim extraction and vector match-back produce optional **References**.
 - **Transparency**: in-repo architecture notes, recruiter terms page, evidence-review UI, and written rationales so trade-offs stay reviewable—not only in ephemeral chat.
 
 ### Build workflow (AI-generated code)
