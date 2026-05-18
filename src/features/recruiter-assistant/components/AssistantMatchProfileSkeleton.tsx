@@ -177,13 +177,13 @@ export function AssistantMatchProfileSkeleton() {
     >
       <Typography
         variant="body1"
-        component="h1"
+        component="p"
         sx={{
           ...recruiterAssistantBriefingSectionHeadingSx,
           mt: 0,
         }}
       >
-        {t("assessmentSummary")}
+        {t("briefingMatchProfileLabel")}
       </Typography>
       <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1}>
         <SummaryCardSkeleton />

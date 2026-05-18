@@ -90,9 +90,12 @@ export const MAX_CHAT_MESSAGES = 50;
  */
 export const MAX_CHAT_HISTORY_JSON_CHARS = 32_768;
 
-/** OpenAI chat model for recruiter matching (`RECRUITER_CHAT_MODEL` overrides). */
+/**
+ * OpenAI chat model for recruiter matching. Set `RECRUITER_CHAT_MODEL` on the
+ * Lambda in AWS (per function) or in local `.env`; CI does not manage it.
+ */
 export const CHAT_MODEL =
-  process.env.RECRUITER_CHAT_MODEL?.trim() || "gpt-5.4-mini";
+  process.env.RECRUITER_CHAT_MODEL?.trim() || "gpt-4.1-nano";
 
 /**
  * Re-chunks each provider `text-delta` into words (per AI SDK `smoothStream`)
@@ -201,8 +204,8 @@ export const DIMENSION_SCORING_MAX_TOKENS = 1536;
 /** Tighter cap for chart projection retry after truncation (`finishReason: length`). */
 export const DIMENSION_SCORING_COMPACT_MAX_TOKENS = 1024;
 
-/** Stable S3 object key CI overwrites; Lambda `EMBEDDINGS_S3_URI` should point here. */
-export const EMBEDDINGS_S3_PUBLISH_KEY = "embeddings.json";
+/** Stable S3 object key for canonical corpus + native LlamaIndex index JSON. */
+export const LLAMAINDEX_INDEX_S3_PUBLISH_KEY = "llamaindex-index.json";
 
 /** Stable S3 object key for optional interests pack; Lambda `INTERESTS_PACK_S3_URI` should point here. */
 export const INTERESTS_PACK_S3_PUBLISH_KEY = "interests-pack.json";

@@ -13,7 +13,7 @@ export interface EmbeddingsFile {
 
 /**
  * Keeps RAG + References aligned with the recruiter's selected site language
- * (`metadata.locale` on embedding chunks from `build-embeddings.mjs`).
+ * (`metadata.locale` on embedding chunks from the corpus index builder).
  * Falls back to the full corpus only when no chunk declares that locale (legacy files).
  */
 export function filterChunksByNavigationLocale(

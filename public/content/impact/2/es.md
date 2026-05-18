@@ -19,7 +19,57 @@ El objetivo no era solo exponer una nueva funcionalidad móvil de alta, sino cre
 
 El servicio de orquestación operaba como un motor de flujo centralizado responsable de coordinar servicios de dominio de forma asíncrona. Las solicitudes móviles entraban por la ruta de aplicación/BFF y disparaban una nueva instancia de saga; el orquestador avanzaba el flujo publicando y consumiendo eventos Kafka, persistiendo snapshots de progreso y aplicando transiciones de estado deterministas.
 
-![diagram](/content/diagrams/impact-2-es-0.svg)
+```mermaid
+flowchart LR
+    subgraph Client Layer
+        Mobile[Mobile App]
+    end
+
+    subgraph Edge Layer
+        API[API Gateway / BFF]
+    end
+
+    subgraph Orchestration Layer
+        Orchestrator[SAGA Orchestrator<br/>State Machine Service]
+    end
+
+    subgraph Domain Services
+        Auth[Authorization Service]
+        Risk[Risk Engine]
+        Account[Account Service]
+        Notification[Notification Service]
+    end
+
+    subgraph Event Backbone
+        Kafka[(Apache Kafka)]
+        DLQ[(Dead Letter Queue)]
+    end
+
+    subgraph Persistence
+        Cassandra[(Cassandra<br/>Saga State Store)]
+    end
+
+    subgraph Observability
+        Logs[Centralized Logs]
+        Grafana[Grafana Dashboards]
+    end
+
+    Mobile --> API
+    API --> Orchestrator
+
+    Orchestrator --> Auth
+    Orchestrator --> Risk
+    Orchestrator --> Account
+    Orchestrator --> Notification
+
+    Orchestrator <--> Kafka
+    Kafka --> DLQ
+
+    Orchestrator --> Cassandra
+
+    Orchestrator --> Logs
+    Logs --> Grafana
+```
 
 Infraestructura de Soporte:
 
@@ -60,7 +110,50 @@ Las transiciones de estado eran monotónicas: una vez que la saga avanzaba a un 
 
 ### Diagrama de Secuencia — Alta de Descubierto Orientada a Eventos (Kafka)
 
-![diagram](/content/diagrams/impact-2-es-1.svg)
+```mermaid
+sequenceDiagram
+    participant Mobile
+    participant BFF
+    participant Saga
+    participant Kafka
+    participant Services
+    participant DLQ
+
+    Mobile->>BFF: Submit Enrollment
+    BFF->>Saga: Start Saga (HTTP)
+
+    Saga->>Kafka: Publish Authorization Requested
+    Kafka->>Services: Authorization Service Consumes
+    Services->>Kafka: Authorization Result Event
+    Kafka->>Saga: Consume Authorization Result
+
+    alt Authorization Approved
+        Saga->>Kafka: Publish Risk Check Requested
+        Kafka->>Services: Risk Service Consumes
+        Services->>Kafka: Risk Result Event
+        Kafka->>Saga: Consume Risk Result
+
+        alt Risk Approved
+            Saga->>Kafka: Publish Account Update Requested
+            Kafka->>Services: Account Service Consumes
+            Services->>Kafka: Account Update Result
+            Kafka->>Saga: Consume Account Result
+
+            alt Update Success
+                Saga->>Saga: Transition -> COMPLETED
+            else Failure
+                Saga->>Kafka: Publish Failure Event
+                Kafka->>DLQ: Route to Support
+            end
+        else Risk Failure
+            Saga->>Kafka: Publish Failure Event
+            Kafka->>DLQ: Route to Support
+        end
+    else Authorization Failure (3 retries or TTL exceeded)
+        Saga->>Kafka: Publish Failure Event
+        Kafka->>DLQ: Route to Support
+    end
+```
 
 ### Flujo de Alta y Manejo de Fallos
 

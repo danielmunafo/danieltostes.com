@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Recruiter API (dev)",
+      "cwd": "${workspaceFolder}/services/recruiter-assistant-api",
+      "program": "${workspaceFolder}/services/recruiter-assistant-api/scripts/dev-server.mjs",
+      "runtimeArgs": ["--enable-source-maps"],
+      "preLaunchTask": "recruiter-assistant-api: build",
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/services/recruiter-assistant-api/dist/**/*.cjs"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/services/recruiter-assistant-api/**",
+        "!**/node_modules/**"
+      ],
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach: Recruiter API",
+      "port": 9229,
+      "restart": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/services/recruiter-assistant-api/dist/**/*.cjs"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/services/recruiter-assistant-api/**",
+        "!**/node_modules/**"
+      ],
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}

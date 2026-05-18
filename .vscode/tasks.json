@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "recruiter-assistant-api: build",
+      "type": "shell",
+      "command": "npm run build",
+      "options": {
+        "cwd": "${workspaceFolder}/services/recruiter-assistant-api"
+      },
+      "group": "build"
+    }
+  ]
+}

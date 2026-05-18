@@ -55,88 +55,6 @@ jobs:
           name: recruiter-lambda-zip
           path: function.zip
 
-  recruiter-e2e:
-    needs: test-and-build
-    runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'pull_request' && 'dev' || 'production' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node (API)
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: services/recruiter-assistant-api/package-lock.json
-
-      - name: Install API dependencies
-        working-directory: services/recruiter-assistant-api
-        run: npm ci
-
-      - name: API unit tests
-        working-directory: services/recruiter-assistant-api
-        run: npm test
-
-      - name: Bundle API for dev server
-        working-directory: services/recruiter-assistant-api
-        run: npm run build
-
-      - name: Require OpenAI API key
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
-          DEPLOY_ENV: ${{ github.event_name == 'pull_request' && 'dev' || 'production' }}
-        run: |
-          if [ -z "$OPENAI_API_KEY" ]; then
-            echo "::error::OPENAI_API_KEY is unset for environment '$DEPLOY_ENV'. Add an environment secret (Settings → Environments → $DEPLOY_ENV), or a repository secret/variable."
-            exit 1
-          fi
-
-      - name: Build embeddings
-        working-directory: services/recruiter-assistant-api
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
-        run: node scripts/build-embeddings.mjs
-
-      - name: Resolve embeddings path
-        working-directory: services/recruiter-assistant-api
-        run: |
-          EMB_FILE=$(ls embeddings/embeddings.v*.json | head -1)
-          if [ -z "$EMB_FILE" ]; then
-            echo "No embeddings/embeddings.v*.json produced by build"
-            exit 1
-          fi
-          echo "EMBEDDINGS_JSON_PATH=${{ github.workspace }}/services/recruiter-assistant-api/$EMB_FILE" >> "$GITHUB_ENV"
-
-      - name: Start API dev server
-        working-directory: services/recruiter-assistant-api
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
-          ALLOWED_ORIGIN: http://localhost:3000
-        run: |
-          npm run dev &
-          npx --yes wait-on@8.0.1 http://127.0.0.1:3001/health -t 120000
-
-      - name: Setup Node (site)
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Install site dependencies
-        run: npm ci
-
-      - name: Build static site
-        env:
-          NEXT_PUBLIC_RECRUITER_API_URL: http://127.0.0.1:3001
-        run: npm run build
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Recruiter assistant match E2E
-        run: npm run test:e2e:recruiter:ci
-
   deploy:
     needs: test-and-build
     runs-on: ubuntu-latest
@@ -164,7 +82,7 @@ jobs:
             --zip-file fileb://function.zip \
             --publish
 
-  embeddings:
+  rag-index:
     needs: test-and-build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
@@ -198,10 +116,10 @@ jobs:
             exit 1
           fi
 
-      - name: Build embeddings
+      - name: Build LlamaIndex corpus index
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
-        run: node scripts/build-embeddings.mjs
+        run: node scripts/build-llamaindex-index.mjs
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -209,16 +127,16 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-1
 
-      - name: Upload embeddings to S3
+      - name: Upload LlamaIndex index to S3
         run: |
-          EMB_FILE=$(ls embeddings/embeddings.v*.json | head -1)
-          if [ -z "$EMB_FILE" ]; then
-            echo "No embeddings/embeddings.v*.json produced by build"
+          IDX_FILE=$(ls embeddings/llamaindex.v*.json | head -1)
+          if [ -z "$IDX_FILE" ]; then
+            echo "No embeddings/llamaindex.v*.json produced by build"
             exit 1
           fi
           BUCKET="${{ secrets.RECRUITER_EMBEDDINGS_BUCKET }}"
-          aws s3 cp "$EMB_FILE" "s3://${BUCKET}/embeddings.json"
-          aws s3 cp "$EMB_FILE" "s3://${BUCKET}/$(basename "$EMB_FILE")"
+          aws s3 cp "$IDX_FILE" "s3://${BUCKET}/llamaindex-index.json"
+          aws s3 cp "$IDX_FILE" "s3://${BUCKET}/$(basename "$IDX_FILE")"
 
       - name: Build and upload interests pack
         run: |

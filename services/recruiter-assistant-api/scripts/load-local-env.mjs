@@ -26,18 +26,39 @@ function parseDotEnvLines(text) {
   return out;
 }
 
+/** Repo-root `.env.test` keys applied to the API process when `RECRUITER_E2E=1`. */
+const REPO_ENV_TEST_TO_API = [
+  ["ALLOWED_ORIGIN", "ALLOWED_ORIGIN"],
+  ["RECAPTCHA_SECRET_KEY", "RECAPTCHA_SECRET_KEY"],
+  ["RECRUITER_API_PORT", "PORT"],
+];
+
+function applyRepoEnvTestForE2e(serviceRoot) {
+  if (process.env.RECRUITER_E2E !== "1") return;
+
+  const repoEnvTest = join(serviceRoot, "..", "..", ".env.test");
+  if (!existsSync(repoEnvTest)) return;
+
+  let text = readFileSync(repoEnvTest, "utf8");
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  const parsed = parseDotEnvLines(text);
+  for (const [from, to] of REPO_ENV_TEST_TO_API) {
+    if (parsed[from] !== undefined) {
+      process.env[to] = parsed[from];
+    }
+  }
+}
+
 /**
  * Loads `services/recruiter-assistant-api/.env` then `.env.local` into `process.env`.
- * `.env` only fills missing keys; `.env.local` overrides (Next-style local secrets).
+ * When `RECRUITER_E2E=1`, also applies repo-root `.env.test` (see `.env.test.example`)
+ * and skips `RECAPTCHA_SECRET_KEY` from `.env.local`.
  */
 export function loadServiceEnvFiles() {
   const scriptsDir = dirname(fileURLToPath(import.meta.url));
   const serviceRoot = join(scriptsDir, "..");
 
-  for (const { name, override } of [
-    { name: ".env", override: false },
-    { name: ".env.local", override: true },
-  ]) {
+  for (const { name, override } of [{ name: ".env", override: false }]) {
     const absPath = join(serviceRoot, name);
     if (!existsSync(absPath)) continue;
     let text = readFileSync(absPath, "utf8");
@@ -49,4 +70,31 @@ export function loadServiceEnvFiles() {
       }
     }
   }
+
+  applyRepoEnvTestForE2e(serviceRoot);
+
+  for (const { name, override } of [{ name: ".env.local", override: true }]) {
+    const absPath = join(serviceRoot, name);
+    if (!existsSync(absPath)) continue;
+    let text = readFileSync(absPath, "utf8");
+    if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+    const parsed = parseDotEnvLines(text);
+    const isRecruiterE2e = process.env.RECRUITER_E2E === "1";
+    for (const [key, val] of Object.entries(parsed)) {
+      if (isRecruiterE2e && override && key === "RECAPTCHA_SECRET_KEY") {
+        continue;
+      }
+      if (override || process.env[key] === undefined) {
+        process.env[key] = val;
+      }
+    }
+  }
+
+  enforceRecruiterE2eNoCaptcha();
+}
+
+/** E2E must never verify captcha, even if `.env.local` sets a secret. */
+function enforceRecruiterE2eNoCaptcha() {
+  if (process.env.RECRUITER_E2E !== "1") return;
+  process.env.RECAPTCHA_SECRET_KEY = "";
 }

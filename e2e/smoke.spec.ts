@@ -8,10 +8,10 @@ test("home page loads and shows the Summary section", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Summary" })).toBeVisible();
 });
 
-test("recruiter assistant hero is visible", async ({ page }) => {
+test("candidate fit briefing hero is visible", async ({ page }) => {
   await page.goto(defaultLocalePath);
   await expect(
-    page.getByRole("heading", { name: /recruiter assistant/i })
+    page.getByRole("heading", { name: /candidate fit briefing/i })
   ).toBeVisible();
 });
 

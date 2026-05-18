@@ -8,6 +8,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "node:http";
 import { loadServiceEnvFiles } from "./load-local-env.mjs";
+import { buildRecruiterHealthBody } from "./recruiter-health-body.mjs";
 
 loadServiceEnvFiles();
 
@@ -24,7 +25,7 @@ createServer(async (req, res) => {
   if (isHealthPath && (method === "GET" || method === "HEAD")) {
     res.writeHead(200, { "content-type": "application/json" });
     if (method === "GET") {
-      res.end(JSON.stringify({ ok: true }));
+      res.end(JSON.stringify(buildRecruiterHealthBody()));
     } else {
       res.end();
     }

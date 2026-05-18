@@ -6,7 +6,8 @@ Consegnare un **portfolio static-first** (S3 + CloudFront) che supporti comunque
 
 - **Sito**: export statico Next.js, temi chiaro/scuro MUI, i18n in quattro lingue, sezioni parallax, ricerca generata a build time, Vitest + Playwright, CI con GitHub Actions.
 - **Assistente**: chat nel browser verso una piccola **AWS Lambda** dietro una Function URL con **response streaming**; embedding offline come JSON versionato su S3; RAG top-K con similarità coseno, **input guard** deterministico e **intent gate** LLM prima del retrieval, rate limit in-memory per IP e CORS con allowlist in produzione.
-- **Forma della risposta**: **tre** stadi di chat in stream su un unico data stream—prima un **valutatore delle evidenze** (copertura dei requisiti con must-have vs nice-to-have, evidenza diretta/adiacente/non evidenziata/contraddittoria, avvisi su similarità fuorviante e **guida al punteggio** con tetti così la sola similarità vettoriale non gonfia l’aderenza), poi un **analista** (solo sintesi, nello stesso blocco “thinking”, senza contraddire il valutatore), infine la **valutazione per i recruiter** (l’intensità del match rispetta il tetto del valutatore). I **marcatori ASCII “thinking”** racchiudono valutatore + analista per separare il ragionamento interno dalla risposta principale; a stream completato, **estrazione strutturata delle claim** e match vettoriale sui chunk producono un blocco opzionale **References** per citazioni verificabili.
+- **Layer agenti (Lambda)**: ogni stadio del pipeline è un **agente per tema** in `services/recruiter-assistant-api/src/recruiterAssistant/agents/` (`contextAgent`, `evidenceEvaluationAgent`, `hardGatesAgent`, `interestsAgent`, `evidenceAnalysisAgent`, `recruiterAgent`, `referencesAgent`, con `briefingAgent` / `chartAgent` delegati dentro `recruiterAgent`). Le regole di comportamento stanno in **`instructions.md`** colocalizzati, caricati nel bundle tramite `getAgentInstruction.ts`; TypeScript assembla prompt sensibili alla lingua e applica gli schema. **`runRecruiterAssistantPipeline.ts`** è l’unico orchestratore—non incorpora testo di prompt.
+- **Forma della risposta (stream)**: dentro i marcatori **`THINKING_*`**—**valutatore evidenze** (copertura requisiti, livelli di evidenza, avvisi su similarità fuorviante, guida al punteggio con tetti) e **analista** (solo sintesi; non può contraddire il valutatore). Dopo la chiusura del thinking: righe effimere di **briefing prep** (`BRIEFING_PREP_*`), JSON del **grafico profilo** (`CHART_DATA_*`), poi il **pitch per recruiter** (fit tecnico rispetta il tetto hard gate; clamp post-generazione). Riemissione opzionale del grafico allineata al pitch. **Solo server (non in stream):** valutazione hard gate, valutazione opzionale **interessi** privati (schedulata in background per non bloccare ciò che l’utente vede). A stream completato: estrazione strutturata delle claim e match vettoriale producono **References** opzionali.
 - **Trasparenza**: note di architettura nel repo, pagina termini per i recruiter, UI di revisione evidenze e testi di razionale così i trade-off restano verificabili.
 
 ### Flusso di realizzazione (codice generato da IA)
@@ -15,15 +16,51 @@ Consegnare un **portfolio static-first** (S3 + CloudFront) che supporti comunque
 
 ### Pilastri tecnici
 
-- Risposte ancorate al retrieval con riferimenti espliciti post-hoc; generazione a stadi (**valutatore** copertura + tetti, **analista** sintesi, **pitch** voce recruiter) e citazioni controllate per similarità.
+- Risposte ancorate al retrieval con riferimenti espliciti post-hoc; generazione a stadi (**valutatore** → **analista** → **pitch**) con tetti deterministici hard gate su fit e grafico.
+- Manutenzione orientata agli agenti: comportamento in markdown; orchestrazione e contratti in TypeScript.
 - Impostazioni security-minded per testo non attendibile (forma dell’input, classificazione intent, system prompt rigidi, errori JSON fail-closed prima dello streaming).
-- Semplicità operativa: bundle statico su S3/CloudFront; Lambda per inferenza; streaming tramite Vercel AI SDK (streamText e risposta in formato data stream), con segreti e passi di deploy documentati.
+- Semplicità operativa: bundle statico su S3/CloudFront; Lambda per inferenza; streaming tramite Vercel AI SDK, con segreti e passi di deploy documentati.
 
-### Architettura dell'assistente
+### Deploy dell'assistente
 
-![Architettura dell'assistente per i recruiter: chat nel browser, AWS Lambda con guardrail e streaming, API chat ed embeddings OpenAI, bucket S3 con JSON degli embeddings.](/content/diagrams/recruiter-assistant-architecture.svg)
+```mermaid
+flowchart LR
+    User[Chat recruiter nel browser] -->|POST in stream| Lambda[AWS Lambda]
+    Lambda -->|guards + pipeline agenti| OpenAI[API chat OpenAI]
+    Lambda -->|embed query| OpenAI
+    Lambda -->|carica indice| S3[(JSON embedding su S3)]
+    Lambda -->|risposta in stream| User
+
+    subgraph StaticSite[Sito portfolio statico]
+        Site[S3 + CloudFront]
+    end
+
+    User -->|naviga| Site
+```
 
 La UI del portfolio resta servita come asset statici da S3 e CloudFront; il chat in streaming segue il percorso Lambda del diagramma.
+
+### Orchestrazione pipeline (agenti)
+
+`runRecruiterAssistantPipeline` invoca agenti per tema in ordine; non implementa la logica dei modelli.
+
+```mermaid
+flowchart TD
+    pipeline[runRecruiterAssistantPipeline]
+
+    pipeline --> context[contextAgent.createContext]
+    context --> eval[evidenceEvaluationAgent.evaluateEvidence]
+    eval --> offTopic[recruiterAgent.evaluateOffTopic]
+    offTopic --> hardGates[hardGatesAgent.assessHardGates]
+    hardGates --> interests[interestsAgent.scheduleEvaluation]
+    hardGates --> analyst[evidenceAnalysisAgent.analyzeEvidence]
+    interests -.->|background non bloccante| analyst
+    analyst --> thinkClose[THINKING_CLOSE]
+    thinkClose --> briefChart[recruiterAgent.projectBriefingAndChart]
+    briefChart --> pitch[recruiterAgent.generatePitch]
+    pitch --> chartSync[recruiterAgent.syncChartWithPitch]
+    chartSync --> refs[referencesAgent.generateReferences]
+```
 
 ### Tech stack
 

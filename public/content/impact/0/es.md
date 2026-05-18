@@ -14,11 +14,60 @@ El sistema se construyó en torno a un motor de decisión basado en JSON y worke
 
 ### Diagrama de Arquitectura
 
-![diagram](/content/diagrams/impact-0-es-0.svg)
+```mermaid
+flowchart LR
+    Portal[Web Portal] -->|Submit or Update Claim| Processor[Warranty Claim Processing System]
+
+    subgraph Warranty Claim Processing System
+        Workers[Workers]
+        Rules[JSON Decision Engine]
+    end
+
+    Processor --> Workers
+    Workers --> Rules
+    Rules --> Workers
+
+    Workers -->|Request Image Evaluation| AI[AI Image Evaluation Service]
+    AI -->|Labels and Scores| Workers
+
+    Workers -->|Update Case Status| Portal
+```
 
 ## Diagrama de Secuencia
 
-![diagram](/content/diagrams/impact-0-es-1.svg)
+```mermaid
+sequenceDiagram
+    participant Portal as Web Portal
+    participant Processor as Claim Processing System
+    participant Queue as Internal Job Queue
+    participant Worker as Worker
+    participant AI as AI Image Service
+    participant Rules as JSON Decision Engine
+    participant Support as Support Escalation
+
+    Portal->>Processor: Submit / Update Warranty Claim
+    Processor->>Queue: Enqueue Claim Job
+
+    Queue->>Worker: Dequeue Job
+    Worker->>Portal: Fetch Claim Data + Images
+
+    Worker->>AI: Send Images for Evaluation
+    AI-->>Worker: Return Labels / Scores
+
+    Worker->>Rules: Evaluate Business Rules (claim data + AI output)
+    Rules-->>Worker: Decision Result
+
+    alt Decision = Auto-Process
+        Worker->>Portal: Update Claim Status
+        Worker-->>Queue: Acknowledge Job (success)
+    else Decision = Escalate or Failure
+        loop Retry up to 3 times
+            Worker->>Worker: Retry Processing
+        end
+        Worker->>Support: Send to Manual Review
+        Worker-->>Queue: Acknowledge Job (escalated)
+    end
+```
 
 ### Orquestación de Flujo y Fiabilidad
 

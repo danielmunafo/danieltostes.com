@@ -6,7 +6,8 @@ Ship a **static-first portfolio** (S3 + CloudFront) that still supports a seriou
 
 - **Site**: Next.js static export, MUI light/dark themes, four-locale i18n, parallax sections, build-time site search, Vitest + Playwright, GitHub Actions CI.
 - **Assistant**: browser chat to a small **AWS Lambda** behind a Function URL with **response streaming**; offline embeddings as versioned JSON in S3; cosine top-K RAG, deterministic **input guard** plus **LLM intent gate** before retrieval, in-memory IP rate limits, and CORS allowlist support for production.
-- **Answer shape**: **three** streamed chat stages over one data stream—first an **evidence evaluator** (requirement coverage with must-have vs nice-to-have, direct vs adjacent vs not evidenced vs contradictory, misleading-similarity callouts, and **match score guidance** with hard caps so vector similarity cannot inflate fit alone), then an **evidence analyst** (synthesis only, same thinking block, must not contradict the evaluator), then the **recruiter-facing assessment** (match strength respects the evaluator ceiling). ASCII **thinking markers** wrap the evaluator + analyst so the UI can separate internal reasoning from the main reply; after streaming completes, **structured claim extraction** and vector match-back produce an optional **References** block for grounded citations.
+- **Agent layer (Lambda)**: each pipeline stage is a **topic agent** under `services/recruiter-assistant-api/src/recruiterAssistant/agents/` (`contextAgent`, `evidenceEvaluationAgent`, `hardGatesAgent`, `interestsAgent`, `evidenceAnalysisAgent`, `recruiterAgent`, `referencesAgent`, plus `briefingAgent` / `chartAgent` delegated inside `recruiterAgent`). Behavioral rules live in colocated **`instructions.md`** files, loaded at bundle time via `getAgentInstruction.ts`; TypeScript agents assemble locale-aware prompts and enforce schemas. **`runRecruiterAssistantPipeline.ts`** is the sole orchestrator—it does not embed prompt prose.
+- **Answer shape (streamed)**: inside **`THINKING_*` markers**—**evidence evaluator** (requirement coverage, evidence levels, misleading-similarity callouts, match score guidance with hard caps) then **evidence analyst** (synthesis only; must not contradict the evaluator). After thinking closes: ephemeral **briefing-prep** lines (`BRIEFING_PREP_*`), **match-profile chart** JSON (`CHART_DATA_*`), then the **recruiter-facing pitch** (technical fit respects hard-gate ceiling; post-hoc clamp). Optional chart re-emit aligned to pitch scores. **Server-only (not streamed):** hard-gate assessment, optional private **interests** evaluation (scheduled in the background so it does not block the user-visible stream). After the stream completes: structured claim extraction and vector match-back produce optional **References**.
 - **Transparency**: in-repo architecture notes, recruiter terms page, evidence-review UI, and written rationales so trade-offs stay reviewable—not only in ephemeral chat.
 
 ### Build workflow (AI-generated code)
@@ -15,15 +16,51 @@ Ship a **static-first portfolio** (S3 + CloudFront) that still supports a seriou
 
 ### Technical pillars
 
-- Retrieval-grounded answers with explicit post-hoc references; staged generation (**evaluator** requirement coverage + caps, **analyst** synthesis, **pitch** recruiter voice) plus similarity-checked citations.
+- Retrieval-grounded answers with explicit post-hoc references; staged generation (**evaluator** → **analyst** → **pitch**) with deterministic hard-gate caps on fit and chart.
+- Agent-oriented maintainability: edit behavior in markdown instructions; keep orchestration and contracts in TypeScript.
 - Security-minded defaults for untrusted recruiter text (shaping, intent classification, strict system prompts, fail-closed JSON errors before streaming).
-- Operational simplicity: static bundle on S3/CloudFront; Lambda for inference; streaming through the Vercel AI SDK (streamText and the data-stream response shape) with documented secrets and deploy steps.
+- Operational simplicity: static bundle on S3/CloudFront; Lambda for inference; streaming through the Vercel AI SDK with documented secrets and deploy steps.
 
-### Assistant architecture
+### Assistant deployment
 
-![Recruiter assistant architecture: browser chat UI, AWS Lambda with guards and streaming, OpenAI chat and embeddings APIs, S3 bucket storing embeddings JSON.](/content/diagrams/recruiter-assistant-architecture.svg)
+```mermaid
+flowchart LR
+    User[Recruiter browser chat] -->|streaming POST| Lambda[AWS Lambda]
+    Lambda -->|guards + agent pipeline| OpenAI[OpenAI chat APIs]
+    Lambda -->|embed query| OpenAI
+    Lambda -->|load index| S3[(S3 embeddings JSON)]
+    Lambda -->|stream response| User
+
+    subgraph StaticSite[Static portfolio site]
+        Site[S3 + CloudFront]
+    end
+
+    User -->|browse| Site
+```
 
 The portfolio UI still ships as static assets from S3 and CloudFront; streamed chat traffic follows the Lambda path in the diagram.
+
+### Pipeline orchestration (agents)
+
+`runRecruiterAssistantPipeline` calls topic agents in order; it does not implement model logic itself.
+
+```mermaid
+flowchart TD
+    pipeline[runRecruiterAssistantPipeline]
+
+    pipeline --> context[contextAgent.createContext]
+    context --> eval[evidenceEvaluationAgent.evaluateEvidence]
+    eval --> offTopic[recruiterAgent.evaluateOffTopic]
+    offTopic --> hardGates[hardGatesAgent.assessHardGates]
+    hardGates --> interests[interestsAgent.scheduleEvaluation]
+    hardGates --> analyst[evidenceAnalysisAgent.analyzeEvidence]
+    interests -.->|background non-blocking| analyst
+    analyst --> thinkClose[THINKING_CLOSE]
+    thinkClose --> briefChart[recruiterAgent.projectBriefingAndChart]
+    briefChart --> pitch[recruiterAgent.generatePitch]
+    pitch --> chartSync[recruiterAgent.syncChartWithPitch]
+    chartSync --> refs[referencesAgent.generateReferences]
+```
 
 ### Tech stack
 

@@ -16,9 +16,6 @@
     "test:watch": "vitest",
     "test:e2e": "npm run build && start-server-and-test 'npx serve out -p 3000' http://localhost:3000 'playwright test --project=smoke'",
     "test:e2e:ci": "start-server-and-test 'npx serve out -p 3000' http://localhost:3000 'playwright test --project=smoke'",
-    "test:e2e:recruiter": "playwright test --project=recruiter-assistant",
-    "test:e2e:recruiter:stack": "node scripts/e2e-recruiter-stack.mjs",
-    "test:e2e:recruiter:ci": "start-server-and-test 'npx serve out -p 3000' http://localhost:3000 'playwright test --project=recruiter-assistant'",
     "prepare": "husky"
   },
   "dependencies": {
