@@ -89,4 +89,12 @@ export function loadServiceEnvFiles() {
       }
     }
   }
+
+  enforceRecruiterE2eNoCaptcha();
+}
+
+/** E2E must never verify captcha, even if `.env.local` sets a secret. */
+function enforceRecruiterE2eNoCaptcha() {
+  if (process.env.RECRUITER_E2E !== "1") return;
+  process.env.RECAPTCHA_SECRET_KEY = "";
 }

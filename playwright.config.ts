@@ -14,6 +14,25 @@ const recruiterTestEnv = getRecruiterTestEnv();
 const isCi = !!process.env.CI;
 const isRecruiterStackEnabled = process.env.PLAYWRIGHT_RECRUITER_STACK === "1";
 
+const RECRUITER_API_WEBSERVER_ENV_KEYS = [
+  "OPENAI_API_KEY",
+  "LLAMAINDEX_INDEX_JSON_PATH",
+] as const;
+
+function recruiterApiWebServerEnv(): Record<string, string> {
+  const env: Record<string, string> = {
+    PORT: String(recruiterTestEnv.apiPort),
+    ALLOWED_ORIGIN: recruiterTestEnv.siteOrigin,
+    RECRUITER_E2E: "1",
+    RECAPTCHA_SECRET_KEY: "",
+  };
+  for (const key of RECRUITER_API_WEBSERVER_ENV_KEYS) {
+    const value = process.env[key];
+    if (value) env[key] = value;
+  }
+  return env;
+}
+
 export default defineConfig({
   testDir: TEST_DIR,
   fullyParallel: true,
@@ -52,12 +71,7 @@ export default defineConfig({
           // Local: reuse manual `npm run dev` on :3001 when healthy. CI always starts fresh.
           reuseExistingServer: !isCi,
           timeout: 180_000,
-          env: {
-            PORT: String(recruiterTestEnv.apiPort),
-            ALLOWED_ORIGIN: recruiterTestEnv.siteOrigin,
-            RECRUITER_E2E: "1",
-            RECAPTCHA_SECRET_KEY: "",
-          },
+          env: recruiterApiWebServerEnv(),
         },
         {
           command: `npx serve out -p ${recruiterTestEnv.sitePort}`,

@@ -107,17 +107,6 @@ jobs:
           fi
           echo "LLAMAINDEX_INDEX_JSON_PATH=${{ github.workspace }}/services/recruiter-assistant-api/$IDX_FILE" >> "$GITHUB_ENV"
 
-      - name: Start API dev server
-        working-directory: services/recruiter-assistant-api
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
-          ALLOWED_ORIGIN: http://localhost:3000
-          RECRUITER_E2E: "1"
-          RECAPTCHA_SECRET_KEY: ""
-        run: |
-          npm run dev:server &
-          npx --yes wait-on@8.0.1 http://127.0.0.1:3001/health -t 120000
-
       - name: Setup Node (site)
         uses: actions/setup-node@v4
         with:
@@ -132,12 +121,23 @@ jobs:
         env:
           NEXT_PUBLIC_RECRUITER_API_URL: http://127.0.0.1:3001
           NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ""
-        run: npm run build
+          RECAPTCHA_SECRET_KEY: ""
+        run: |
+          npm run build
+          node scripts/verify-recruiter-e2e-no-captcha.mjs --static-export
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
       - name: Recruiter assistant match E2E
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
+          PLAYWRIGHT_RECRUITER_STACK: "1"
+          RECRUITER_E2E: "1"
+          ALLOWED_ORIGIN: http://localhost:3000
+          NEXT_PUBLIC_RECRUITER_API_URL: http://127.0.0.1:3001
+          NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ""
+          RECAPTCHA_SECRET_KEY: ""
         run: npm run test:e2e:recruiter:ci
 
   deploy:

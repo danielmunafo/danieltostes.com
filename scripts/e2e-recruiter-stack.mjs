@@ -68,6 +68,11 @@ if (apiAlreadyUp) {
 }
 
 execSync("npm run build", { cwd: repoRoot, stdio: "inherit", env });
+execSync("node scripts/verify-recruiter-e2e-no-captcha.mjs --static-export", {
+  cwd: repoRoot,
+  stdio: "inherit",
+  env,
+});
 execSync("npx playwright test --project=recruiter-assistant", {
   cwd: repoRoot,
   stdio: "inherit",

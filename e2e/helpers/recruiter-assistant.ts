@@ -66,7 +66,24 @@ function isRecruiterChatPostResponse(response: {
   );
 }
 
+export async function assertRecruiterE2eCaptchaDisabled(
+  page: Page
+): Promise<void> {
+  const { recruiterApiHealthUrl } = getRecruiterTestEnv();
+  const response = await page.request.get(recruiterApiHealthUrl);
+  expect(response.ok()).toBeTruthy();
+  const body = (await response.json()) as {
+    recaptchaVerification?: string;
+  };
+  expect(
+    body.recaptchaVerification,
+    `${recruiterE2eSetupHint()} API must report recaptchaVerification=disabled.`
+  ).toBe("disabled");
+}
+
 export async function prepareRecruiterAssistantPage(page: Page): Promise<void> {
+  await assertRecruiterE2eCaptchaDisabled(page);
+
   await page.addInitScript((storageKey: string) => {
     window.sessionStorage.setItem(storageKey, "1");
   }, RECRUITER_TERMS_ACCEPTANCE_STORAGE_KEY);
@@ -84,6 +101,10 @@ export async function prepareRecruiterAssistantPage(page: Page): Promise<void> {
   if (await unavailableAlert.isVisible()) {
     throw new Error(recruiterE2eSetupHint());
   }
+
+  await expect(page.locator('iframe[src*="google.com/recaptcha"]')).toHaveCount(
+    0
+  );
 }
 
 export async function submitJobDescription(
@@ -163,7 +184,6 @@ export async function waitForRecruiterPipelineComplete(
   const assessmentSummaryHeading = log.getByRole("heading", {
     name: ASSESSMENT_SUMMARY_HEADING,
   });
-  await assessmentSummaryHeading.scrollIntoViewIfNeeded();
   await expect(assessmentSummaryHeading).toBeVisible({
     timeout: remainingMs(),
   });

@@ -6,11 +6,10 @@ const ENV_TEST_FILE = ".env.test";
 /**
  * Per-test budget for one full recruiter pipeline (evaluator → chart → pitch).
  * `waitForRecruiterPipelineComplete` uses this as a shared deadline across serial UI waits.
- * CI keeps a long ceiling for real OpenAI latency; local runs fail faster when the API is stuck.
  */
-export const RECRUITER_E2E_TEST_TIMEOUT_MS = process.env.CI
-  ? 600_000
-  : Number(process.env.RECRUITER_E2E_TEST_TIMEOUT_MS ?? 180_000);
+export const RECRUITER_E2E_TEST_TIMEOUT_MS = Number(
+  process.env.RECRUITER_E2E_TEST_TIMEOUT_MS ?? 180_000
+);
 
 let isEnvTestLoaded = false;
 

@@ -85,7 +85,7 @@ Four scenarios (perfection, ok, bad match, complete mismatch) call the **local**
 
 One-shot (build + stack + tests): `npm run test:e2e:recruiter:stack`.
 
-**Troubleshooting recruiter E2E stack:** Playwright **reuses** a healthy API on `:3001` when you run `npm run dev:e2e` (reads repo `.env.test` for CORS + no reCAPTCHA). Stop `next dev` on `:3000` so `serve out` can bind there. **CI** already sets `ALLOWED_ORIGIN`, `RECRUITER_E2E`, and empty `RECAPTCHA_SECRET_KEY` in the workflow — no new GitHub variables. Local pipeline waits default to 3 minutes per test (10 minutes in CI); override with `RECRUITER_E2E_TEST_TIMEOUT_MS`.
+**Troubleshooting recruiter E2E stack:** Playwright **reuses** a healthy API on `:3001` locally when you run `npm run dev:e2e` (reads repo `.env.test` for CORS + no reCAPTCHA). Stop `next dev` on `:3000` so `serve out` can bind there. **CI** uses the same `PLAYWRIGHT_RECRUITER_STACK=1` path as `test:e2e:recruiter:ci` (Playwright starts API + `serve out`; workflow only needs `OPENAI_API_KEY` plus the index build — no extra GitHub vars). reCAPTCHA is off when `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` and `RECAPTCHA_SECRET_KEY` are empty at site build and API start; `GET /health` returns `recaptchaVerification: "disabled"`, and `scripts/verify-recruiter-e2e-no-captcha.mjs` scans `out/` after build. Per-test timeout defaults to **3 minutes** (`RECRUITER_E2E_TEST_TIMEOUT_MS`, default `180000`).
 
 Collapsible panels (**Evidence review**, **Role Context**) expose titles as `button`, not `heading` — E2E selectors match that.
 
