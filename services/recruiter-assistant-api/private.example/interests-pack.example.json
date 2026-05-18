@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "criteriaMarkdown": "# Example preference rubric (safe to commit)\n\nThis is **not** a real private rubric — copy to `private/`, replace with your criteria, then run `npm run build:interests-pack` for a versioned file.\n\n## Work model\n\n- Remote-first roles: high interest\n- Heavy on-site: not a fit\n\n## Product domains\n\n- AI / platform products: high interest\n- Other domains: neutral; assess case by case\n",
+  "sourceSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "generatedAt": "1970-01-01T00:00:00.000Z"
+}

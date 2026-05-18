@@ -2,7 +2,10 @@
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { SECTION_IDS, type SectionId } from "@/constants/sections";
+import {
+  PARALLAX_SECTION_IDS,
+  type ParallaxContentSectionId,
+} from "@/constants/sections";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { SectionBackground } from "./SectionBackground";
 import { ParallaxSection } from "./ParallaxSection";
@@ -12,7 +15,7 @@ import { ExperienceSection } from "./ExperienceSection";
 import { EducationSection } from "./EducationSection";
 import { MeSection } from "./MeSection";
 
-const SECTION_CONTENT: Record<SectionId, React.ComponentType> = {
+const SECTION_CONTENT: Record<ParallaxContentSectionId, React.ComponentType> = {
   summary: SummarySection,
   impact: ImpactSection,
   experience: ExperienceSection,
@@ -36,11 +39,14 @@ export function ParallaxLayout() {
         previousSectionOpacity={previousSectionOpacity}
       />
 
-      {SECTION_IDS.map((id, idx) => {
+      {PARALLAX_SECTION_IDS.map((id, idx) => {
         const Content = SECTION_CONTENT[id];
-        const isLast = idx === SECTION_IDS.length - 1;
+        const isLast = idx === PARALLAX_SECTION_IDS.length - 1;
         const isFirst = idx === 0;
-        const compactSections = new Set<SectionId>(["summary", "impact"]);
+        const compactSections = new Set<ParallaxContentSectionId>([
+          "summary",
+          "impact",
+        ]);
         const compact = isLast || compactSections.has(id);
         return (
           <ParallaxSection

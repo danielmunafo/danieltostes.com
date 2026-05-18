@@ -4,7 +4,7 @@ This document describes how to configure GitHub Actions to deploy to both dev an
 
 ## Overview
 
-The CI/CD workflow (`.github/workflows/ci.yml`) automatically deploys to two environments:
+The **Frontend** workflow (`.github/workflows/ci.yml`) automatically deploys to two environments:
 
 - **dev**: Deployed on pull requests for preview and testing
 - **production**: Deployed on merge to `main`
@@ -44,6 +44,22 @@ Navigate to **Settings → Secrets and variables → Actions → Repository secr
 | `AWS_ROLE_ARN` | IAM role ARN for OIDC authentication | `arn:aws:iam::123456789012:role/GitHubActionsRole` |
 
 > **Note:** The `AWS_ROLE_ARN` is shared across both environments. If you need separate roles per environment, you can also configure this as an environment secret instead.
+
+### Recruiter assistant (optional)
+
+Add **`RECRUITER_API_URL`** per GitHub **environment** (recommended) or at repository level:
+
+| Where                                  | When                                                           |
+| -------------------------------------- | -------------------------------------------------------------- |
+| **Environments → dev → Secret**        | PR previews (`dev.danieltostes.com`) — dev Lambda Function URL |
+| **Environments → production → Secret** | `main` builds — prod Lambda Function URL                       |
+| **Repository secret or variable**      | Fallback for either environment if not set on the environment  |
+
+The **Frontend / build** job uses the same `dev` / `production` environment as deploy, so environment secrets are visible during `npm run build`. A **variable** is enough (the URL is public in the static bundle).
+
+After adding or changing it, re-run the **Frontend** workflow (site build + deploy), not only Recruiter API.
+
+For the API deploy workflow and embeddings upload secrets, see [services/recruiter-assistant-api/SETUP.md](../services/recruiter-assistant-api/SETUP.md).
 
 ## AWS Infrastructure Requirements
 

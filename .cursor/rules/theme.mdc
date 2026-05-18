@@ -1,0 +1,9 @@
+---
+description: Theme and design tokens
+globs: src/theme/**
+alwaysApply: false
+---
+
+- All tokens (palette, typography, spacing, radii, shadows) in `src/theme/**`.
+- Light/dark parity; consume via `sx` or `styled()` — no hardcoded values in components.
+- Reusable primitives via `styled()`; no component imports inside theme files.

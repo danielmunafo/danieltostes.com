@@ -55,8 +55,13 @@ export function LocaleRuntimeProvider({
         .then((m) => {
           setMessages(m.default);
           setLocaleState(newLocale);
-          const newPath = `/${newLocale}`;
-          window.history.replaceState(null, "", newPath);
+          const { pathname, search, hash } = window.location;
+          const segments = pathname.split("/").filter(Boolean);
+          const nextPath =
+            segments.length === 0
+              ? `/${newLocale}`
+              : `/${[newLocale, ...segments.slice(1)].join("/")}`;
+          window.history.replaceState(null, "", `${nextPath}${search}${hash}`);
         })
         .finally(() => setIsSwitching(false));
     },

@@ -1,0 +1,26 @@
+# Dependencies (root .gitignore only covers /node_modules)
+node_modules/
+
+# esbuild output
+dist/
+
+# Generated embeddings (large JSON; optional local copies)
+embeddings/*.json
+
+# Private interests: your rubric + generated JSON (never commit).
+#   Source: private/interests.source.md
+#   Build:  npm run build:interests-pack → private/interests-pack.<hash>.json
+#   Env:    INTERESTS_PACK_JSON_PATH=private/interests-pack.<hash>.json
+private/
+
+# Vitest / tooling
+coverage/
+.vitest/
+
+# Logs and local env
+*.log
+.env*
+!.env.example
+
+# OS / editor
+.DS_Store

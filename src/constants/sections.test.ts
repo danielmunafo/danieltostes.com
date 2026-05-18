@@ -6,6 +6,7 @@ import {
   GLASS_BLUR,
   ICON_POSITION_OFFSET,
   ICON_SIDE_PADDING,
+  PARALLAX_SECTION_IDS,
   SECTION_BG_GRADIENTS,
   SECTION_COLORS,
   SECTION_ICON_OVERLAP_RATIO,
@@ -15,7 +16,7 @@ import {
   SECTION_ITEM_PADDING_Y,
   getItemSide,
   hexToRgba,
-  type SectionId,
+  type ParallaxContentSectionId,
 } from "./sections";
 
 describe("hexToRgba", () => {
@@ -53,14 +54,14 @@ describe("getItemSide", () => {
   });
 
   it("covers all sections at item 0", () => {
-    const expected: Record<SectionId, "left" | "right"> = {
+    const expected: Record<ParallaxContentSectionId, "left" | "right"> = {
       summary: "left",
       impact: "right",
       experience: "left",
       education: "left",
       me: "left",
     };
-    for (const id of SECTION_IDS) {
+    for (const id of PARALLAX_SECTION_IDS) {
       expect(getItemSide(id, 0)).toBe(expected[id]);
     }
   });

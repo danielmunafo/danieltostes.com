@@ -1,0 +1,11 @@
+---
+description: MUI components and sections
+globs: src/components/**,src/features/**
+alwaysApply: false
+---
+
+- MUI only; `sx` by default; `styled()` for reusable blocks.
+- i18n keys for user-visible copy; presentational components; logic in hooks.
+- Accessibility: semantic HTML, ARIA, keyboard support.
+- Searchable sections: IDs `section-<sectionId>-item-<itemIndex>` per `docs/search-index.md`.
+- Theme tokens, not ad-hoc colors; guard `window` access; focused MUI imports.

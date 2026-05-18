@@ -167,6 +167,16 @@ But those are deliberately not required for the “scaffolding” milestone.
 
 ---
 
+## Recruiter AI assistant (Lambda)
+
+The portfolio remains **static-first** (S3 + CloudFront). The recruiter-facing **AI chat** is optional compute on **AWS Lambda** (Function URL with response streaming):
+
+- **Frontend:** `src/features/recruiter-assistant/` — Vercel AI SDK `useChat`; build-time env `NEXT_PUBLIC_RECRUITER_API_URL` (from GitHub Actions variable `RECRUITER_API_URL` in CI).
+- **Backend:** `services/recruiter-assistant-api/` — cosine **RAG**, then staged chat in `recruiterAssistant/pipeline/runRecruiterAssistantPipeline.ts`: **evaluator** and **analyst** inside **thinking markers**; **hard-gate assessment** and optional **interests** run server-side only; after thinking closes, **briefing prep** + **match-profile chart** JSON markers, then **pitch** (clamped to hard gates), then **post-stream** `## References`. Embeddings in **private S3** (or local path); OpenAI key from **Secrets Manager** (or env locally); AWS bootstrap **manual** (`SETUP.md`).
+- **Plan:** [docs/plans/recruiter-assistant-plan.md](./plans/recruiter-assistant-plan.md).
+
+---
+
 ## Future Refactor Considerations
 
 Likely future changes as the site grows:

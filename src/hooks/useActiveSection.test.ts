@@ -47,6 +47,12 @@ describe("useActiveSection", () => {
       y: 300,
       toJSON: () => ({}),
     };
+    for (const id of ["assistant", "education", "me"]) {
+      vi.spyOn(
+        document.getElementById(`section-${id}`)!,
+        "getBoundingClientRect"
+      ).mockReturnValue(rectAbove);
+    }
     ["summary", "impact"].forEach((id) => {
       vi.spyOn(
         document.getElementById(`section-${id}`)!,

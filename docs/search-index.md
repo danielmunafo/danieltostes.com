@@ -36,7 +36,7 @@ Impact is **not** in SECTION_SPEC; it is indexed only by `buildEntriesFromImpact
 
 Requirements:
 
-- **All four locales** must have the same structure: when you add or edit `Summary.impact` in one locale, update all four `src/messages/<locale>.json`. When you add or edit `public/content/impact/<i>/<locale>.md`, add or edit the same path for **en**, **pt-BR**, **es**, and **it** (see `.cursor/rules/i18n/RULE.md`).
+- **All four locales** must have the same structure: when you add or edit `Summary.impact` in one locale, update all four `src/messages/<locale>.json`. When you add or edit `public/content/impact/<i>/<locale>.md`, add or edit the same path for **en**, **pt-BR**, **es**, and **it** (see `.cursor/rules/i18n.mdc`).
 - The script currently indexes impact indices **0, 1, 2** only (hardcoded in `build-search-index.mjs`). Adding a new impact item (e.g. index 3) requires:
   - Adding an entry to `Summary.impact` in all locale message files.
   - Adding `public/content/impact/3/<locale>.md` for each locale.

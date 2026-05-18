@@ -1,0 +1,14 @@
+---
+description: npm dependency and lockfile workflow
+globs: package.json,package-lock.json,services/**/package.json
+alwaysApply: false
+---
+
+When adding or updating deps:
+
+1. Edit `package.json`
+2. `rm -rf node_modules package-lock.json`
+3. `npm install`
+4. Commit `package.json` + `package-lock.json`; run format, lint, test
+
+Do not hand-edit `package-lock.json`.

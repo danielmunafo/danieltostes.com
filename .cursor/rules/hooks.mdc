@@ -1,0 +1,9 @@
+---
+description: React hooks conventions
+globs: src/hooks/**
+alwaysApply: false
+---
+
+- Behavior-based names; typed params/returns; pure reusable hooks.
+- Guard DOM/`window` (e.g. `const isWindowUndefined = typeof window === "undefined"`).
+- Rules of Hooks; clean up listeners/intervals in `useEffect`; avoid UI-heavy hooks.

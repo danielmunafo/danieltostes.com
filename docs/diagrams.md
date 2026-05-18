@@ -116,3 +116,28 @@ flowchart TD
 • Managed TLS certificates for HTTPS (typically used by CloudFront).
 • Auto-renewal.
 • Used by both dev and production distributions.
+
+## 3) Recruiter assistant (browser → Lambda → OpenAI)
+
+```mermaid
+flowchart LR
+  Browser[Static site browser]
+  CF[CloudFront and S3]
+  Lambda[Lambda Function URL]
+  S3Emb[Embeddings bucket]
+  OAI[OpenAI API]
+  SM[Secrets Manager]
+
+  Browser --> CF
+  Browser -->|POST stream| Lambda
+  Lambda --> SM
+  Lambda --> S3Emb
+  Lambda --> OAI
+```
+
+- **Static assets** are still served from CloudFront + S3 (`out/`).
+- **Chat** POSTs directly to the **Lambda Function URL** (CORS allowlist); the marketing bucket does not terminate the stream.
+- **RAG corpus index** is built offline (`services/recruiter-assistant-api/scripts/build-llamaindex-index.mjs`) and uploaded to the RAG bucket; see [services/recruiter-assistant-api/SETUP.md](../services/recruiter-assistant-api/SETUP.md).
+- **Inside the stream** (see [docs/plans/recruiter-assistant-plan.md](./plans/recruiter-assistant-plan.md)): RAG → evaluator → hard gates (server) → optional interests (server log) → analyst **inside thinking markers** → briefing prep + chart JSON → pitch → post-stream **References**.
+
+For a **handler-level** flow (stages, S3 load, post-stream references), use the architecture diagram in [docs/plans/recruiter-assistant-plan.md](./plans/recruiter-assistant-plan.md).

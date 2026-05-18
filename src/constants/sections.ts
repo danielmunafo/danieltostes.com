@@ -2,18 +2,24 @@
 
 import type { ThemeMode } from "./site";
 
-export const SECTION_IDS = [
+/** Scrollable CV sections (parallax column); excludes the assistant hero above the fold. */
+export const PARALLAX_SECTION_IDS = [
   "summary",
   "impact",
   "experience",
   "education",
   "me",
 ] as const;
+export type ParallaxContentSectionId = (typeof PARALLAX_SECTION_IDS)[number];
+
+/** All sections including assistant (background crossfade + scroll intersection). */
+export const SECTION_IDS = ["assistant", ...PARALLAX_SECTION_IDS] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
 /** Foreground (content column) background colors per section, keyed by theme mode. */
 export const SECTION_COLORS = {
   dark: {
+    assistant: "#12182A",
     summary: "#0D1B2A",
     impact: "#1A3D3D",
     experience: "#1B4332",
@@ -21,6 +27,7 @@ export const SECTION_COLORS = {
     me: "#6B2737",
   },
   light: {
+    assistant: "#D4DCE8",
     summary: "#C9D6E3",
     impact: "#C5E3DF",
     experience: "#C9E3D4",
@@ -32,6 +39,7 @@ export const SECTION_COLORS = {
 /** CSS gradients used as mock background images, keyed by theme mode. */
 export const SECTION_BG_GRADIENTS = {
   dark: {
+    assistant: "linear-gradient(135deg, #1e2a4a 0%, #0f1525 50%, #1a1f35 100%)",
     summary: "linear-gradient(135deg, #1a3a5c 0%, #0a1929 50%, #1a2a3c 100%)",
     impact: "linear-gradient(135deg, #2a5a5a 0%, #0a2e2e 50%, #1a3a3a 100%)",
     experience:
@@ -40,6 +48,7 @@ export const SECTION_BG_GRADIENTS = {
     me: "linear-gradient(135deg, #8b3a4a 0%, #3a0e1a 50%, #5a2030 100%)",
   },
   light: {
+    assistant: "linear-gradient(135deg, #e2e8f2 0%, #cfd8e8 50%, #dce4f0 100%)",
     summary: "linear-gradient(135deg, #dae5f0 0%, #c0d0e0 50%, #d0dce8 100%)",
     impact: "linear-gradient(135deg, #d5f0ed 0%, #c0e0dc 50%, #d0e8e5 100%)",
     experience:
@@ -108,10 +117,10 @@ export const CHIP_BG = {
  * Experience and education both start with the icon on the left.
  */
 export function getItemSide(
-  sectionId: SectionId,
+  sectionId: ParallaxContentSectionId,
   itemIndex: number
 ): "left" | "right" {
-  const sectionIdx = SECTION_IDS.indexOf(sectionId);
+  const sectionIdx = PARALLAX_SECTION_IDS.indexOf(sectionId);
   const baseIsLeft =
     sectionId === "experience" || sectionId === "education"
       ? true
@@ -125,7 +134,7 @@ export function getItemSide(
 export const EXPERIENCE_ROLE_ICONS: readonly { src: string; scale?: number }[] =
   [
     { src: "/confidential.svg" },
-    { src: "/potenzo.svg" },
+    { src: "/logo.svg" },
     { src: "/ageras.svg" },
     { src: "/klarna.svg", scale: 1.05 },
     { src: "/mercadolivre.svg" },

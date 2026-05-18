@@ -1,0 +1,22 @@
+---
+description: Commit structure and conventional commits
+alwaysApply: false
+---
+
+## Principles
+
+- One logical change per commit; split infra, docs, config, and features when practical.
+- Conventional Commits: `feat|fix|docs|chore|ci|test|refactor|build(scope): description`
+- Order: foundation (CI/scripts) → implementation → docs.
+- Stage explicit paths; avoid `git add .`.
+- Run `npm run format:check` before each commit.
+
+## Split when
+
+- CI/workflows vs feature code vs docs (small doc fixes tied to the feature may stay together).
+- Different features → separate commits.
+
+## Gotchas
+
+- Tightly coupled changes may be one commit.
+- Do not commit with format failures.

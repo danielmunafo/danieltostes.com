@@ -1,0 +1,14 @@
+Staff Full-Stack Engineer — Product Platform
+
+We are hiring a Staff-level engineer to lead delivery across TypeScript, Node.js, React, and distributed backend services.
+
+Must-have:
+- Production TypeScript / React / Node.js experience at scale
+- API design, performance, and reliability (observability, SLOs)
+- Ownership of cross-team technical initiatives
+
+Nice-to-have:
+- Event-driven architecture and workflow orchestration
+- PostgreSQL and AWS
+
+You will partner with product and infrastructure to ship customer-facing features.

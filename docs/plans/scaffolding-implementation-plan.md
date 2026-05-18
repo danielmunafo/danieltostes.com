@@ -36,7 +36,7 @@ This document describes the execution plan and technology choices for the initia
 | Familiar to many reviewers and interviewers.          | Framework overhead vs. a minimal Vite setup.                                      |
 | Fits architecture: static-first, S3 deploy.           |                                                                                   |
 
-**Decision:** Use Next.js for structure and conventions; accept the constraint of static export for S3. See [architecture.md – Why Next.js](../architecture.md#why-nextjs-static-export-over-pure-vite).
+**Decision:** Use Next.js for structure and conventions; accept the constraint of static export for S3. See [architecture.md - Why Next.js](../architecture.md#why-nextjs-static-export-over-pure-vite).
 
 ---
 
@@ -49,7 +49,7 @@ This document describes the execution plan and technology choices for the initia
 | **SEO and shareability:** Each locale has a stable URL (e.g. `/pt-BR`), which is better for indexing and sharing.                                                                                                                                                                               |                                                                                                                                |
 | **Aligns with static export:** No `headers()` or cookies at runtime; `setRequestLocale` + `getMessages({ locale })` keep build static.                                                                                                                                                          |                                                                                                                                |
 
-**Decision:** Use a route per locale so the app stays static, fast, and cacheable at the edge, with language-specific URLs and on-demand message loading. This is documented in [architecture.md – i18n Strategy](../architecture.md#i18n-strategy).
+**Decision:** Use a route per locale so the app stays static, fast, and cacheable at the edge, with language-specific URLs and on-demand message loading. This is documented in [architecture.md - i18n Strategy](../architecture.md#i18n-strategy).
 
 ---
 
@@ -61,7 +61,7 @@ This document describes the execution plan and technology choices for the initia
 | `sx` and `styled()` keep styling in one system; design tokens live in `src/theme/`. | Extra dependency surface (MUI + Emotion).                |
 | Fast UI iteration without building a design system from scratch.                    |                                                          |
 
-**Decision:** MUI + theme tokens + CssBaseline; prefer `sx` for most styling and `styled()` for reusable blocks. See [architecture.md – Why MUI](../architecture.md#why-mui-over-tailwind) and [AGENTS.md – CSS / Styling](../../AGENTS.md#css-mui-only-no-extra-styling-lib).
+**Decision:** MUI + theme tokens + CssBaseline; prefer `sx` for most styling and `styled()` for reusable blocks. See [architecture.md - Why MUI](../architecture.md#why-mui-over-tailwind) and [AGENTS.md - CSS / Styling](../../AGENTS.md#css-mui-only-no-extra-styling-lib).
 
 ---
 

@@ -2,14 +2,16 @@
 /**
  * Build-time script: generates public/search-index.json for the site search tool.
  *
- * Reads src/messages (locale JSON) and public/content/impact (locale .md) per locale,
+ * Reads src/messages (locale JSON) and public/content markdown for impact items and
+ * optional experience role details, flattens content into searchable entries with
+ * scrollTargetId for navigation.
  * flattens content into searchable entries with scrollTargetId for navigation.
  * Index structure is driven by INDEX_SPEC; new sections/keys only require a spec entry.
  * Run before next build (e.g. in the build script).
  */
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 const LOCALES = ["en", "pt-BR", "es", "it"];
 const MESSAGES_DIR = "src/messages";
@@ -177,6 +179,38 @@ function buildEntriesFromImpactMd(locale, impactItems) {
   return entries;
 }
 
+const CONTENT_ROOT = resolve("public/content");
+
+function resolveExperienceDetailMarkdownPath(bodyPath, locale) {
+  const mdRelative = join(
+    ...bodyPath.split("/").filter(Boolean),
+    `${locale}.md`
+  );
+  const mdPath = resolve(CONTENT_ROOT, mdRelative);
+  if (!mdPath.startsWith(CONTENT_ROOT)) return null;
+  return mdPath;
+}
+
+function mergeExperienceDetailMarkdown(locale, entries, messages) {
+  const roles = messages?.Experience?.roles;
+  if (!Array.isArray(roles)) return entries;
+  return entries.map((entry) => {
+    if (entry.sectionId !== "experience") return entry;
+    const role = roles[entry.itemIndex];
+    const bodyPath =
+      typeof role?.detailBodyPath === "string"
+        ? role.detailBodyPath.trim()
+        : "";
+    if (!bodyPath) return entry;
+    const mdPath = resolveExperienceDetailMarkdownPath(bodyPath, locale);
+    if (!mdPath || !existsSync(mdPath)) return entry;
+    const raw = readFileSync(mdPath, "utf8");
+    const stripped = stripMarkdownForSearch(raw);
+    if (!stripped) return entry;
+    return { ...entry, text: `${entry.text} ${stripped}`.trim() };
+  });
+}
+
 function main() {
   const indexByLocale = {};
 
@@ -189,7 +223,8 @@ function main() {
       continue;
     }
     const messages = JSON.parse(readFileSync(messagesPath, "utf8"));
-    const entries = buildEntriesFromSpec(messages);
+    let entries = buildEntriesFromSpec(messages);
+    entries = mergeExperienceDetailMarkdown(locale, entries, messages);
     const impactItems = messages.Summary?.impact;
     const mdEntries = buildEntriesFromImpactMd(locale, impactItems);
     indexByLocale[locale] = [...entries, ...mdEntries];

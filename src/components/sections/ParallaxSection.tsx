@@ -10,11 +10,11 @@ import {
   GLASS_BLUR,
   SECTION_COLORS,
   hexToRgba,
-  type SectionId,
+  type ParallaxContentSectionId,
 } from "@/constants/sections";
 
 interface ParallaxSectionProps {
-  sectionId: SectionId;
+  sectionId: ParallaxContentSectionId;
   /** Skip the 100vh minimum so the section only takes its natural height. */
   compact?: boolean;
   /** When true, adds top margin so the first section is spaced from the top; avoids double gap between sections. */

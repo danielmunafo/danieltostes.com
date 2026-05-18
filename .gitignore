@@ -30,8 +30,15 @@ public/content/diagrams/
 # build-time generated search index
 public/search-index.json
 
+# recruiter assistant API (generated)
+services/recruiter-assistant-api/dist/
+services/recruiter-assistant-api/embeddings/*.json
+
 # env files (opt-in to commit if needed)
 .env*
+!.env.example
+!.env.test.example
+!**/.env.example
 
 # debug
 npm-debug.log*

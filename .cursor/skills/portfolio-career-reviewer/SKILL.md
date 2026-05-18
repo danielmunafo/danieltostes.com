@@ -1,6 +1,6 @@
 ---
 name: portfolio-career-reviewer
-description: Reviews and writes portfolio markdown entries (jobs, projects, experience) as a senior/staff engineer advocating for Daniel, aligning tone and content with his LinkedIn profile and documented strengths/positioning. Use when updating or creating .md files that describe Daniel's career, projects, or skills.
+description: Portfolio career copy (jobs, experience .md). Invoke for senior/staff voice aligned with LinkedIn.
 ---
 
 # Portfolio Career Reviewer
@@ -89,7 +89,7 @@ When asked to **write** a new entry from notes:
 3. **Draft using templates**
    - Use the relevant template below.
 4. **Tighten for impact**
-   - Prefer 3–6 bullets of strong impact, each with:
+   - Prefer 3-6 bullets of strong impact, each with:
      - A clear action Daniel took.
      - Technologies or domains only where relevant.
      - A concrete result where possible.
@@ -126,7 +126,7 @@ Use this for case studies like those on LinkedIn:
 [Dates or context]
 
 Overview  
-1–2 sentences describing what problem the project solved and for whom.
+1-2 sentences describing what problem the project solved and for whom.
 
 Key Responsibilities & Achievements
 
@@ -148,7 +148,7 @@ Results
 - Keep each bullet or description roughly **tweet-length** (aim for ≤ 280 characters) so entries stay scannable.
 - Use metrics and concrete outcomes when they are known; otherwise, be honest but specific.
 - Match the existing **portfolio structure and naming** used in other `.md` files (headings, sections like Overview / Key Contributions / Results, and bullet style) so new content feels consistent across the site.
-- If the content is **locale-specific** (e.g. under `public/content/.../en.md`), update or add the same content for all four locales (en, pt-BR, es, it). See `.cursor/rules/i18n/RULE.md` for the app’s translation-sync rule.
+- If the content is **locale-specific** (e.g. under `public/content/.../en.md`), update or add the same content for all four locales (en, pt-BR, es, it). See `.cursor/rules/i18n.mdc`.
 
 ## Examples of requested actions
 

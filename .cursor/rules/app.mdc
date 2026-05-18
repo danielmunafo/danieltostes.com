@@ -1,0 +1,30 @@
+---
+description: Next.js app shell, routing, static export
+globs: src/app/**
+alwaysApply: false
+---
+
+## Scope
+
+`src/app/**` — layouts, pages, static export constraints.
+
+## Constraints
+
+- Static export only: no API routes, server actions, or SSR-only APIs.
+- SPA on S3/CloudFront; locale via explicit `[locale]` segments + `generateStaticParams`.
+- Lean route bundles; no heavy imports in root layout.
+
+## Gotchas
+
+- No `headers()`, `cookies()`, or server-only APIs in export paths.
+- Do not detect locale at runtime; pre-render all locales.
+
+## Example
+
+```ts
+// OK: locale from segment
+const messages = (await import(`@/messages/${locale}.json`)).default;
+
+// BAD: breaks static export
+const locale = headers().get("x-next-intl-locale") ?? "en";
+```

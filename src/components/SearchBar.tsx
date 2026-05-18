@@ -78,18 +78,6 @@ export function SearchBar() {
     inputRef.current?.blur();
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "f") {
-        e.preventDefault();
-        inputRef.current?.focus();
-        setOpen(true);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
   useEffect(
     () => () => {
       if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
