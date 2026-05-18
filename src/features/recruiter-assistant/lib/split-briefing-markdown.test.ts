@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  hasBestPositioningAngleSectionFinished,
   hasBestPositioningAngleSectionStarted,
+  hasScoresSectionFinished,
   splitBriefingMarkdown,
   splitExecutiveBriefMarkdown,
   splitPitchAndReferencesMarkdown,
+  trimPitchMarkdownBeforeMatchProfileReady,
 } from "./split-briefing-markdown";
 
 describe("hasBestPositioningAngleSectionStarted", () => {
@@ -32,6 +35,60 @@ describe("hasBestPositioningAngleSectionStarted", () => {
         "it"
       )
     ).toBe(true);
+  });
+});
+
+describe("hasScoresSectionFinished", () => {
+  it("is false while the Scores section is still streaming", () => {
+    expect(
+      hasScoresSectionFinished(
+        "# Verdict\nGo\n\n# Scores\n- **Technical fit:** 9/10",
+        "en"
+      )
+    ).toBe(false);
+  });
+
+  it("is true once the next h1 after Scores has started", () => {
+    expect(
+      hasScoresSectionFinished(
+        "# Verdict\n\n# Scores\n- **Technical fit:** 9/10\n\n# Why It Matches\n- a",
+        "en"
+      )
+    ).toBe(true);
+  });
+});
+
+describe("hasBestPositioningAngleSectionFinished", () => {
+  it("is false while Best Positioning Angle body is still streaming", () => {
+    expect(
+      hasBestPositioningAngleSectionFinished(
+        "# Verdict\n\n# Best Positioning Angle\n\nOpening paragraph.",
+        "en"
+      )
+    ).toBe(false);
+  });
+
+  it("is true once references follow the section", () => {
+    expect(
+      hasBestPositioningAngleSectionFinished(
+        "# Verdict\n\n# Best Positioning Angle\n\nParagraph.\n\n## References\n",
+        "en"
+      )
+    ).toBe(true);
+  });
+});
+
+describe("trimPitchMarkdownBeforeMatchProfileReady", () => {
+  it("keeps verdict content before Scores begins", () => {
+    const md = "# Verdict\nStrong fit.\n\n# Scores\n- **Technical fit:** 9/10";
+    expect(trimPitchMarkdownBeforeMatchProfileReady(md, "en")).toBe(
+      "# Verdict\nStrong fit."
+    );
+  });
+
+  it("returns the full pitch when Scores has not started", () => {
+    const md = "# Verdict\nStrong fit.";
+    expect(trimPitchMarkdownBeforeMatchProfileReady(md, "en")).toBe(md);
   });
 });
 

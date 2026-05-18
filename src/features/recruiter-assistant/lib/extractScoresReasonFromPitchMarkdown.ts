@@ -19,7 +19,8 @@ function tryParseMainReasonLine(trimmedLine: string): string | null {
   return mReason[2]?.trim() || null;
 }
 
-function extractScoresSectionRange(
+/** Index range of a pitch `# Scores` block (heading line included). */
+export function extractScoresSectionRange(
   markdown: string,
   scoresTitle: string
 ): { start: number; end: number } | null {
