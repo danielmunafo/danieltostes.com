@@ -85,6 +85,8 @@ Four scenarios (perfection, ok, bad match, complete mismatch) call the **local**
 
 One-shot (build + stack + tests): `npm run test:e2e:recruiter:stack`.
 
+**Troubleshooting slow recruiter E2E:** Stop any manual `npm run dev` on port 3001 before `test:e2e:recruiter:stack` — Playwright used to reuse that process, including `.env.local` reCAPTCHA (requests fail with `captcha_failed`) and esbuild watch churn while `node_modules` changes. The stack now starts a fresh `build` + `dev:server` with reCAPTCHA disabled. Local pipeline waits default to 3 minutes per test (10 minutes in CI); override with `RECRUITER_E2E_TEST_TIMEOUT_MS`.
+
 Collapsible panels (**Evidence review**, **Role Context**) expose titles as `button`, not `heading` — E2E selectors match that.
 
 Set `SKIP_RECRUITER_E2E=1` to skip the recruiter Playwright project. CI runs these in the [Recruiter API workflow](.github/workflows/recruiter-api.yml) (`recruiter-e2e` job), not in the Frontend smoke job.

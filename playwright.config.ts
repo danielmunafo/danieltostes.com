@@ -43,10 +43,13 @@ export default defineConfig({
   webServer: isRecruiterStackEnabled
     ? [
         {
-          command: "npm run dev",
+          // One-shot bundle + server (not watch): avoids reusing a manual `npm run dev`
+          // on :3001 with .env.local reCAPTCHA or a broken esbuild watch session.
+          command:
+            "node scripts/ensure-rag-artifacts.mjs && npm run build && npm run dev:server",
           cwd: "services/recruiter-assistant-api",
           url: recruiterTestEnv.recruiterApiHealthUrl,
-          reuseExistingServer: !isCi,
+          reuseExistingServer: false,
           timeout: 180_000,
           env: {
             PORT: String(recruiterTestEnv.apiPort),
@@ -58,7 +61,7 @@ export default defineConfig({
         {
           command: `npx serve out -p ${recruiterTestEnv.sitePort}`,
           url: recruiterTestEnv.playwrightBaseUrl,
-          reuseExistingServer: !isCi,
+          reuseExistingServer: false,
           timeout: 60_000,
         },
       ]
