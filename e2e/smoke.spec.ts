@@ -104,6 +104,21 @@ test("experience section shows company names", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Klarna" })).toBeVisible();
 });
 
+test("home page deep link preserves hash and scrolls to section", async ({
+  page,
+}) => {
+  await page.goto(`${defaultLocalePath}#section-experience-item-0`);
+  await expect(page).toHaveURL(/#section-experience-item-0$/);
+  const target = page.locator("#section-experience-item-0");
+  await expect(target).toBeVisible();
+  await expect
+    .poll(async () => {
+      const box = await target.boundingBox();
+      return box !== null && box.y < 240;
+    })
+    .toBe(true);
+});
+
 test("search navigates to matched item on select", async ({ page }) => {
   await page.goto(defaultLocalePath);
   const searchInput = page.getByLabel("Search site content");

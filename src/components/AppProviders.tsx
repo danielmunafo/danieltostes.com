@@ -3,10 +3,13 @@
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
 import { ThemeModeProvider } from "@/contexts/ThemeModeContext";
+import { useRestorePreservedLocationHash } from "@/hooks/useRestorePreservedLocationHash";
 import { ThemeRegistry } from "./ThemeRegistry";
 import { TopBar } from "./TopBar";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
+  useRestorePreservedLocationHash();
+
   return (
     <ThemeModeProvider>
       <ThemeRegistry>

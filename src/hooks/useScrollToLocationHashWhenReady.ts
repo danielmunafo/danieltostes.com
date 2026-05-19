@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { scrollToLocationHashAfterPaint } from "../lib/scrollToLocationHash";
+import { scrollToLocationHashAfterPaint } from "@/lib/locationHash";
 
 /** Scroll to `location.hash` once content is ready; re-run on `hashchange`. */
 export function useScrollToLocationHashWhenReady(
