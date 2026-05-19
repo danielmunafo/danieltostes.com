@@ -18,6 +18,7 @@ import { GLASS_BLUR, SECTION_IDS } from "@/constants/sections";
 import type { Locale } from "@/i18n/request";
 import type { SearchIndexEntry } from "@/hooks/useSearchIndex";
 import { useSearchIndex } from "@/hooks/useSearchIndex";
+import { navigateToLocationHashTarget } from "@/lib/locationHash";
 
 const FUSE_OPTIONS = {
   keys: ["title", "text"],
@@ -29,8 +30,7 @@ const FUSE_OPTIONS = {
 const MAX_RESULTS = 8;
 
 function scrollToTarget(scrollTargetId: string): void {
-  const el = document.getElementById(scrollTargetId);
-  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  navigateToLocationHashTarget(scrollTargetId);
 }
 
 export function SearchBar() {

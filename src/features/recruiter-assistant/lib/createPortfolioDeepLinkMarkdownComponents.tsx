@@ -5,6 +5,10 @@ import NextLink from "next/link";
 import type { Components } from "react-markdown";
 import type { MouseEvent } from "react";
 import { isValidLocale, LOCALES, type Locale } from "@/i18n/request";
+import {
+  navigateToLocationHashTarget,
+  stashPendingLocationHash,
+} from "@/lib/locationHash";
 import { flushRecruiterChatSession } from "./recruiter-chat-session-flush";
 
 const LOCALE_PORTFOLIO_HASH_PATTERN = new RegExp(
@@ -48,7 +52,7 @@ function normalizePortfolioPathname(pathname: string): string {
  * Next.js client navigation typically no-op; scroll to the target anyway so
  * repeat clicks from references still bring the section into view.
  */
-function scrollToSameHashPortfolioTarget(
+function handlePortfolioDeepLinkClick(
   event: MouseEvent<HTMLAnchorElement>,
   pathHref: string
 ): void {
@@ -60,6 +64,7 @@ function scrollToSameHashPortfolioTarget(
   const isModifiedClick =
     event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
   if (isModifiedClick) return;
+
   let url: URL;
   try {
     url = new URL(pathHref, window.location.origin);
@@ -68,14 +73,16 @@ function scrollToSameHashPortfolioTarget(
   }
   const id = url.hash.slice(1).trim();
   if (!id) return;
+
   const targetPath = normalizePortfolioPathname(url.pathname);
   const currentPath = normalizePortfolioPathname(window.location.pathname);
-  if (targetPath !== currentPath) return;
-  if (window.location.hash !== url.hash) return;
-  const targetEl = document.getElementById(id);
-  if (!targetEl) return;
-  event.preventDefault();
-  targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (targetPath === currentPath) {
+    event.preventDefault();
+    navigateToLocationHashTarget(id);
+    return;
+  }
+
+  stashPendingLocationHash(pathHref);
 }
 
 /**
@@ -105,7 +112,7 @@ export function createPortfolioDeepLinkMarkdownComponents(
             className={className}
             onClick={(e) => {
               flushRecruiterChatSession();
-              scrollToSameHashPortfolioTarget(e, resolvedHref);
+              handlePortfolioDeepLinkClick(e, resolvedHref);
               propsOnClick?.(e);
             }}
           >

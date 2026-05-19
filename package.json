@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:with-diagrams": "npm run render-mermaid && npm run dev",
-    "build": "npm run build-search-index && npm run render-mermaid && next build; ec=$?; git checkout -- public/content/ 2>/dev/null; exit $ec",
+    "build": "npm run build-search-index && npm run render-mermaid && next build && node scripts/inject-location-hash-preserver.mjs; ec=$?; git checkout -- public/content/ 2>/dev/null; exit $ec",
     "build-search-index": "node scripts/build-search-index.mjs",
     "render-mermaid": "node scripts/render-mermaid.mjs",
     "start": "serve out -p 3000",
