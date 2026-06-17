@@ -2,6 +2,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { CHAT_MODEL, INTENT_GATE_MAX_TOKENS } from "../constants.js";
 import { logError, logInfo } from "../logging/logger.js";
+import { getActiveTrace } from "../tracing/requestTrace.js";
 
 type OpenAiClient = ReturnType<typeof createOpenAI>;
 
@@ -47,7 +48,10 @@ async function classifyWithStructuredModel(
   openai: OpenAiClient,
   userText: string
 ): Promise<"RECRUITER" | "OFF_TOPIC"> {
-  const { object } = await generateObject({
+  // Called directly (not via traceGenerate) so the generateObject "enum" overload
+  // keeps its literal return type; the stage is recorded manually on success.
+  const startedAt = Date.now();
+  const { object, usage } = await generateObject({
     model: openai(CHAT_MODEL),
     output: "enum",
     enum: ["RECRUITER", "OFF_TOPIC"],
@@ -55,6 +59,14 @@ async function classifyWithStructuredModel(
     prompt: `Classify this single user message:\n---\n${userText}\n---`,
     temperature: 0,
     maxTokens: INTENT_GATE_MAX_TOKENS,
+  });
+  getActiveTrace()?.recordStage({
+    stage: "intent_gate",
+    model: CHAT_MODEL,
+    kind: "chat",
+    status: "success",
+    latencyMs: Date.now() - startedAt,
+    usage,
   });
   return object;
 }

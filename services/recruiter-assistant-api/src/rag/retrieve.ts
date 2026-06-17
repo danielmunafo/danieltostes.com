@@ -43,6 +43,25 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   return dotProduct(a, b) / denom;
 }
 
+/** A retrieved chunk paired with its cosine similarity to the query. */
+export type ScoredChunk = { chunk: EmbeddingChunk; score: number };
+
+/**
+ * Returns the top-K chunks (with scores) by cosine similarity to the query embedding.
+ */
+export function retrieveTopKWithScores(
+  chunks: readonly EmbeddingChunk[],
+  queryEmbedding: number[],
+  topK: number
+): ScoredChunk[] {
+  const scored = chunks.map((chunk) => ({
+    chunk,
+    score: cosineSimilarity(chunk.embedding, queryEmbedding),
+  }));
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, topK);
+}
+
 /**
  * Returns the top-K chunks by cosine similarity to the query embedding.
  */
@@ -51,29 +70,27 @@ export function retrieveTopK(
   queryEmbedding: number[],
   topK: number
 ): EmbeddingChunk[] {
-  const scored = chunks.map((chunk) => ({
-    chunk,
-    score: cosineSimilarity(chunk.embedding, queryEmbedding),
-  }));
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, topK).map((s) => s.chunk);
+  return retrieveTopKWithScores(chunks, queryEmbedding, topK).map(
+    (entry) => entry.chunk
+  );
 }
 
 /**
- * Merges top-K results from multiple query embeddings, keeping the best score per chunk id.
+ * Merges top-K results (with scores) from multiple query embeddings, keeping the
+ * best score per chunk id. Results are sorted by score descending.
  */
-export function retrieveMergedTopK(
+export function retrieveMergedTopKWithScores(
   chunks: readonly EmbeddingChunk[],
   queryEmbeddings: readonly number[][],
   topK: number
-): EmbeddingChunk[] {
+): ScoredChunk[] {
   if (queryEmbeddings.length === 0) return [];
   if (queryEmbeddings.length === 1) {
-    return retrieveTopK(chunks, queryEmbeddings[0], topK);
+    return retrieveTopKWithScores(chunks, queryEmbeddings[0], topK);
   }
 
   const perQueryK = Math.max(1, Math.ceil(topK / queryEmbeddings.length));
-  const byId = new Map<string, { chunk: EmbeddingChunk; score: number }>();
+  const byId = new Map<string, ScoredChunk>();
 
   for (const queryEmbedding of queryEmbeddings) {
     const scored = chunks.map((chunk) => ({
@@ -89,8 +106,18 @@ export function retrieveMergedTopK(
     }
   }
 
-  return [...byId.values()]
-    .sort((a, b) => b.score - a.score)
-    .slice(0, topK)
-    .map((entry) => entry.chunk);
+  return [...byId.values()].sort((a, b) => b.score - a.score).slice(0, topK);
+}
+
+/**
+ * Merges top-K results from multiple query embeddings, keeping the best score per chunk id.
+ */
+export function retrieveMergedTopK(
+  chunks: readonly EmbeddingChunk[],
+  queryEmbeddings: readonly number[][],
+  topK: number
+): EmbeddingChunk[] {
+  return retrieveMergedTopKWithScores(chunks, queryEmbeddings, topK).map(
+    (entry) => entry.chunk
+  );
 }

@@ -14,6 +14,7 @@ import {
   buildEvidenceEvaluatorSystemPrompt,
   buildEvidenceEvaluatorUserPrompt,
 } from "./assemblePrompt.js";
+import { recordStreamStage } from "../../../tracing/requestTrace.js";
 
 export async function evaluateEvidence(params: {
   openai: OpenAiProvider;
@@ -28,6 +29,7 @@ export async function evaluateEvidence(params: {
     params.sourceExcerpts
   );
 
+  const startedAt = Date.now();
   const evaluatorResult = streamText({
     model: params.openai(CHAT_MODEL),
     system: buildEvidenceEvaluatorSystemPrompt(params.navLocale),
@@ -40,6 +42,12 @@ export async function evaluateEvidence(params: {
   });
 
   const evidenceEvaluationMarkdown = (await evaluatorResult.text).trim();
+  await recordStreamStage(
+    "evidence_evaluation",
+    CHAT_MODEL,
+    evaluatorResult,
+    startedAt
+  );
 
   params.dataStream.write(formatDataStreamPart("text", "\n\n---\n\n"));
 

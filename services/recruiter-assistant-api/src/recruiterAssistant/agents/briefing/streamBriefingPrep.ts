@@ -10,6 +10,7 @@ import {
   buildBriefingPrepStatusSystemPrompt,
   buildBriefingPrepStatusUserPrompt,
 } from "./assembleBriefingPrompt.js";
+import { recordStreamStage } from "../../../tracing/requestTrace.js";
 
 export async function streamBriefingPrep(params: {
   openai: OpenAiProvider;
@@ -18,6 +19,7 @@ export async function streamBriefingPrep(params: {
   evidenceEvaluationMarkdown: string;
   evidenceAnalysisMarkdown: string;
 }): Promise<void> {
+  const startedAt = Date.now();
   const briefingPrepStatusResult = streamText({
     model: params.openai(CHAT_MODEL),
     system: buildBriefingPrepStatusSystemPrompt(params.navLocale),
@@ -32,4 +34,10 @@ export async function streamBriefingPrep(params: {
     experimental_sendFinish: false,
   });
   await briefingPrepStatusResult.text;
+  await recordStreamStage(
+    "briefing_prep",
+    CHAT_MODEL,
+    briefingPrepStatusResult,
+    startedAt
+  );
 }

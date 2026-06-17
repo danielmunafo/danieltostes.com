@@ -54,10 +54,14 @@ export function createLlamaIndexRetrieverAdapter(
       );
       const merged = mergeRetrievalResults(resultsPerQuery, RAG_TOP_K);
       const topChunks = toEmbeddingChunks(merged);
+      const topScores = merged
+        .map((chunk) => chunk.score)
+        .filter((score): score is number => typeof score === "number");
 
       return {
         chunksForNavLocale,
         topChunks,
+        topScores,
         sourceExcerpts: formatPortfolioChunks(topChunks, input.navLocale),
       };
     },

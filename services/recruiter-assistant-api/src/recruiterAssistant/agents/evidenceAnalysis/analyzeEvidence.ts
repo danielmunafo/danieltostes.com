@@ -14,6 +14,7 @@ import {
   buildEvidenceAnalystSystemPrompt,
   buildEvidenceAnalystUserPrompt,
 } from "./assemblePrompt.js";
+import { recordStreamStage } from "../../../tracing/requestTrace.js";
 
 export async function analyzeEvidence(params: {
   openai: OpenAiProvider;
@@ -32,6 +33,7 @@ export async function analyzeEvidence(params: {
     params.hardGateAssessmentMarkdown
   );
 
+  const startedAt = Date.now();
   const evidenceAnalysisResult = streamText({
     model: params.openai(CHAT_MODEL),
     system: buildEvidenceAnalystSystemPrompt(params.navLocale),
@@ -43,7 +45,13 @@ export async function analyzeEvidence(params: {
     experimental_sendFinish: false,
   });
 
-  return {
-    evidenceAnalysisMarkdown: (await evidenceAnalysisResult.text).trim(),
-  };
+  const evidenceAnalysisMarkdown = (await evidenceAnalysisResult.text).trim();
+  await recordStreamStage(
+    "evidence_analysis",
+    CHAT_MODEL,
+    evidenceAnalysisResult,
+    startedAt
+  );
+
+  return { evidenceAnalysisMarkdown };
 }

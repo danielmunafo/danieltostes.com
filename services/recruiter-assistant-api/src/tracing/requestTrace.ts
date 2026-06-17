@@ -1,0 +1,293 @@
+import { AsyncLocalStorage } from "node:async_hooks";
+import { logInfo } from "../logging/logger.js";
+import {
+  estimateChatCostUSD,
+  estimateEmbeddingCostUSD,
+  type AnyTokenUsage,
+} from "./costEstimator.js";
+
+export type StageStatus = "success" | "error";
+export type ModelCallKind = "chat" | "embedding";
+export type RequestOutcome = "success" | "error" | "unknown";
+
+/** One model call within a request (LLM or embedding). */
+export type StageRecord = {
+  stage: string;
+  model: string;
+  status: StageStatus;
+  latencyMs: number;
+  promptTokens?: number;
+  completionTokens?: number;
+  tokens?: number;
+  costUSD?: number;
+  errorName?: string;
+};
+
+export type RetrievalStats = {
+  provider: string;
+  topK: number;
+  returnedChunks: number;
+  similarityMin: number | null;
+  similarityMax: number | null;
+  latencyMs: number;
+};
+
+export type RecordStageInput = {
+  stage: string;
+  model: string;
+  kind: ModelCallKind;
+  status: StageStatus;
+  latencyMs: number;
+  usage?: AnyTokenUsage;
+  errorName?: string;
+};
+
+function errorNameOf(err: unknown): string {
+  if (err instanceof Error && err.name) return err.name;
+  return "UnknownError";
+}
+
+function round6(value: number): number {
+  return Math.round(value * 1_000_000) / 1_000_000;
+}
+
+function finiteOrUndefined(value: number): number | undefined {
+  return Number.isFinite(value) ? value : undefined;
+}
+
+/**
+ * Accumulates per-stage timing, token usage, estimated cost, and retrieval stats
+ * for a single chat request. Emitted once, at request end, as a structured pino
+ * log. Stage recording is a no-op after `finish()` so late (not-awaited) calls
+ * cannot mutate an already-logged trace.
+ */
+export class RequestTrace {
+  readonly requestId: string;
+  private readonly navLocale: string;
+  private readonly startedAtMs: number;
+  private finishedAtMs: number | null = null;
+  private finished = false;
+  private outcome: RequestOutcome = "unknown";
+  private errorName: string | undefined;
+  private readonly stages: StageRecord[] = [];
+  private retrieval: RetrievalStats | null = null;
+
+  constructor(
+    requestId: string,
+    params: { navLocale: string; nowMs?: number }
+  ) {
+    this.requestId = requestId;
+    this.navLocale = params.navLocale;
+    this.startedAtMs = params.nowMs ?? Date.now();
+  }
+
+  recordStage(input: RecordStageInput): void {
+    if (this.finished) return;
+    const record: StageRecord = {
+      stage: input.stage,
+      model: input.model,
+      status: input.status,
+      latencyMs: input.latencyMs,
+    };
+    if (input.errorName) record.errorName = input.errorName;
+    const usage = input.usage;
+    if (usage && input.kind === "chat" && "promptTokens" in usage) {
+      record.promptTokens = finiteOrUndefined(usage.promptTokens);
+      record.completionTokens = finiteOrUndefined(usage.completionTokens);
+      const cost = estimateChatCostUSD(input.model, usage);
+      if (cost !== null) record.costUSD = round6(cost);
+    } else if (usage && input.kind === "embedding" && "tokens" in usage) {
+      record.tokens = finiteOrUndefined(usage.tokens);
+      const cost = estimateEmbeddingCostUSD(input.model, usage);
+      if (cost !== null) record.costUSD = round6(cost);
+    }
+    this.stages.push(record);
+  }
+
+  recordRetrieval(stats: RetrievalStats): void {
+    if (this.finished) return;
+    this.retrieval = stats;
+  }
+
+  setOutcome(outcome: RequestOutcome, err?: unknown): void {
+    this.outcome = outcome;
+    if (err !== undefined) this.errorName = errorNameOf(err);
+  }
+
+  finish(nowMs?: number): void {
+    if (this.finished) return;
+    this.finished = true;
+    this.finishedAtMs = nowMs ?? Date.now();
+  }
+
+  /** Serializable envelope for the single end-of-request log line. */
+  toLog(): Record<string, unknown> {
+    let promptTokens = 0;
+    let completionTokens = 0;
+    let embeddingTokens = 0;
+    let costUSD = 0;
+    let anyCostKnown = false;
+    for (const stage of this.stages) {
+      if (stage.promptTokens) promptTokens += stage.promptTokens;
+      if (stage.completionTokens) completionTokens += stage.completionTokens;
+      if (stage.tokens) embeddingTokens += stage.tokens;
+      if (stage.costUSD !== undefined) {
+        costUSD += stage.costUSD;
+        anyCostKnown = true;
+      }
+    }
+    const endedAtMs = this.finishedAtMs ?? Date.now();
+    return {
+      requestId: this.requestId,
+      navLocale: this.navLocale,
+      outcome: this.outcome,
+      ...(this.errorName ? { errorName: this.errorName } : {}),
+      totalLatencyMs: endedAtMs - this.startedAtMs,
+      retrieval: this.retrieval,
+      stages: this.stages,
+      totals: {
+        llmCalls: this.stages.length,
+        promptTokens,
+        completionTokens,
+        embeddingTokens,
+        totalTokens: promptTokens + completionTokens + embeddingTokens,
+        estimatedCostUSD: anyCostKnown ? round6(costUSD) : null,
+      },
+    };
+  }
+}
+
+export function createRequestTrace(
+  requestId: string,
+  params: { navLocale: string }
+): RequestTrace {
+  return new RequestTrace(requestId, params);
+}
+
+// --- Request-scoped context (AsyncLocalStorage) -----------------------------
+
+const traceStore = new AsyncLocalStorage<RequestTrace>();
+
+/** Runs `fn` with `trace` as the active request-scoped trace. */
+export function runWithTrace<T>(
+  trace: RequestTrace,
+  fn: () => Promise<T>
+): Promise<T> {
+  return traceStore.run(trace, fn);
+}
+
+/** The trace for the current async context, if any. */
+export function getActiveTrace(): RequestTrace | undefined {
+  return traceStore.getStore();
+}
+
+/** Emits the single structured trace log for a completed request. */
+export function logRequestTrace(trace: RequestTrace): void {
+  logInfo("recruiter.trace", "request trace", trace.toLog());
+}
+
+// --- Call-site recorders (no-op when no active trace) -----------------------
+
+type MaybeUsage = {
+  usage?: {
+    promptTokens?: number;
+    completionTokens?: number;
+    tokens?: number;
+  };
+};
+
+function extractUsage(
+  result: unknown,
+  kind: ModelCallKind
+): AnyTokenUsage | undefined {
+  const usage = (result as MaybeUsage | null)?.usage;
+  if (!usage) return undefined;
+  if (kind === "chat" && typeof usage.promptTokens === "number") {
+    return {
+      promptTokens: usage.promptTokens,
+      completionTokens:
+        typeof usage.completionTokens === "number" ? usage.completionTokens : 0,
+    };
+  }
+  if (kind === "embedding" && typeof usage.tokens === "number") {
+    return { tokens: usage.tokens };
+  }
+  return undefined;
+}
+
+/**
+ * Wraps an awaited `generateObject`/`generateText`/`embedMany` call, recording a
+ * stage with latency, token usage, and estimated cost. Returns the call result
+ * unchanged. Failures are recorded as `status: "error"` and re-thrown.
+ */
+export async function traceGenerate<T>(
+  stage: string,
+  model: string,
+  kind: ModelCallKind,
+  fn: () => Promise<T>
+): Promise<T> {
+  const trace = getActiveTrace();
+  const startedAt = Date.now();
+  try {
+    const result = await fn();
+    trace?.recordStage({
+      stage,
+      model,
+      kind,
+      status: "success",
+      latencyMs: Date.now() - startedAt,
+      usage: extractUsage(result, kind),
+    });
+    return result;
+  } catch (err) {
+    trace?.recordStage({
+      stage,
+      model,
+      kind,
+      status: "error",
+      latencyMs: Date.now() - startedAt,
+      errorName: err instanceof Error ? err.name : "UnknownError",
+    });
+    throw err;
+  }
+}
+
+/**
+ * Records a `streamText` stage. Call after `await result.text` has resolved;
+ * `result.usage` (a Promise) is then settled. `startedAtMs` should be captured
+ * immediately before the `streamText` call so latency covers the full stream.
+ */
+export async function recordStreamStage(
+  stage: string,
+  model: string,
+  result: {
+    usage: Promise<{ promptTokens: number; completionTokens: number }>;
+  },
+  startedAtMs: number
+): Promise<void> {
+  const trace = getActiveTrace();
+  if (!trace) return;
+  try {
+    const usage = await result.usage;
+    trace.recordStage({
+      stage,
+      model,
+      kind: "chat",
+      status: "success",
+      latencyMs: Date.now() - startedAtMs,
+      usage: {
+        promptTokens: usage.promptTokens,
+        completionTokens: usage.completionTokens,
+      },
+    });
+  } catch (err) {
+    trace.recordStage({
+      stage,
+      model,
+      kind: "chat",
+      status: "error",
+      latencyMs: Date.now() - startedAtMs,
+      errorName: err instanceof Error ? err.name : "UnknownError",
+    });
+  }
+}
