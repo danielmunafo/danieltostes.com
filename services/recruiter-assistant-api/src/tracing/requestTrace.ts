@@ -253,41 +253,30 @@ export async function traceGenerate<T>(
 }
 
 /**
- * Records a `streamText` stage. Call after `await result.text` has resolved;
- * `result.usage` (a Promise) is then settled. `startedAtMs` should be captured
- * immediately before the `streamText` call so latency covers the full stream.
+ * Returns an `onFinish` callback for `streamText` that records the stage with
+ * real token usage. Pass `startedAtMs` captured immediately before the
+ * `streamText` call so latency covers the full stream duration.
+ *
+ * Prefer this over awaiting `result.usage` after the stream: the `usage`
+ * Promise on the stream result can resolve before the provider's final usage
+ * SSE event is processed, yielding undefined token counts for some models.
+ * `onFinish` is always invoked after the stream is fully drained.
  */
-export async function recordStreamStage(
+export function makeStreamTraceOnFinish(
   stage: string,
   model: string,
-  result: {
-    usage: Promise<{ promptTokens: number; completionTokens: number }>;
-  },
   startedAtMs: number
-): Promise<void> {
-  const trace = getActiveTrace();
-  if (!trace) return;
-  try {
-    const usage = await result.usage;
-    trace.recordStage({
+): (event: {
+  usage: { promptTokens: number; completionTokens: number };
+}) => void {
+  return ({ usage }) => {
+    getActiveTrace()?.recordStage({
       stage,
       model,
       kind: "chat",
       status: "success",
       latencyMs: Date.now() - startedAtMs,
-      usage: {
-        promptTokens: usage.promptTokens,
-        completionTokens: usage.completionTokens,
-      },
+      usage,
     });
-  } catch (err) {
-    trace.recordStage({
-      stage,
-      model,
-      kind: "chat",
-      status: "error",
-      latencyMs: Date.now() - startedAtMs,
-      errorName: err instanceof Error ? err.name : "UnknownError",
-    });
-  }
+  };
 }

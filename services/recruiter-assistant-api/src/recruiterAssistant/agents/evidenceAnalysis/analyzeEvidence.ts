@@ -14,7 +14,7 @@ import {
   buildEvidenceAnalystSystemPrompt,
   buildEvidenceAnalystUserPrompt,
 } from "./assemblePrompt.js";
-import { recordStreamStage } from "../../../tracing/requestTrace.js";
+import { makeStreamTraceOnFinish } from "../../../tracing/requestTrace.js";
 
 export async function analyzeEvidence(params: {
   openai: OpenAiProvider;
@@ -40,18 +40,17 @@ export async function analyzeEvidence(params: {
     prompt: evidenceAnalystUserPrompt,
     maxTokens: EVIDENCE_BRIEF_MAX_TOKENS,
     experimental_transform: recruiterStreamTextSmoothTransform,
+    onFinish: makeStreamTraceOnFinish(
+      "evidence_analysis",
+      CHAT_MODEL,
+      startedAt
+    ),
   });
   evidenceAnalysisResult.mergeIntoDataStream(params.dataStream, {
     experimental_sendFinish: false,
   });
 
   const evidenceAnalysisMarkdown = (await evidenceAnalysisResult.text).trim();
-  await recordStreamStage(
-    "evidence_analysis",
-    CHAT_MODEL,
-    evidenceAnalysisResult,
-    startedAt
-  );
 
   return { evidenceAnalysisMarkdown };
 }

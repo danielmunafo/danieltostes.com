@@ -13,7 +13,7 @@ import type {
   ValidRecruiterRequest,
 } from "../../types.js";
 import { buildRecruiterPitchSystemPrompt } from "./assemblePrompt.js";
-import { recordStreamStage } from "../../../tracing/requestTrace.js";
+import { makeStreamTraceOnFinish } from "../../../tracing/requestTrace.js";
 
 export async function generatePitch(params: {
   openai: OpenAiProvider;
@@ -39,13 +39,13 @@ export async function generatePitch(params: {
     messages: params.request.coreMessages,
     maxTokens: RECRUITER_PITCH_MAX_TOKENS,
     experimental_transform: recruiterStreamTextSmoothTransform,
+    onFinish: makeStreamTraceOnFinish("pitch", CHAT_MODEL, startedAt),
   });
   pitchResult.mergeIntoDataStream(params.dataStream, {
     experimental_sendStart: false,
   });
 
   let assistantText = await pitchResult.text;
-  await recordStreamStage("pitch", CHAT_MODEL, pitchResult, startedAt);
   if (params.hardGateAssessment) {
     const clamped = validateAndClampPitchHardGates(
       assistantText,
