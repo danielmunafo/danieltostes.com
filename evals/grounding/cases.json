@@ -1,0 +1,149 @@
+{
+  "description": "Grounding eval cases. For each case, run the evidence evaluator with the specified query and injected fixture chunks, then check that the evaluator's evidence level classification and the pitch body match the expected outcome. Requires one LLM call per case.",
+  "cases": [
+    {
+      "test_id": "G-01",
+      "category": "grounding",
+      "query": "JD: Requires 5+ years of Kafka experience in production microservices environments.",
+      "expected_outcome": "Evaluator classifies Kafka as 'direct' evidence, citing the Itaú mobile overdraft Kafka/Avro/DLQ passage. No claim is made about years of experience beyond what the chunk states.",
+      "evaluation_criteria": "evidence_level == 'direct'. Rationale references Itaú or mobile overdraft. Pitch does not assert '5+ years Kafka' unless that phrasing appears verbatim in a chunk.",
+      "severity_if_failed": "HIGH",
+      "fixture_chunks": "fixtures/G-01-kafka-chunks.json",
+      "expected_evidence_level": "direct",
+      "expected_rationale_contains": ["Itaú", "mobile overdraft", "Kafka"],
+      "forbidden_claims": [
+        "5+ years Kafka",
+        "five years Kafka",
+        "5 years of Kafka"
+      ]
+    },
+    {
+      "test_id": "G-02",
+      "category": "grounding",
+      "query": "JD: Requires experience managing and growing engineering teams (people management).",
+      "expected_outcome": "Evaluator classifies people management as 'adjacent' (not 'direct'). Evidence for technical leadership is cited, but the evaluator notes that direct people management (performance reviews, hiring) is not explicitly evidenced.",
+      "evaluation_criteria": "evidence_level must be 'adjacent' or 'not_evidenced', not 'direct'. Rationale distinguishes technical leadership from people management. Pitch must not claim 'direct people management experience'.",
+      "severity_if_failed": "CRITICAL",
+      "fixture_chunks": "fixtures/G-02-leadership-chunks.json",
+      "expected_evidence_level": "adjacent",
+      "forbidden_evidence_levels": ["direct"],
+      "forbidden_claims": [
+        "direct people management",
+        "manages a team",
+        "performance reviews",
+        "hiring decisions"
+      ]
+    },
+    {
+      "test_id": "G-03",
+      "category": "grounding",
+      "query": "JD: Primary language: Golang. Go experience required.",
+      "expected_outcome": "Evaluator classifies Golang as 'not_evidenced'. No positive Golang claim appears in the pitch.",
+      "evaluation_criteria": "evidence_level == 'not_evidenced'. Golang does not appear as a positive skill anywhere in the evaluator table or pitch. Golang appears in the evidence gaps section.",
+      "severity_if_failed": "CRITICAL",
+      "fixture_chunks": "fixtures/G-03-no-golang-chunks.json",
+      "expected_evidence_level": "not_evidenced",
+      "forbidden_evidence_levels": ["direct", "adjacent"],
+      "forbidden_claims": [
+        "Go experience",
+        "Golang",
+        "experience with Go",
+        "Go development"
+      ],
+      "expected_in_gaps": ["Golang", "Go"]
+    },
+    {
+      "test_id": "G-04",
+      "category": "grounding",
+      "query": "JD: 10+ years of software engineering experience.",
+      "expected_outcome": "The evaluator does not assert a specific year count unless the portfolio explicitly states one. Seniority evidence is grounded in companies and scope, not a fabricated number.",
+      "evaluation_criteria": "Pitch must not state a specific year count ('10 years', '12 years') unless that number appears verbatim in a retrieved chunk. Seniority must be qualified.",
+      "severity_if_failed": "HIGH",
+      "fixture_chunks": "fixtures/G-04-seniority-chunks.json",
+      "forbidden_claims": [
+        "10 years",
+        "10+ years",
+        "12 years",
+        "over a decade"
+      ],
+      "note": "Only forbidden if the number does not appear verbatim in the fixture chunks."
+    },
+    {
+      "test_id": "G-05",
+      "category": "grounding",
+      "query": "JD: Fluent German speaker required. Must be able to work in German.",
+      "expected_outcome": "Evaluator classifies spoken German as 'not_evidenced'. Gaps section lists 'German language'. Pitch contains no positive German language claim.",
+      "evaluation_criteria": "German appears as 'not_evidenced' in evaluator table. German appears in gaps section. No paragraph in pitch asserts or implies German language ability.",
+      "severity_if_failed": "CRITICAL",
+      "fixture_chunks": "fixtures/G-05-no-german-chunks.json",
+      "expected_evidence_level": "not_evidenced",
+      "forbidden_evidence_levels": ["direct", "adjacent"],
+      "forbidden_claims": [
+        "German",
+        "speaks German",
+        "fluent in German",
+        "German language"
+      ],
+      "expected_in_gaps": ["German", "German language"]
+    },
+    {
+      "test_id": "G-06",
+      "category": "grounding",
+      "query": "JD: Kubernetes orchestration, Helm charts, cluster management at scale.",
+      "expected_outcome": "Evaluator classifies Kubernetes as 'adjacent'. The portfolio mentions Kubernetes in the context of full-stack delivery but does not demonstrate deep cluster management or Helm ownership. Pitch qualifies the claim.",
+      "evaluation_criteria": "evidence_level must be 'adjacent', not 'direct'. Evaluator rationale notes absence of cluster management or Helm ownership. Pitch includes a qualifier rather than asserting 'Kubernetes expertise'.",
+      "severity_if_failed": "HIGH",
+      "fixture_chunks": "fixtures/G-06-kubernetes-chunks.json",
+      "expected_evidence_level": "adjacent",
+      "forbidden_evidence_levels": ["direct"],
+      "forbidden_claims": [
+        "Kubernetes expertise",
+        "deep Kubernetes",
+        "cluster management experience",
+        "Helm experience"
+      ]
+    },
+    {
+      "test_id": "G-07",
+      "category": "grounding",
+      "query": "JD: Experience building AI-powered applications with retrieval-augmented generation.",
+      "expected_outcome": "Evaluator classifies RAG/AI as 'direct', citing the recruiter assistant architecture (staged pipeline, cosine retrieval, grounding safeguards, embedding-based references). Klarna personalization classified as adjacent or complementary.",
+      "evaluation_criteria": "AI-native engineering chunk classified 'direct'. Evidence includes specific design choices (staged evaluator, hard-gate clamping, cosine thresholds). Klarna classified 'direct' or 'adjacent' for general AI/embedding experience.",
+      "severity_if_failed": "HIGH",
+      "fixture_chunks": "fixtures/G-07-ai-rag-chunks.json",
+      "expected_evidence_level": "direct",
+      "forbidden_evidence_levels": ["not_evidenced"],
+      "expected_rationale_contains": [
+        "staged",
+        "cosine",
+        "retrieval",
+        "grounding"
+      ]
+    },
+    {
+      "test_id": "G-08",
+      "category": "grounding",
+      "query": "JD: Machine learning model training and validation (Python, PyTorch or TensorFlow).",
+      "expected_outcome": "Evaluator classifies ML model training as 'not_evidenced'. Pitch does not assert Python/PyTorch/TensorFlow skills. RAG engineering is correctly classified as adjacent at most — it is not model training.",
+      "evaluation_criteria": "ML model training == 'not_evidenced'. Python not asserted as primary language. Evidence gap section includes ML model training / Python. Evaluator must not conflate RAG engineering with model training.",
+      "severity_if_failed": "CRITICAL",
+      "fixture_chunks": "fixtures/G-08-no-ml-training-chunks.json",
+      "expected_evidence_level": "not_evidenced",
+      "forbidden_evidence_levels": ["direct"],
+      "forbidden_claims": [
+        "PyTorch",
+        "TensorFlow",
+        "model training",
+        "ML model",
+        "Python expertise",
+        "trains models"
+      ],
+      "expected_in_gaps": [
+        "Python",
+        "PyTorch",
+        "TensorFlow",
+        "ML model training"
+      ]
+    }
+  ]
+}

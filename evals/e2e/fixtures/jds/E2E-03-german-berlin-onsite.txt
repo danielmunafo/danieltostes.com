@@ -1,0 +1,15 @@
+Senior Backend Engineer — Berlin (On-site)
+
+Wir sind ein Berliner Fintech-Unternehmen. Die Stelle wird vollständig auf Deutsch durchgeführt.
+
+Requirements:
+- Fluent German (C1 or higher). The role is conducted entirely in German.
+- On-site in Berlin, 4 days per week minimum
+- EU work authorization required
+- 4+ years backend engineering experience
+- Java or Kotlin preferred
+- PostgreSQL, REST APIs
+
+Nice to have:
+- Spring Boot experience
+- AWS infrastructure knowledge

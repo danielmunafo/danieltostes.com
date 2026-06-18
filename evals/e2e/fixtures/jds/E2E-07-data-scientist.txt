@@ -1,0 +1,16 @@
+Senior Data Scientist — Machine Learning Platform
+
+We are building a production ML platform and need a data scientist with hands-on model development experience.
+
+Requirements:
+- Python expertise, 5+ years
+- ML model training: scikit-learn, PyTorch or TensorFlow
+- Feature engineering and feature stores
+- Model validation, drift detection, and A/B testing
+- Production ML pipeline experience (Airflow, Kubeflow, or similar)
+
+Nice to have:
+- MLflow or model registry experience
+- SQL and dbt for data preparation
+- PySpark for large-scale data processing
+- Statistics and experimental design background
