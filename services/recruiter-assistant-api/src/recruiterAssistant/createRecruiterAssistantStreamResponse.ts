@@ -7,6 +7,7 @@ import {
   runWithTrace,
   type RequestTrace,
 } from "../tracing/requestTrace.js";
+import { saveChatTrace } from "../feedback/writeFeedbackToS3.js";
 import type {
   RecruiterAssistantDependencies,
   ValidRecruiterRequest,
@@ -41,6 +42,7 @@ export function createRecruiterAssistantStreamResponse(params: {
       } finally {
         trace.finish();
         logRequestTrace(trace);
+        saveChatTrace(trace.requestId, trace.toLog());
       }
     },
   });
