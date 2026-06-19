@@ -88,15 +88,12 @@ Add **inline policy** (tighten ARNs to your account):
     {
       "Effect": "Allow",
       "Action": ["s3:PutObject"],
-      "Resource": [
-        "arn:aws:s3:::YOUR_FEEDBACK_BUCKET/v2/*.json",
-        "arn:aws:s3:::YOUR_FEEDBACK_BUCKET/v2/traces/*.json"
-      ]
+      "Resource": "arn:aws:s3:::YOUR_FEEDBACK_BUCKET/*"
     },
     {
       "Effect": "Allow",
       "Action": ["s3:GetObject", "s3:DeleteObject"],
-      "Resource": "arn:aws:s3:::YOUR_FEEDBACK_BUCKET/v2/traces/*.json"
+      "Resource": "arn:aws:s3:::YOUR_FEEDBACK_BUCKET/*/traces/*"
     },
     {
       "Effect": "Allow",
