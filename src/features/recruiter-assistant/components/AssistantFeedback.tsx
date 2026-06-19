@@ -170,7 +170,7 @@ export function AssistantFeedback({
         ) : (
           <ThumbDownRoundedIcon sx={{ fontSize: 16, color: "text.disabled" }} />
         )}
-        <Typography variant="caption" color="text.disabled">
+        <Typography variant="caption" color="text.disabled" sx={{ ml: 0.75 }}>
           {t("feedbackSent")}
         </Typography>
       </Box>
