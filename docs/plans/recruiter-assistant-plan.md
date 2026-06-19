@@ -21,11 +21,13 @@ This document is the canonical reference for the recruiter-facing AI chat: archi
 ```mermaid
 flowchart LR
     User[Recruiter Browser] -->|"useChat POST data stream"| FU[Lambda Function URL]
+    User -->|"POST /feedback JSON"| FU
     FU --> Handler[handleChatRequest + response stream]
     Handler -->|getSecretValue| SM[(Secrets Manager OPENAI_API_KEY)]
     Handler -->|validate + rate limit + guards| Pre[Input guard then intent gate]
     Pre --> Ctx[contextAgent.createContext]
-    Handler -->|GET llamaindex index| S3E[(S3 RAG bucket)]
+    Handler -->|GET llamaindex index| S3E[(S3 RAG bucket — read-only)]
+    Handler -->|"POST /feedback → PutObject"| S3F[(S3 Feedback bucket — write-only)]
     Ctx --> RAG[RecruiterRetriever top-K]
     RAG --> Ev[Evaluator streamText]
     Ev --> HG[Hard gates generateObject]
@@ -119,12 +121,13 @@ flowchart LR
 - **Scope:** system instructions restrict answers to the supplied portfolio context; refuse unrelated requests (enforced in prompts + intent gate + off-topic handling in references builder).
 - **CORS:** Comma-separated **`ALLOWED_ORIGIN`** in Lambda env (handler enforces `403 forbidden_origin`). **Function URL CORS** must list the same origins (handler does not emit `Access-Control-*` on Lambda — response streaming). Local `npm run dev` uses handler CORS. When unset/empty on Lambda, all cross-origin calls are denied — **do not** rely on permissive dev behavior in prod.
 - **Secrets:** OpenAI key in AWS Secrets Manager in production; Lambda execution role reads `OPENAI_SECRET_ARN`.
+- **Feedback endpoint (`POST /feedback`):** same origin check, rate limit, and CORS as the chat path. Zod-validated body; no raw question/response text stored — only SHA-256 hex (first 16 chars) of each. Records are append-only; Lambda role has `s3:PutObject` on the feedback bucket only (no `GetObject`, no delete). If `FEEDBACK_S3_BUCKET` is unset the endpoint is a silent no-op.
 
 ---
 
 ## AWS enablement (manual)
 
-See **[services/recruiter-assistant-api/SETUP.md](../../services/recruiter-assistant-api/SETUP.md)** for numbered steps: embeddings bucket, log group, execution role, secret, Lambda + Function URL, extend `AWS_ROLE_ARN` IAM policy for recruiter CI, `RECRUITER_API_URL` / `NEXT_PUBLIC_RECRUITER_API_URL`.
+See **[services/recruiter-assistant-api/SETUP.md](../../services/recruiter-assistant-api/SETUP.md)** for numbered steps: embeddings bucket, **feedback bucket (§1b)**, log group, execution role (**add `s3:PutObject` on feedback bucket to inline policy — §4**), secret, Lambda + Function URL (**add `FEEDBACK_S3_BUCKET` / `FEEDBACK_S3_PREFIX` env vars — §5**), extend `AWS_ROLE_ARN` IAM policy for recruiter CI, `RECRUITER_API_URL` / `NEXT_PUBLIC_RECRUITER_API_URL`.
 
 ---
 
