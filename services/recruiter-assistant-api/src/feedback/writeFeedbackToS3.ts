@@ -9,7 +9,7 @@ function getFeedbackBucket(): string | null {
 }
 
 function getFeedbackPrefix(): string {
-  const raw = process.env.FEEDBACK_S3_PREFIX?.trim() || "v1/";
+  const raw = process.env.FEEDBACK_S3_PREFIX?.trim() || "v2";
   return raw.endsWith("/") ? raw : `${raw}/`;
 }
 
@@ -31,7 +31,7 @@ export async function writeFeedbackToS3(record: FeedbackBody): Promise<void> {
   const dd = String(ts.getUTCDate()).padStart(2, "0");
   const epoch = ts.getTime();
   const safeId = record.requestId.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 64);
-  const key = `${getFeedbackPrefix()}${yyyy}/${mm}/${dd}/${epoch}_${safeId}.json`;
+  const key = `${getFeedbackPrefix()}${yyyy}${mm}${dd}_${epoch}_${safeId}.json`;
 
   await s3.send(
     new PutObjectCommand({

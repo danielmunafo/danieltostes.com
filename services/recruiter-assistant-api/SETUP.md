@@ -32,7 +32,7 @@ Stores one JSON object per feedback submission (append-only, one file per record
 | `FEEDBACK_S3_BUCKET` | `danieltostes-recruiter-feedback`   |
 | `FEEDBACK_S3_PREFIX` | `v1` (default; omit to use default) |
 
-Object key pattern: `v1/{YYYY}/{MM}/{DD}/{epoch}_{requestId-first16}.json`
+Object key pattern: `v2/{YYYYMMDD}_{epoch}_{safeRequestId}.json`
 
 If `FEEDBACK_S3_BUCKET` is not set on the Lambda, the `/feedback` endpoint still returns `200 { ok: true }` (no-op) — safe to deploy without configuring this bucket.
 
