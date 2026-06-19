@@ -17,6 +17,7 @@ import {
   REFERENCE_RETRIEVAL_PREFERENCE_SCORE_DELTA,
 } from "../constants.js";
 import { logWarn } from "../logging/logger.js";
+import { traceGenerate } from "../tracing/requestTrace.js";
 import {
   buildClaimExtractionPrompt,
   buildClaimExtractionPromptForTest,
@@ -126,12 +127,18 @@ export async function buildReferencesMarkdown(
   let claims: readonly string[];
   let gaps: readonly string[];
   try {
-    const { object } = await generateObject({
-      model: openai(CHAT_MODEL),
-      schema: claimsSchema,
-      maxTokens: CLAIM_EXTRACTION_MAX_TOKENS,
-      prompt: buildClaimExtractionPrompt(trimmed),
-    });
+    const { object } = await traceGenerate(
+      "references_claims",
+      CHAT_MODEL,
+      "chat",
+      () =>
+        generateObject({
+          model: openai(CHAT_MODEL),
+          schema: claimsSchema,
+          maxTokens: CLAIM_EXTRACTION_MAX_TOKENS,
+          prompt: buildClaimExtractionPrompt(trimmed),
+        })
+    );
     claims = object.claims
       .map((c) => c.trim())
       .filter((c) => c.length > 0)
@@ -148,10 +155,16 @@ export async function buildReferencesMarkdown(
 
   let embeddings: number[][];
   try {
-    const res = await embedMany({
-      model: openai.embedding(EMBEDDING_MODEL),
-      values: [...claims],
-    });
+    const res = await traceGenerate(
+      "references_embed",
+      EMBEDDING_MODEL,
+      "embedding",
+      () =>
+        embedMany({
+          model: openai.embedding(EMBEDDING_MODEL),
+          values: [...claims],
+        })
+    );
     embeddings = res.embeddings;
   } catch (err) {
     logWarn("references", "claim embedding failed", { err });

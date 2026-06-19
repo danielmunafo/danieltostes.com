@@ -8,6 +8,7 @@ import { evaluateOffTopic } from "../recruiter/evaluateOffTopic.js";
 import type { InterestsPack } from "../../../interests/loadInterestsPack.js";
 import { shouldOmitInterestsOutputMarkdown } from "../../../interests/loadInterestsPack.js";
 import { logInfo, logWarn } from "../../../logging/logger.js";
+import { traceGenerate } from "../../../tracing/requestTrace.js";
 import type { OpenAiProvider } from "../../types.js";
 import {
   buildInterestsEvaluatorSystemPrompt,
@@ -30,16 +31,22 @@ export async function evaluateInterests(params: {
   }
 
   try {
-    const { text: rawInterests } = await generateText({
-      model: params.openai(CHAT_MODEL),
-      system: buildInterestsEvaluatorSystemPrompt(params.navLocale),
-      prompt: buildInterestsEvaluatorUserPrompt(
-        params.navLocale,
-        params.userText,
-        params.interestsPack.criteriaMarkdown
-      ),
-      maxTokens: INTERESTS_ALIGNMENT_MAX_TOKENS,
-    });
+    const { text: rawInterests } = await traceGenerate(
+      "interests",
+      CHAT_MODEL,
+      "chat",
+      () =>
+        generateText({
+          model: params.openai(CHAT_MODEL),
+          system: buildInterestsEvaluatorSystemPrompt(params.navLocale),
+          prompt: buildInterestsEvaluatorUserPrompt(
+            params.navLocale,
+            params.userText,
+            params.interestsPack!.criteriaMarkdown
+          ),
+          maxTokens: INTERESTS_ALIGNMENT_MAX_TOKENS,
+        })
+    );
 
     const trimmed = rawInterests.trim();
     logInfo(

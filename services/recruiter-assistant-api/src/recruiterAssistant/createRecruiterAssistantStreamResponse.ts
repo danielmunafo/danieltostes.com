@@ -2,6 +2,11 @@ import { createDataStreamResponse } from "ai";
 import { corsHeadersFor } from "../http/cors.js";
 import { logStreamError } from "../http/errors.js";
 import { runRecruiterAssistantPipeline } from "./pipeline/runRecruiterAssistantPipeline.js";
+import {
+  logRequestTrace,
+  runWithTrace,
+  type RequestTrace,
+} from "../tracing/requestTrace.js";
 import type {
   RecruiterAssistantDependencies,
   ValidRecruiterRequest,
@@ -10,8 +15,9 @@ import type {
 export function createRecruiterAssistantStreamResponse(params: {
   request: ValidRecruiterRequest;
   dependencies: RecruiterAssistantDependencies;
+  trace: RequestTrace;
 }): Response {
-  const { request, dependencies } = params;
+  const { request, dependencies, trace } = params;
 
   return createDataStreamResponse({
     headers: corsHeadersFor(request.origin),
@@ -20,11 +26,22 @@ export function createRecruiterAssistantStreamResponse(params: {
       return "stream_error";
     },
     execute: async (dataStream) => {
-      await runRecruiterAssistantPipeline({
-        request,
-        openai: dependencies.openai,
-        dataStream,
-      });
+      try {
+        await runWithTrace(trace, () =>
+          runRecruiterAssistantPipeline({
+            request,
+            openai: dependencies.openai,
+            dataStream,
+          })
+        );
+        trace.setOutcome("success");
+      } catch (err) {
+        trace.setOutcome("error", err);
+        throw err;
+      } finally {
+        trace.finish();
+        logRequestTrace(trace);
+      }
     },
   });
 }
