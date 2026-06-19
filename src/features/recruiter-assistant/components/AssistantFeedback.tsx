@@ -1,5 +1,7 @@
 "use client";
 
+import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
+import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
 import ThumbDownOutlinedIcon from "@mui/icons-material/ThumbDownOutlined";
 import ThumbDownRoundedIcon from "@mui/icons-material/ThumbDownRounded";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
@@ -7,6 +9,7 @@ import ThumbUpRoundedIcon from "@mui/icons-material/ThumbUpRounded";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Collapse from "@mui/material/Collapse";
+import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
 import Link from "@mui/material/Link";
@@ -27,6 +30,10 @@ export type AssistantFeedbackProps = {
   questionText: string;
   responseText: string;
   locale: string;
+  onCopy: () => void;
+  copyLabel: string;
+  onClean: () => void;
+  cleanLabel: string;
 };
 
 const ICON_BTN_SX = {
@@ -37,11 +44,23 @@ const ICON_BTN_SX = {
   "&:hover": { bgcolor: "action.hover", color: "text.primary" },
 } as const;
 
+const ROW_SX = {
+  display: "flex",
+  justifyContent: "flex-start",
+  alignItems: "center",
+  gap: 0.25,
+  flexShrink: 0,
+} as const;
+
 export function AssistantFeedback({
   messageId,
   questionText,
   responseText,
   locale,
+  onCopy,
+  copyLabel,
+  onClean,
+  cleanLabel,
 }: AssistantFeedbackProps) {
   const t = useTranslations("RecruiterAssistant");
 
@@ -108,16 +127,44 @@ export function AssistantFeedback({
     { key: "too_long", label: t("feedbackReasonTooLong") },
   ];
 
+  const copyButton = (
+    <Tooltip title={copyLabel} placement="top" arrow describeChild>
+      <span>
+        <IconButton
+          type="button"
+          size="small"
+          aria-label={copyLabel}
+          onClick={onCopy}
+          sx={ICON_BTN_SX}
+        >
+          <ContentCopyRoundedIcon sx={{ fontSize: 18 }} />
+        </IconButton>
+      </span>
+    </Tooltip>
+  );
+
+  const cleanButton = (
+    <Tooltip title={cleanLabel} placement="top" arrow describeChild>
+      <span>
+        <IconButton
+          type="button"
+          size="small"
+          aria-label={cleanLabel}
+          onClick={onClean}
+          sx={ICON_BTN_SX}
+        >
+          <RestartAltRoundedIcon sx={{ fontSize: 18 }} />
+        </IconButton>
+      </span>
+    </Tooltip>
+  );
+
   if (isDone) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 0.5,
-          height: 32,
-        }}
-      >
+      <Box sx={{ ...ROW_SX, mt: 2 }}>
+        {copyButton}
+        {cleanButton}
+        <Divider orientation="vertical" flexItem sx={{ mx: 0.5, my: 0.75 }} />
         {rating === "positive" ? (
           <ThumbUpRoundedIcon sx={{ fontSize: 16, color: "success.main" }} />
         ) : (
@@ -131,8 +178,12 @@ export function AssistantFeedback({
   }
 
   return (
-    <Stack spacing={0.5}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
+    <Stack spacing={0.5} sx={{ mt: 2 }}>
+      <Box sx={ROW_SX}>
+        {copyButton}
+        {cleanButton}
+        <Divider orientation="vertical" flexItem sx={{ mx: 0.5, my: 0.75 }} />
+
         <Tooltip
           title={t("feedbackHelpful")}
           placement="top"
