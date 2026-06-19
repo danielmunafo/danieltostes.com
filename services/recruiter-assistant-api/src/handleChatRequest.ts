@@ -6,9 +6,11 @@ import {
 } from "./http/errors.js";
 import {
   getMethod,
+  getPath,
   getRequestOrigin,
   type LambdaHttpEvent,
 } from "./http/lambdaHttpEvent.js";
+import { handleFeedbackRequest } from "./handleFeedbackRequest.js";
 import { createRecruiterAssistantDependencies } from "./recruiterAssistant/createRecruiterAssistantDependencies.js";
 import { createRecruiterAssistantStreamResponse } from "./recruiterAssistant/createRecruiterAssistantStreamResponse.js";
 import { parseAndValidateRecruiterRequest } from "./recruiterAssistant/request/parseAndValidateRecruiterRequest.js";
@@ -20,6 +22,11 @@ import { runIntentGate } from "./security/intentGate.js";
 export async function handleChatRequest(
   event: LambdaHttpEvent
 ): Promise<Response> {
+  const path = getPath(event);
+  if (path === "/feedback" || path === "/feedback/") {
+    return handleFeedbackRequest(event);
+  }
+
   const method = getMethod(event);
   const origin = getRequestOrigin(event);
 

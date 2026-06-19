@@ -53,7 +53,19 @@
     "chartRecommendationMaybe": "Tal vez / validar antes",
     "chartRecommendationWeakFit": "Encaje débil",
     "chartRecommendationSkip": "Descartar",
-    "scoresRationaleLabel": "Fundamento"
+    "scoresRationaleLabel": "Fundamento",
+    "feedbackHelpful": "Útil",
+    "feedbackNotHelpful": "No útil",
+    "feedbackThanks": "¡Gracias por el feedback!",
+    "feedbackSent": "Feedback enviado",
+    "feedbackWhatWentWrong": "¿Qué salió mal?",
+    "feedbackReasonWrongFit": "Perfil incorrecto",
+    "feedbackReasonOffTopic": "Fuera del tema",
+    "feedbackReasonMissingContext": "Falta contexto",
+    "feedbackReasonTooLong": "Demasiado largo",
+    "feedbackCommentPlaceholder": "Nota opcional…",
+    "feedbackSubmit": "Enviar",
+    "feedbackSkip": "Omitir"
   },
   "RecruiterAssistantTerms": {
     "metaTitle": "Términos del Asistente de IA para reclutadores",
@@ -127,9 +139,15 @@
       }
     ],
     "impactDetails": [
-      { "bodyPath": "impact/0" },
-      { "bodyPath": "impact/1" },
-      { "bodyPath": "impact/2" }
+      {
+        "bodyPath": "impact/0"
+      },
+      {
+        "bodyPath": "impact/1"
+      },
+      {
+        "bodyPath": "impact/2"
+      }
     ],
     "impactDetailClose": "Cerrar",
     "icon": "Resumen"
@@ -373,7 +391,10 @@
     "coursesBlock": {
       "title": "Cursos",
       "courses": [
-        { "name": "Architecting on AWS", "provider": "Amazon Web Services" },
+        {
+          "name": "Architecting on AWS",
+          "provider": "Amazon Web Services"
+        },
         {
           "name": "Systems Operations on AWS",
           "provider": "Amazon Web Services"
@@ -383,10 +404,22 @@
     "languagesBlock": {
       "title": "Idiomas",
       "languages": [
-        { "name": "🇧🇷 Portugués", "level": "Nativo" },
-        { "name": "🇬🇧 Inglés", "level": "Fluido" },
-        { "name": "🇪🇸 Español", "level": "Competencia Profesional" },
-        { "name": "🇮🇹 Italiano", "level": "Elemental" }
+        {
+          "name": "🇧🇷 Portugués",
+          "level": "Nativo"
+        },
+        {
+          "name": "🇬🇧 Inglés",
+          "level": "Fluido"
+        },
+        {
+          "name": "🇪🇸 Español",
+          "level": "Competencia Profesional"
+        },
+        {
+          "name": "🇮🇹 Italiano",
+          "level": "Elemental"
+        }
       ]
     },
     "permitsBlock": {

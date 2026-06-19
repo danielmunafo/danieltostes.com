@@ -53,7 +53,19 @@
     "chartRecommendationMaybe": "Maybe / validate first",
     "chartRecommendationWeakFit": "Weak fit",
     "chartRecommendationSkip": "Skip",
-    "scoresRationaleLabel": "Rationale"
+    "scoresRationaleLabel": "Rationale",
+    "feedbackHelpful": "Helpful",
+    "feedbackNotHelpful": "Not helpful",
+    "feedbackThanks": "Thanks for the signal!",
+    "feedbackSent": "Feedback sent",
+    "feedbackWhatWentWrong": "What went wrong?",
+    "feedbackReasonWrongFit": "Wrong fit",
+    "feedbackReasonOffTopic": "Off-topic",
+    "feedbackReasonMissingContext": "Missing context",
+    "feedbackReasonTooLong": "Too long",
+    "feedbackCommentPlaceholder": "Optional note…",
+    "feedbackSubmit": "Submit",
+    "feedbackSkip": "Skip"
   },
   "RecruiterAssistantTerms": {
     "metaTitle": "Recruiter Assistant terms",
@@ -379,7 +391,10 @@
     "coursesBlock": {
       "title": "Courses",
       "courses": [
-        { "name": "Architecting on AWS", "provider": "Amazon Web Services" },
+        {
+          "name": "Architecting on AWS",
+          "provider": "Amazon Web Services"
+        },
         {
           "name": "Systems Operations on AWS",
           "provider": "Amazon Web Services"
@@ -389,10 +404,22 @@
     "languagesBlock": {
       "title": "Languages",
       "languages": [
-        { "name": "🇧🇷 Portuguese", "level": "Native" },
-        { "name": "🇬🇧 English", "level": "Fluent" },
-        { "name": "🇪🇸 Spanish", "level": "Professional Proficiency" },
-        { "name": "🇮🇹 Italian", "level": "Elementary" }
+        {
+          "name": "🇧🇷 Portuguese",
+          "level": "Native"
+        },
+        {
+          "name": "🇬🇧 English",
+          "level": "Fluent"
+        },
+        {
+          "name": "🇪🇸 Spanish",
+          "level": "Professional Proficiency"
+        },
+        {
+          "name": "🇮🇹 Italian",
+          "level": "Elementary"
+        }
       ]
     },
     "permitsBlock": {

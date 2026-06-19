@@ -1,11 +1,23 @@
 import { Buffer } from "node:buffer";
 
 export type LambdaHttpEvent = {
-  requestContext?: { http?: { method?: string; sourceIp?: string } };
+  rawPath?: string;
+  requestContext?: {
+    http?: { method?: string; path?: string; sourceIp?: string };
+  };
   headers?: Record<string, string | undefined>;
   body?: string | null;
   isBase64Encoded?: boolean;
 };
+
+export function getPath(event: LambdaHttpEvent): string {
+  if (typeof event.rawPath === "string" && event.rawPath.length > 0) {
+    return event.rawPath;
+  }
+  const httpPath = event.requestContext?.http?.path;
+  if (typeof httpPath === "string" && httpPath.length > 0) return httpPath;
+  return "/";
+}
 
 export function getMethod(event: LambdaHttpEvent): string {
   const fromV2 = event.requestContext?.http?.method;

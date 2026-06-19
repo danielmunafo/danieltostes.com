@@ -97,6 +97,7 @@ import { AssistantBriefingBody } from "./AssistantBriefingBody";
 import { AssistantBriefingProgress } from "./AssistantBriefingProgress";
 import { AssistantEvidenceReview } from "./AssistantEvidenceReview";
 import { AssistantJobContextPanel } from "./AssistantJobContextPanel";
+import { AssistantFeedback } from "./AssistantFeedback";
 import { AssistantMatchProfileSkeleton } from "./AssistantMatchProfileSkeleton";
 import { AssistantThinkingIndicator } from "./AssistantThinkingIndicator";
 
@@ -898,6 +899,12 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
               mainBody.trim() !== "" &&
               !showBodySkeleton &&
               !isStreamingThisMessage;
+            const questionText =
+              !isUser && messageIndex > 0
+                ? getRecruiterAssistantMessagePlainText(
+                    messages[messageIndex - 1]!
+                  )
+                : "";
             return (
               <Box
                 key={m.id}
@@ -1159,6 +1166,14 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                             </span>
                           </Tooltip>
                         </Box>
+                      ) : null}
+                      {hasBriefingToCopy ? (
+                        <AssistantFeedback
+                          messageId={m.id}
+                          questionText={questionText}
+                          responseText={mainBody}
+                          locale={locale}
+                        />
                       ) : null}
                     </Box>
                   </Stack>
