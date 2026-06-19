@@ -1,9 +1,4 @@
-import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { logError } from "../logging/logger.js";
 import type { FeedbackBody } from "./feedbackSchema.js";
 
@@ -22,50 +17,47 @@ function safeRequestId(requestId: string): string {
   return requestId.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 128);
 }
 
-function traceKey(requestId: string): string {
-  return `${getFeedbackPrefix()}traces/${safeRequestId(requestId)}.json`;
+function dateParts(ts: Date) {
+  const yyyy = ts.getUTCFullYear();
+  const mm = String(ts.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(ts.getUTCDate()).padStart(2, "0");
+  return `${yyyy}${mm}${dd}`;
 }
 
-/** Called at chat completion (fire-and-forget). Writes the AI trace so the
- *  feedback handler can read it back when the user submits a rating. */
+async function putJson(
+  bucket: string,
+  key: string,
+  body: unknown,
+  context: { requestId: string; scope: string }
+): Promise<void> {
+  await s3
+    .send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: JSON.stringify(body),
+        ContentType: "application/json",
+      })
+    )
+    .catch((err: unknown) => {
+      logError(context.scope, `failed to write ${context.scope} to S3`, err, {
+        requestId: context.requestId,
+      });
+    });
+}
+
+/** Called at chat completion (fire-and-forget). Writes the AI trace as a
+ *  permanent object so it can be correlated with feedback by requestId. */
 export function saveChatTrace(
   requestId: string,
   traceData: Record<string, unknown>
 ): void {
   const bucket = getFeedbackBucket();
   if (!bucket) return;
-  s3.send(
-    new PutObjectCommand({
-      Bucket: bucket,
-      Key: traceKey(requestId),
-      Body: JSON.stringify(traceData),
-      ContentType: "application/json",
-    })
-  ).catch((err: unknown) => {
-    logError("feedback", "failed to save chat trace to S3", err, { requestId });
-  });
-}
-
-/** Reads the trace written by saveChatTrace, then deletes it (consumed once). */
-async function consumeTrace(
-  bucket: string,
-  requestId: string
-): Promise<Record<string, unknown> | null> {
-  const key = traceKey(requestId);
-  try {
-    const res = await s3.send(
-      new GetObjectCommand({ Bucket: bucket, Key: key })
-    );
-    const body = await res.Body?.transformToString();
-    if (!body) return null;
-    // best-effort cleanup — don't block feedback write on delete
-    s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: key })).catch(
-      () => {}
-    );
-    return JSON.parse(body) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
+  const prefix = getFeedbackPrefix();
+  const ts = new Date();
+  const key = `${prefix}traces/${dateParts(ts)}_${safeRequestId(requestId)}.json`;
+  void putJson(bucket, key, traceData, { requestId, scope: "chat-trace" });
 }
 
 export async function writeFeedbackToS3(record: FeedbackBody): Promise<void> {
@@ -80,24 +72,12 @@ export async function writeFeedbackToS3(record: FeedbackBody): Promise<void> {
     return;
   }
 
-  const aiTrace = await consumeTrace(bucket, record.requestId);
-
   const ts = new Date(record.timestamp);
-  const yyyy = ts.getUTCFullYear();
-  const mm = String(ts.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(ts.getUTCDate()).padStart(2, "0");
   const epoch = ts.getTime();
-  const safeId = safeRequestId(record.requestId).slice(0, 64);
-  const key = `${getFeedbackPrefix()}${yyyy}${mm}${dd}_${epoch}_${safeId}.json`;
+  const key = `${getFeedbackPrefix()}${dateParts(ts)}_${epoch}_${safeRequestId(record.requestId).slice(0, 64)}.json`;
 
-  const payload = aiTrace ? { ...record, aiTrace } : record;
-
-  await s3.send(
-    new PutObjectCommand({
-      Bucket: bucket,
-      Key: key,
-      Body: JSON.stringify(payload),
-      ContentType: "application/json",
-    })
-  );
+  await putJson(bucket, key, record, {
+    requestId: record.requestId,
+    scope: "feedback",
+  });
 }
