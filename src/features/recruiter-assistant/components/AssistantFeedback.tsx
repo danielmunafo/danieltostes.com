@@ -12,12 +12,11 @@ import Collapse from "@mui/material/Collapse";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
-import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   submitFeedback,
   type FeedbackReason,
@@ -76,14 +75,12 @@ export function AssistantFeedback({
   const isDone = phase === "done";
 
   const expandPanelRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (isExpanding) {
-      expandPanelRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    }
-  }, [isExpanding]);
+  const scrollExpandIntoView = useCallback(() => {
+    expandPanelRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  }, []);
 
   const doSubmit = useCallback(
     (r: "positive" | "negative", reason?: FeedbackReason, c?: string) => {
@@ -121,10 +118,6 @@ export function AssistantFeedback({
   const handleSubmitNegative = useCallback(() => {
     doSubmit("negative", pendingReason ?? undefined, comment);
   }, [doSubmit, pendingReason, comment]);
-
-  const handleSkip = useCallback(() => {
-    doSubmit("negative");
-  }, [doSubmit]);
 
   const reasons: { key: FeedbackReason; label: string }[] = [
     { key: "wrong_fit", label: t("feedbackReasonWrongFit") },
@@ -245,7 +238,7 @@ export function AssistantFeedback({
         </Tooltip>
       </Box>
 
-      <Collapse in={isExpanding} unmountOnExit>
+      <Collapse in={isExpanding} unmountOnExit onEntered={scrollExpandIntoView}>
         <Stack ref={expandPanelRef} spacing={1} sx={{ pt: 0.25 }}>
           <Typography variant="caption" color="text.secondary">
             {t("feedbackWhatWentWrong")}
@@ -286,7 +279,7 @@ export function AssistantFeedback({
             }}
           />
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Box>
             <Box
               component="button"
               type="button"
@@ -310,17 +303,6 @@ export function AssistantFeedback({
             >
               {t("feedbackSubmit")}
             </Box>
-
-            <Link
-              component="button"
-              type="button"
-              variant="caption"
-              color="text.secondary"
-              underline="hover"
-              onClick={handleSkip}
-            >
-              {t("feedbackSkip")}
-            </Link>
           </Box>
         </Stack>
       </Collapse>
