@@ -1,0 +1,15 @@
+Senior Go Engineer — Backend Platform
+
+We are building our core infrastructure in Go and are looking for an experienced Go developer to join the team.
+
+Requirements:
+- 4+ years of Go experience in production environments
+- Microservices architecture and distributed systems
+- PostgreSQL and Redis
+- Docker and Kubernetes
+- Strong understanding of concurrency patterns in Go
+
+Nice to have:
+- TypeScript or JavaScript for tooling scripts
+- AWS or GCP experience
+- gRPC experience

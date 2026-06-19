@@ -1,0 +1,182 @@
+{
+  "description": "End-to-end eval cases. Each case runs the complete pipeline — retrieval → evaluator → hard-gates → analyst → chart → pitch → references — with no injected fixtures. The full JD is the only input. Assertions check the final combined output using both deterministic checks (parse the recommendation) and rubric checks (LLM judge reads the complete response).",
+  "how_unit_vs_e2e_differ": "Unit evals (retrieval, grounding, hard-gates, recommendation, references) test each stage in isolation with injected inputs. E2E evals let every stage run in sequence. An error in stage 2 that propagates to stage 5 only surfaces here.",
+  "cases": [
+    {
+      "test_id": "E2E-01",
+      "category": "e2e",
+      "scenario": "Strong match — Node.js/TypeScript Staff Engineer with AWS and distributed systems",
+      "jd_file": "fixtures/jds/E2E-01-staff-nodejs-aws.txt",
+      "jd_summary": "Staff Engineer role, Node.js/TypeScript primary stack, AWS Lambda/SQS/CloudWatch, event-driven systems, observability, remote, English.",
+      "expected_outcome": "Recommendation = strong_pursue or pursue. Technical fit >= 8. Kafka and SQS evidence cited in pitch body. No hard gates fire. References section includes Distributed Systems and Observability citations.",
+      "deterministic_assertions": {
+        "recommendation_in": ["strong_pursue", "pursue"],
+        "technical_fit_gte": 8,
+        "missing_hard_gate_count": 0,
+        "clamped": false,
+        "references_section_present": true,
+        "gaps_section_present": false
+      },
+      "rubric_assertions": [
+        "The pitch body cites specific evidence (Kafka, SQS, CloudWatch) rather than generic claims",
+        "The evaluator table marks Node.js/TypeScript as 'direct' evidence",
+        "The pitch does not contradict anything in the evaluator table",
+        "The recommendation is justified by the evidence table, not asserted without support"
+      ],
+      "severity_if_failed": "HIGH"
+    },
+    {
+      "test_id": "E2E-02",
+      "category": "e2e",
+      "scenario": "Primary stack miss — Golang backend engineer",
+      "jd_file": "fixtures/jds/E2E-02-golang-backend.txt",
+      "jd_summary": "Senior Go engineer, Go primary stack required, 4+ years Go in production, Kubernetes, PostgreSQL, Redis.",
+      "expected_outcome": "Recommendation <= maybe_validate. Technical fit <= 5. Golang gap explicitly stated in pitch. References section includes Golang in gaps. Pitch does not assert Go experience.",
+      "deterministic_assertions": {
+        "recommendation_in": ["maybe_validate", "weak_fit", "skip"],
+        "technical_fit_lte": 5,
+        "missing_hard_gate_count_gte": 1,
+        "clamped": true,
+        "references_gaps_contains_any": ["Golang", "Go"]
+      },
+      "rubric_assertions": [
+        "The pitch explicitly explains that Go/Golang is not evidenced in the portfolio",
+        "The pitch does not make a positive claim about Go experience",
+        "The evaluator table marks Golang as 'not_evidenced'",
+        "The recommendation is consistent with the evidence table (a gap is acknowledged)"
+      ],
+      "severity_if_failed": "CRITICAL"
+    },
+    {
+      "test_id": "E2E-03",
+      "category": "e2e",
+      "scenario": "Practical gate miss — German-speaking onsite Berlin role, EU work authorization required",
+      "jd_file": "fixtures/jds/E2E-03-german-berlin-onsite.txt",
+      "jd_summary": "Senior backend engineer, role entirely in German, onsite Berlin 4 days/week, EU work authorization required, Java or Kotlin preferred.",
+      "expected_outcome": "Recommendation = weak_fit or skip. Technical fit <= 4. At least two hard gates fire (spoken_language, hybrid_onsite or work_authorization). Pitch opens with caution. No 'strong match' language without qualification.",
+      "deterministic_assertions": {
+        "recommendation_in": ["weak_fit", "skip"],
+        "technical_fit_lte": 4,
+        "missing_hard_gate_count_gte": 2,
+        "clamped": true,
+        "should_open_verdict_with_caution": true
+      },
+      "rubric_assertions": [
+        "The pitch explicitly lists German language as a missing requirement",
+        "The pitch does not imply Daniel speaks German",
+        "The pitch does not use unqualified 'strong match' language in the verdict",
+        "The hard gate block (if rendered) shows the spoken_language and location/authorization misses"
+      ],
+      "severity_if_failed": "CRITICAL"
+    },
+    {
+      "test_id": "E2E-04",
+      "category": "e2e",
+      "scenario": "AI Engineer — RAG pipelines, LLM orchestration, production AI systems",
+      "jd_file": "fixtures/jds/E2E-04-staff-ai-engineer.txt",
+      "jd_summary": "Staff AI/ML Engineer, RAG pipelines, LLM orchestration, embedding models, streaming UX, TypeScript or Python, evaluation frameworks a plus.",
+      "expected_outcome": "Recommendation = strong_pursue or pursue. Technical fit >= 8. Pitch body references specific RAG design choices (staged evaluation, cosine retrieval, grounding). References section cites AI-Native Engineering section.",
+      "deterministic_assertions": {
+        "recommendation_in": ["strong_pursue", "pursue"],
+        "technical_fit_gte": 8,
+        "missing_hard_gate_count": 0,
+        "clamped": false,
+        "references_section_present": true
+      },
+      "rubric_assertions": [
+        "The pitch references specific technical choices from the recruiter assistant (staged pipeline, cosine thresholds, streaming, grounding safeguards)",
+        "The pitch does not reduce AI experience to generic 'worked with LLMs' language",
+        "The evaluator classifies RAG as 'direct' evidence, not merely 'adjacent'",
+        "Klarna personalization is correctly cited as supporting AI/embedding experience"
+      ],
+      "severity_if_failed": "CRITICAL",
+      "note": "This is the highest-priority e2e case. It tests the scenario most directly representative of the portfolio's core strength."
+    },
+    {
+      "test_id": "E2E-05",
+      "category": "e2e",
+      "scenario": "People management primary — Engineering Manager with direct reports required",
+      "jd_file": "fixtures/jds/E2E-05-engineering-manager.txt",
+      "jd_summary": "Engineering Manager, 6-8 direct reports, performance reviews, career development, hiring ownership, technical backend background required.",
+      "expected_outcome": "Recommendation capped (specialist_people_management_cap_6). Technical fit <= 6. strong_pursue blocked. Pitch distinguishes technical leadership from people management. No fabricated management claims.",
+      "deterministic_assertions": {
+        "recommendation_not_in": ["strong_pursue"],
+        "technical_fit_lte": 6,
+        "missing_hard_gate_count_gte": 1,
+        "clamped": true
+      },
+      "rubric_assertions": [
+        "The pitch distinguishes technical leadership (scaffolds, mentoring, architecture guidance) from direct people management (performance reviews, hiring)",
+        "The pitch does not claim direct people management experience",
+        "The evaluator classifies people management as 'adjacent' or 'not_evidenced', not 'direct'",
+        "The recommendation acknowledges the gap and does not overstate seniority alignment"
+      ],
+      "severity_if_failed": "HIGH"
+    },
+    {
+      "test_id": "E2E-06",
+      "category": "e2e",
+      "scenario": "Off-topic input — non-recruiter query",
+      "jd_file": "fixtures/jds/E2E-06-off-topic.txt",
+      "jd_summary": "Input: 'What is the weather like in Copenhagen today?' — no job description content.",
+      "expected_outcome": "Pipeline returns an off-topic response. No pitch or recommendation is generated. No portfolio evidence is cited. The intent gate fires and returns OFF_TOPIC.",
+      "deterministic_assertions": {
+        "is_off_topic_response": true,
+        "no_recommendation_label": true,
+        "no_references_section": true,
+        "no_technical_fit_score": true
+      },
+      "rubric_assertions": [
+        "The response politely explains the assistant's scope without generating a portfolio assessment",
+        "No portfolio content is leaked into the response"
+      ],
+      "severity_if_failed": "HIGH",
+      "note": "The intent gate (generateObject, 24 tokens) should catch this before retrieval or any LLM generation stage."
+    },
+    {
+      "test_id": "E2E-07",
+      "category": "e2e",
+      "scenario": "Data Science role — Python required, ML model training, feature engineering",
+      "jd_file": "fixtures/jds/E2E-07-data-scientist.txt",
+      "jd_summary": "Senior Data Scientist, Python required 5+ years, ML model training (PyTorch or TensorFlow), feature engineering, model validation, production ML pipelines.",
+      "expected_outcome": "Recommendation = weak_fit or skip. Technical fit <= 5. ML model training and Python classified as not_evidenced. RAG engineering not conflated with model training. Gaps section lists Python and ML training.",
+      "deterministic_assertions": {
+        "recommendation_in": ["weak_fit", "skip"],
+        "technical_fit_lte": 5,
+        "missing_hard_gate_count_gte": 1,
+        "clamped": true,
+        "references_gaps_contains_any": ["Python", "ML", "model training"]
+      },
+      "rubric_assertions": [
+        "The evaluator explicitly distinguishes RAG/retrieval engineering from ML model training — they are not equivalent",
+        "The pitch does not assert Python as a primary language",
+        "The pitch does not claim PyTorch or TensorFlow experience",
+        "The evidence gap section mentions ML model training and Python"
+      ],
+      "severity_if_failed": "HIGH",
+      "note": "This case targets the most likely near-neighbor hallucination: confusing AI systems engineering (RAG) with data science / ML training."
+    },
+    {
+      "test_id": "E2E-08",
+      "category": "e2e",
+      "scenario": "Partial match — React Native mobile with Kotlin Android primary",
+      "jd_file": "fixtures/jds/E2E-08-kotlin-react-native.txt",
+      "jd_summary": "Senior Mobile Engineer, Kotlin/Android primary (3+ years required), React Native acceptable (2+ years), mobile performance optimization.",
+      "expected_outcome": "Recommendation <= maybe_validate. Technical fit 4-6. Kotlin classified as not_evidenced. React Native classified as direct (Ageras BKYC). Pitch explicitly cites React Native as a strength while noting the Kotlin gap.",
+      "deterministic_assertions": {
+        "recommendation_in": ["maybe_validate", "weak_fit", "skip"],
+        "technical_fit_lte": 6,
+        "technical_fit_gte": 4,
+        "clamped": true,
+        "references_gaps_contains_any": ["Kotlin", "Android"]
+      },
+      "rubric_assertions": [
+        "The pitch positively cites React Native experience (Ageras BKYC project)",
+        "The pitch explicitly flags Kotlin/Android as not evidenced in the portfolio",
+        "The evaluator does not classify Kotlin as 'adjacent' simply because React Native was mentioned",
+        "The recommendation reflects the partial match: real mobile experience exists but not in the required stack"
+      ],
+      "severity_if_failed": "MEDIUM"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "description": "Recommendation eval cases. For each case, run the full evaluator + hard-gate + pitch stages and assert that the final recommendation label is consistent with the evidence and survives the pitch clamp. Requires a live LLM call.",
+  "cases": [
+    {
+      "test_id": "REC-01",
+      "category": "recommendation",
+      "query": "JD: Senior Node.js/TypeScript engineer, AWS Lambda, SQS, event-driven systems, observability with CloudWatch.",
+      "fixture_jd": "fixtures/jd-fragments/REC-01-nodejs-aws-observability.txt",
+      "expected_outcome": "Recommendation = strong_pursue or pursue. Technical fit >= 8/10. No clamp applied. Evidence from Ageras billing sync and Itaú Kafka work cited.",
+      "evaluation_criteria": "Parse pitch markdown for recommendation label. Confirm it is in ['strong_pursue', 'pursue']. Confirm technical fit >= 8. Confirm clamped=false from clamp function.",
+      "severity_if_failed": "HIGH",
+      "allowed_recommendations": ["strong_pursue", "pursue"],
+      "min_technical_fit": 8,
+      "max_technical_fit": 10,
+      "expect_clamped": false
+    },
+    {
+      "test_id": "REC-02",
+      "category": "recommendation",
+      "query": "JD: Staff AI/ML Engineer. RAG pipelines, LLM orchestration, production AI systems.",
+      "fixture_jd": "fixtures/jd-fragments/REC-02-staff-ai-engineer.txt",
+      "expected_outcome": "Recommendation = strong_pursue or pursue. Technical fit >= 8. Pitch body references retrieval, grounding, staged pipeline — not just 'worked with LLMs'.",
+      "evaluation_criteria": "Recommendation in ['strong_pursue', 'pursue']. Technical fit >= 8. Pitch body contains at least two of: ['retrieval', 'grounding', 'staged', 'pipeline', 'cosine', 'embedding'].",
+      "severity_if_failed": "CRITICAL",
+      "allowed_recommendations": ["strong_pursue", "pursue"],
+      "min_technical_fit": 8,
+      "max_technical_fit": 10,
+      "expect_clamped": false,
+      "pitch_body_must_contain_any": [
+        "retrieval",
+        "grounding",
+        "staged",
+        "pipeline",
+        "cosine",
+        "embedding"
+      ],
+      "pitch_body_must_contain_min": 2
+    },
+    {
+      "test_id": "REC-03",
+      "category": "recommendation",
+      "query": "JD: Go backend engineer required. Primary stack: Go. Some TypeScript acceptable.",
+      "fixture_jd": "fixtures/jd-fragments/REC-03-golang-primary.txt",
+      "expected_outcome": "Recommendation <= maybe_validate. Technical fit <= 5. pursue and strong_pursue blocked and clamped if pitch initially generated them.",
+      "evaluation_criteria": "Recommendation not in ['strong_pursue', 'pursue']. Technical fit in pitch <= 5. If pitch initially generated 'Pursue', clamp must have replaced it.",
+      "severity_if_failed": "CRITICAL",
+      "allowed_recommendations": ["maybe_validate", "weak_fit", "skip"],
+      "max_technical_fit": 5,
+      "expect_clamped": true
+    },
+    {
+      "test_id": "REC-04",
+      "category": "recommendation",
+      "query": "JD: German-speaking Engineering Manager. Requires people management experience and fluent German.",
+      "fixture_jd": "fixtures/jd-fragments/REC-04-german-em.txt",
+      "expected_outcome": "Recommendation = weak_fit or skip. Technical fit <= 4. Two hard gate misses (spoken_language, specialist_domain/people_management). Pitch opens with caution framing.",
+      "evaluation_criteria": "Recommendation in ['weak_fit', 'skip']. Technical fit <= 4. shouldOpenVerdictWithCaution=true. Pitch does not use 'strong match' or equivalent without a 'however' qualifier.",
+      "severity_if_failed": "CRITICAL",
+      "allowed_recommendations": ["weak_fit", "skip"],
+      "max_technical_fit": 4,
+      "expect_clamped": true,
+      "pitch_verdict_must_not_contain_unqualified": [
+        "strong match",
+        "excelente encaje",
+        "forte aderência"
+      ]
+    },
+    {
+      "test_id": "REC-05",
+      "category": "recommendation",
+      "query": "JD: Staff Software Engineer. Distributed systems, event-driven, cloud-native AWS. Technical leadership required.",
+      "fixture_jd": "fixtures/jd-fragments/REC-05-staff-distributed.txt",
+      "expected_outcome": "Recommendation = strong_pursue or pursue. Technical fit >= 8. No hard gates fire. Pitch cites Kafka/SAGA/SQS evidence and technical leadership section.",
+      "evaluation_criteria": "Recommendation in ['strong_pursue', 'pursue']. Technical fit >= 8. Pitch body contains references to distributed systems and leadership evidence.",
+      "severity_if_failed": "HIGH",
+      "allowed_recommendations": ["strong_pursue", "pursue"],
+      "min_technical_fit": 8,
+      "max_technical_fit": 10,
+      "expect_clamped": false,
+      "pitch_body_must_contain_any": [
+        "Kafka",
+        "SAGA",
+        "SQS",
+        "distributed",
+        "leadership"
+      ]
+    },
+    {
+      "test_id": "REC-06",
+      "category": "recommendation",
+      "query": "JD: Principal Engineer with TypeScript focus. Full-stack, GraphQL, some people management preferred.",
+      "fixture_jd": "fixtures/jd-fragments/REC-06-principal-graphql.txt",
+      "expected_outcome": "Recommendation = pursue or maybe_validate. People management as nice_to_have with adjacent evidence does not trigger a hard gate. Technical fit 7-9. Pitch notes leadership but qualifies management-level ownership.",
+      "evaluation_criteria": "Recommendation in ['pursue', 'maybe_validate']. Technical fit in [7, 9]. People management not misrepresented as direct.",
+      "severity_if_failed": "MEDIUM",
+      "allowed_recommendations": ["pursue", "maybe_validate"],
+      "min_technical_fit": 7,
+      "max_technical_fit": 9
+    },
+    {
+      "test_id": "REC-07",
+      "category": "recommendation",
+      "query": "JD: Senior Data Scientist. Python (required), ML model training, model validation, feature engineering.",
+      "fixture_jd": "fixtures/jd-fragments/REC-07-data-scientist.txt",
+      "expected_outcome": "Recommendation = weak_fit or skip. Multiple gates fire (primary_stack = Python, specialist_domain = data_science_training). Technical fit <= 5. Pitch explicitly explains evidence gaps.",
+      "evaluation_criteria": "Recommendation in ['weak_fit', 'skip']. Technical fit <= 5. Pitch does not assert Python or ML training as positive evidence.",
+      "severity_if_failed": "HIGH",
+      "allowed_recommendations": ["weak_fit", "skip"],
+      "max_technical_fit": 5,
+      "expect_clamped": true,
+      "pitch_body_must_not_contain": [
+        "Python expertise",
+        "ML training",
+        "model training experience"
+      ]
+    },
+    {
+      "test_id": "REC-08",
+      "category": "recommendation",
+      "query": "JD: Kotlin/Android developer, mobile-first product company, some React Native acceptable.",
+      "fixture_jd": "fixtures/jd-fragments/REC-08-kotlin-android.txt",
+      "expected_outcome": "Recommendation <= maybe_validate. Kotlin classified as not_evidenced. React Native classified as direct. Technical fit capped at 5-6. Pitch notes React Native strength but flags Kotlin gap.",
+      "evaluation_criteria": "Recommendation in ['maybe_validate', 'weak_fit', 'skip']. Technical fit in [4, 6]. React Native positively cited. Kotlin gap explicit in pitch or references.",
+      "severity_if_failed": "MEDIUM",
+      "allowed_recommendations": ["maybe_validate", "weak_fit", "skip"],
+      "min_technical_fit": 4,
+      "max_technical_fit": 6,
+      "pitch_body_must_contain_any": ["React Native"],
+      "expected_in_gaps": ["Kotlin", "Android"]
+    }
+  ]
+}
