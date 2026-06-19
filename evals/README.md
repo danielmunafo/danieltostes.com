@@ -54,6 +54,56 @@ Category-specific fields are documented in each `cases.json`.
 | MEDIUM   | Quality degradation — wrong excerpt, gap not surfaced, citation weaker than expected           |
 | LOW      | Cosmetic — support label phrasing, link format, minor ranking order                            |
 
+## Running the evals
+
+All commands run from `services/recruiter-assistant-api/`.
+
+### Step 1 — Generate the corpus snapshot (once per corpus change)
+
+```bash
+npm run eval:snapshot
+# → saves evals/retrieval/fixtures/corpus-snapshot.json
+```
+
+Requires a local LlamaIndex index at `LLAMAINDEX_INDEX_JSON_PATH` or in `embeddings/llamaindex.v*.json`. Run `npm run build:llamaindex-index` first if needed.
+
+### Step 2 — Retrieval evals (offline, no LLM)
+
+```bash
+npm run eval:retrieval
+# Run a single case:
+npm run eval:retrieval -- --case R-04
+# Run against a specific locale:
+npm run eval:retrieval -- --locale pt-BR
+```
+
+Requires `OPENAI_API_KEY` to embed the queries. Everything else is pure math against the snapshot — no LLM call.
+
+### Step 3 — E2E evals (full pipeline)
+
+```bash
+# Terminal 1: start the dev server in E2E mode (skips reCAPTCHA)
+RECRUITER_E2E=1 npm run dev:server
+
+# Terminal 2: run the eval suite
+npm run eval:e2e
+# Run a single case:
+npm run eval:e2e -- --case E2E-04
+```
+
+The e2e runner checks deterministic assertions (recommendation label, technical fit score, references/gaps presence) and prints rubric assertions for manual review. Override the server URL with `EVAL_SERVER_URL=http://...`.
+
+### When to run each layer
+
+| When                                   | Run                                                  |
+| -------------------------------------- | ---------------------------------------------------- |
+| Every commit                           | `eval:retrieval` (no LLM cost, fast)                 |
+| Before any prompt change ships         | `eval:retrieval` + `eval:e2e` on the priority-12 set |
+| Before a release                       | Full `eval:e2e` suite                                |
+| After corpus/portfolio content changes | `eval:snapshot` then `eval:retrieval`                |
+
+---
+
 ## Priority-12 regression set
 
 If you can only run a subset, run these 12 cases — they cover the highest-confidence regression risk across all failure modes:
