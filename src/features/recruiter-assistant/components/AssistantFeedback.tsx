@@ -23,7 +23,7 @@ import {
   type FeedbackReason,
 } from "../lib/recruiter-assistant-feedback";
 
-type FeedbackPhase = "idle" | "negative-expand" | "submitting" | "done";
+type FeedbackPhase = "idle" | "negative-expand" | "done";
 
 export type AssistantFeedbackProps = {
   messageId: string;
@@ -73,29 +73,25 @@ export function AssistantFeedback({
 
   const isDisabled = phase !== "idle";
   const isExpanding = phase === "negative-expand";
-  const isSubmitting = phase === "submitting";
   const isDone = phase === "done";
 
   const doSubmit = useCallback(
-    async (r: "positive" | "negative", reason?: FeedbackReason, c?: string) => {
-      setPhase("submitting");
-      try {
-        await submitFeedback({
-          messageId,
-          questionText,
-          responseText,
-          rating: r,
-          reason,
-          comment: c?.trim() || undefined,
-          locale,
-        });
-        setPhase("done");
-      } catch {
+    (r: "positive" | "negative", reason?: FeedbackReason, c?: string) => {
+      setPhase("done");
+      submitFeedback({
+        messageId,
+        questionText,
+        responseText,
+        rating: r,
+        reason,
+        comment: c?.trim() || undefined,
+        locale,
+      }).catch(() => {
         setPhase("idle");
         setRating(null);
         setPendingReason(null);
         setComment("");
-      }
+      });
     },
     [messageId, questionText, responseText, locale]
   );
@@ -103,7 +99,7 @@ export function AssistantFeedback({
   const handleThumbUp = useCallback(() => {
     if (isDisabled) return;
     setRating("positive");
-    void doSubmit("positive");
+    doSubmit("positive");
   }, [isDisabled, doSubmit]);
 
   const handleThumbDown = useCallback(() => {
@@ -113,11 +109,11 @@ export function AssistantFeedback({
   }, [isDisabled]);
 
   const handleSubmitNegative = useCallback(() => {
-    void doSubmit("negative", pendingReason ?? undefined, comment);
+    doSubmit("negative", pendingReason ?? undefined, comment);
   }, [doSubmit, pendingReason, comment]);
 
   const handleSkip = useCallback(() => {
-    void doSubmit("negative");
+    doSubmit("negative");
   }, [doSubmit]);
 
   const reasons: { key: FeedbackReason; label: string }[] = [
@@ -226,12 +222,10 @@ export function AssistantFeedback({
               disabled={isDisabled}
               sx={{
                 ...ICON_BTN_SX,
-                ...(isExpanding || (rating === "negative" && isSubmitting)
-                  ? { color: "error.main" }
-                  : {}),
+                ...(isExpanding ? { color: "error.main" } : {}),
               }}
             >
-              {isExpanding || (rating === "negative" && isSubmitting) ? (
+              {isExpanding ? (
                 <ThumbDownRoundedIcon sx={{ fontSize: 18 }} />
               ) : (
                 <ThumbDownOutlinedIcon sx={{ fontSize: 18 }} />
@@ -239,12 +233,6 @@ export function AssistantFeedback({
             </IconButton>
           </span>
         </Tooltip>
-
-        {rating === "positive" && isSubmitting && (
-          <Typography variant="caption" color="success.main" sx={{ ml: 0.25 }}>
-            {t("feedbackThanks")}
-          </Typography>
-        )}
       </Box>
 
       <Collapse in={isExpanding} unmountOnExit>
@@ -264,7 +252,6 @@ export function AssistantFeedback({
                 onClick={() =>
                   setPendingReason((prev) => (prev === key ? null : key))
                 }
-                disabled={isSubmitting}
                 sx={{ fontSize: "0.75rem", height: 24 }}
               />
             ))}
@@ -276,7 +263,6 @@ export function AssistantFeedback({
             placeholder={t("feedbackCommentPlaceholder")}
             multiline
             maxRows={3}
-            disabled={isSubmitting}
             sx={{
               fontSize: "0.8125rem",
               color: "text.secondary",
@@ -295,7 +281,6 @@ export function AssistantFeedback({
               component="button"
               type="button"
               onClick={handleSubmitNegative}
-              disabled={isSubmitting}
               sx={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -309,9 +294,8 @@ export function AssistantFeedback({
                 fontSize: "0.8125rem",
                 fontWeight: 600,
                 lineHeight: 1.5,
-                cursor: isSubmitting ? "not-allowed" : "pointer",
-                opacity: isSubmitting ? 0.5 : 1,
-                "&:hover": { opacity: isSubmitting ? 0.5 : 0.88 },
+                cursor: "pointer",
+                "&:hover": { opacity: 0.88 },
               }}
             >
               {t("feedbackSubmit")}
@@ -324,8 +308,6 @@ export function AssistantFeedback({
               color="text.secondary"
               underline="hover"
               onClick={handleSkip}
-              disabled={isSubmitting}
-              sx={{ cursor: isSubmitting ? "not-allowed" : "pointer" }}
             >
               {t("feedbackSkip")}
             </Link>
