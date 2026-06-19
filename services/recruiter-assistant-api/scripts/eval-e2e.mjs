@@ -184,7 +184,7 @@ function normalizeRecommendation(label) {
 // HTTP call
 // ---------------------------------------------------------------------------
 
-async function callDevServer(jdText, testId) {
+async function callDevServer(jdText) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -226,7 +226,6 @@ function runDeterministicAssertions(assertions, parsedOutput) {
     recommendation_key,
     technicalFit,
     fullText,
-    pitch,
     isOffTopic,
   } = parsedOutput;
 
@@ -426,7 +425,7 @@ async function main() {
 
     let rawBody;
     try {
-      rawBody = await callDevServer(jdText, evalCase.test_id);
+      rawBody = await callDevServer(jdText);
     } catch (err) {
       process.stdout.write("\r");
       console.log(
