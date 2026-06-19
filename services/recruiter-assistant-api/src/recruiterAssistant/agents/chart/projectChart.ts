@@ -6,6 +6,7 @@ import {
   type RecruiterNavLocale,
 } from "../../../constants.js";
 import { logError, logInfo, logWarn } from "../../../logging/logger.js";
+import { traceGenerate } from "../../../tracing/requestTrace.js";
 import {
   alignChartAssessmentWithHardGates,
   logChartAssessmentAlignment,
@@ -60,13 +61,19 @@ export async function projectChart(params: {
 
   for (const [attemptIndex, attempt] of CHART_PROJECTION_ATTEMPTS.entries()) {
     try {
-      const { object: rawChart } = await generateObject({
-        model: params.openai(CHAT_MODEL),
-        schema: chartDataSchemaForModelOutput,
-        maxTokens: attempt.maxTokens,
-        system: buildChartProjectionSystemPrompt(attempt.compact),
-        prompt,
-      });
+      const { object: rawChart } = await traceGenerate(
+        "chart",
+        CHAT_MODEL,
+        "chat",
+        () =>
+          generateObject({
+            model: params.openai(CHAT_MODEL),
+            schema: chartDataSchemaForModelOutput,
+            maxTokens: attempt.maxTokens,
+            system: buildChartProjectionSystemPrompt(attempt.compact),
+            prompt,
+          })
+      );
       const { chart: chartForValidation, adjustments } =
         normalizeChartEvidenceScorePairings(rawChart);
       if (adjustments.length > 0) {

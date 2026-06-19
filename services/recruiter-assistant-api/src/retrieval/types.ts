@@ -29,6 +29,8 @@ export type RecruiterRetrieverResult = {
   chunksForNavLocale: readonly EmbeddingChunk[];
   topChunks: readonly EmbeddingChunk[];
   sourceExcerpts: string;
+  /** Cosine scores aligned to `topChunks` (descending), when the retriever computes them. */
+  topScores?: readonly number[];
 };
 
 export interface RecruiterRetriever {

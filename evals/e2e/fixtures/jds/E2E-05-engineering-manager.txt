@@ -1,0 +1,15 @@
+Engineering Manager — Platform Team
+
+We are looking for an Engineering Manager to lead and grow a team of 6-8 backend engineers.
+
+Requirements:
+- 3+ years of direct people management experience
+- Ownership of performance reviews, career development, and hiring
+- Technical background in backend distributed systems
+- Ability to translate technical decisions for non-engineering stakeholders
+- Experience with cloud infrastructure (AWS or GCP)
+
+Nice to have:
+- Fintech or regulated domain experience
+- Experience scaling teams from 5 to 15+ engineers
+- OKR or goals framework experience

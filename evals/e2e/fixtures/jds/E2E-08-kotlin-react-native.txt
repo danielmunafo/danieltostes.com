@@ -1,0 +1,14 @@
+Senior Mobile Engineer — Cross-Platform
+
+We are a mobile-first product company building consumer apps for Android and iOS.
+
+Requirements:
+- Kotlin/Android development, 3+ years
+- React Native experience accepted (2+ years minimum)
+- Mobile performance optimization and profiling
+- REST API integration and offline-first patterns
+
+Nice to have:
+- TypeScript/Node.js for backend work
+- AWS Amplify or Firebase
+- Experience shipping to Google Play and App Store

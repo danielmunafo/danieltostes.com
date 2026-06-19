@@ -2,7 +2,7 @@ import { RAG_TOP_K } from "../../constants.js";
 import { formatPortfolioChunks } from "../../rag/formatPortfolioChunks.js";
 import {
   cosineSimilarity,
-  retrieveMergedTopK,
+  retrieveMergedTopKWithScores,
   type EmbeddingChunk,
 } from "../../rag/retrieve.js";
 import type { OpenAiProvider } from "../../recruiterAssistant/types.js";
@@ -27,14 +27,16 @@ export function createCustomRetrieverAdapter(
       const corpus = await loadPortfolioCorpus(input.navLocale);
       const queries = buildRetrievalQueries(input.query);
       const queryEmbeddings = await embedRetrievalQueries(openai, queries);
-      const topChunks = retrieveMergedTopK(
+      const scored = retrieveMergedTopKWithScores(
         corpus.chunksForNavLocale,
         queryEmbeddings,
         RAG_TOP_K
       );
+      const topChunks = scored.map((entry) => entry.chunk);
       return {
         chunksForNavLocale: corpus.chunksForNavLocale,
         topChunks,
+        topScores: scored.map((entry) => entry.score),
         sourceExcerpts: formatPortfolioChunks(topChunks, input.navLocale),
       };
     },

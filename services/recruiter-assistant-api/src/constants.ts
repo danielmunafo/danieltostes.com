@@ -151,7 +151,7 @@ export const CLAIM_EXTRACTION_MAX_TOKENS = 512;
 export const INTENT_GATE_MAX_TOKENS = 24;
 
 /** Max tokens for structured hard-gate row extraction (`generateObject`). */
-export const HARD_GATE_EXTRACTION_MAX_TOKENS = 768;
+export const HARD_GATE_EXTRACTION_MAX_TOKENS = 2048;
 
 /** Max tokens for the evidence evaluator (`streamText` before the analyst). */
 export const EVIDENCE_EVALUATOR_MAX_TOKENS = 1600;

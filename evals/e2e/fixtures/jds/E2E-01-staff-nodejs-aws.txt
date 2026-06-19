@@ -1,0 +1,17 @@
+Staff Software Engineer — Platform Engineering
+
+We are a remote-first fintech company looking for a Staff Engineer to own our backend platform.
+
+Requirements:
+- 6+ years of software engineering experience
+- Node.js and TypeScript as primary stack
+- AWS experience: Lambda, SQS, CloudWatch, S3
+- Event-driven and distributed systems design
+- Observability: structured logging, metrics, alerting
+- Ability to communicate and lead technically in English
+
+Nice to have:
+- GraphQL or REST API gateway experience
+- Kafka or message queue systems
+- Datadog or Grafana for SLO monitoring
+- Experience in fintech or regulated environments

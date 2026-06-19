@@ -15,6 +15,8 @@ import { createRecruiterAssistantDependencies } from "./recruiterAssistant/creat
 import { createRecruiterAssistantStreamResponse } from "./recruiterAssistant/createRecruiterAssistantStreamResponse.js";
 import { parseAndValidateRecruiterRequest } from "./recruiterAssistant/request/parseAndValidateRecruiterRequest.js";
 import { runIntentGate } from "./security/intentGate.js";
+import { randomUUID } from "node:crypto";
+import { createRequestTrace, runWithTrace } from "./tracing/requestTrace.js";
 
 /**
  * Core HTTP handler: returns a Web `Response` (streaming body for POST / chat).
@@ -41,9 +43,11 @@ export async function handleChatRequest(
 
   try {
     const dependencies = await createRecruiterAssistantDependencies();
-    const intent = await runIntentGate(
-      dependencies.openai,
-      parsedRequest.value.guardedText
+    const trace = createRequestTrace(randomUUID(), {
+      navLocale: parsedRequest.value.navLocale,
+    });
+    const intent = await runWithTrace(trace, () =>
+      runIntentGate(dependencies.openai, parsedRequest.value.guardedText)
     );
     if (!intent.ok) {
       return clientErrorResponse(
@@ -56,6 +60,7 @@ export async function handleChatRequest(
     return createRecruiterAssistantStreamResponse({
       request: parsedRequest.value,
       dependencies,
+      trace,
     });
   } catch (err) {
     logInternalServerError("handleChatRequest", err);

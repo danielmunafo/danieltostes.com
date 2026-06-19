@@ -1,0 +1,16 @@
+Staff AI/ML Engineer — Production AI Systems
+
+We are building AI-powered product features and need an engineer who has shipped production AI systems, not just experimented with them.
+
+Requirements:
+- Hands-on experience building RAG pipelines in production
+- LLM orchestration and prompt engineering at scale
+- Embedding models and vector retrieval (cosine similarity, FAISS, or similar)
+- Streaming UX for LLM responses
+- TypeScript or Python
+
+Nice to have:
+- Evaluation frameworks for LLM output quality
+- Grounding and hallucination mitigation techniques
+- Experience with OpenAI or Anthropic APIs
+- Observability for AI systems (token tracking, latency, cost)

@@ -1,0 +1,111 @@
+{
+  "description": "Retrieval eval cases. For each case, embed the query with text-embedding-3-small, run retrieveMergedTopK against the pinned corpus snapshot, and assert the expected chunks appear (or do not appear) in the top-K results. No LLM call required.",
+  "corpus_snapshot": "fixtures/corpus-snapshot.json",
+  "default_top_k": 30,
+  "cases": [
+    {
+      "test_id": "R-01",
+      "category": "retrieval",
+      "query": "Has Daniel worked with Kafka?",
+      "expected_outcome": "The Distributed Systems section chunk containing Kafka, Avro, Cassandra, and Itaú mobile overdraft evidence appears in the top-30 results.",
+      "evaluation_criteria": "Embed query. Run retrieveMergedTopK. Assert recall@30 >= 1 for a chunk whose text contains 'Kafka' and references Itaú or mobile overdraft.",
+      "severity_if_failed": "CRITICAL",
+      "expected_chunk_patterns": ["Kafka", "Avro", "Itaú"],
+      "min_recall_at_k": 1,
+      "top_k": 30,
+      "is_negative_test": false
+    },
+    {
+      "test_id": "R-02",
+      "category": "retrieval",
+      "query": "Has Daniel built AI systems or RAG pipelines?",
+      "expected_outcome": "The AI-Native Engineering section chunk surfaces in top-10. The AI-Driven Decision Systems chunk also appears in top-30.",
+      "evaluation_criteria": "AI-Native Engineering chunk must appear in top-10. AI-Driven Decision Systems chunk must appear in top-30.",
+      "severity_if_failed": "CRITICAL",
+      "expected_chunk_patterns": ["RAG", "staged", "cosine retrieval"],
+      "min_recall_at_k": 1,
+      "top_k": 10,
+      "secondary_top_k": 30,
+      "secondary_chunk_patterns": ["AI-Driven", "vector similarity", "Klarna"],
+      "is_negative_test": false
+    },
+    {
+      "test_id": "R-03",
+      "category": "retrieval",
+      "query": "Is Daniel experienced with technical leadership and mentoring?",
+      "expected_outcome": "The Technical Leadership section chunk appears in top-20.",
+      "evaluation_criteria": "Chunk whose text references MercadoLivre scaffolds, onboarding, or mentoring must appear within top-20 results.",
+      "severity_if_failed": "HIGH",
+      "expected_chunk_patterns": ["MercadoLivre", "scaffold", "mentor"],
+      "min_recall_at_k": 1,
+      "top_k": 20,
+      "is_negative_test": false
+    },
+    {
+      "test_id": "R-04",
+      "category": "retrieval",
+      "query": "Has Daniel worked with Golang?",
+      "expected_outcome": "No chunk achieves cosine similarity >= 0.55 for this query. No chunk explicitly containing Golang as a primary language appears in top-10.",
+      "evaluation_criteria": "Verify that the max similarity score for any returned chunk is below 0.55. Negative test — the system must not surface false-positive evidence for an absent skill.",
+      "severity_if_failed": "HIGH",
+      "expected_chunk_patterns": [],
+      "max_similarity_threshold": 0.55,
+      "top_k": 10,
+      "is_negative_test": true,
+      "negative_assertion": "no chunk with similarity >= 0.55"
+    },
+    {
+      "test_id": "R-05",
+      "category": "retrieval",
+      "query": "Is Daniel suitable for a Staff Engineer role?",
+      "expected_outcome": "At minimum the Technical Leadership and one of Distributed Systems or Full-Stack Platform Engineering chunks appear in top-30.",
+      "evaluation_criteria": "Two or more high-signal chunks (leadership, scale, cross-functional) appear in top-30.",
+      "severity_if_failed": "HIGH",
+      "expected_chunk_patterns": [
+        "Technical Leadership",
+        "MercadoLivre",
+        "staff-level"
+      ],
+      "min_recall_at_k": 2,
+      "top_k": 30,
+      "is_negative_test": false
+    },
+    {
+      "test_id": "R-06",
+      "category": "retrieval",
+      "query": "Does Daniel have observability and SLO experience?",
+      "expected_outcome": "The Observability and Reliability section chunk appears in top-10, containing references to Datadog, Grafana, CloudWatch, SLOs.",
+      "evaluation_criteria": "Chunk containing 'Datadog' and 'SLO' or 'CloudWatch' appears in top-10.",
+      "severity_if_failed": "MEDIUM",
+      "expected_chunk_patterns": ["Datadog", "SLO", "CloudWatch"],
+      "min_recall_at_k": 1,
+      "top_k": 10,
+      "is_negative_test": false
+    },
+    {
+      "test_id": "R-07",
+      "category": "retrieval",
+      "query": "Is Daniel suitable for a role requiring German language?",
+      "expected_outcome": "No chunk scores above 0.45 for a German-language requirement query. The system retrieves general portfolio chunks but none contain German-language evidence.",
+      "evaluation_criteria": "Negative test. Confirm that the highest-scoring chunk for this query scores below 0.45.",
+      "severity_if_failed": "HIGH",
+      "expected_chunk_patterns": [],
+      "max_similarity_threshold": 0.45,
+      "top_k": 30,
+      "is_negative_test": true,
+      "negative_assertion": "no chunk with similarity >= 0.45 for German language"
+    },
+    {
+      "test_id": "R-08",
+      "category": "retrieval",
+      "query": "Has Daniel worked with event-driven architecture and SQS?",
+      "expected_outcome": "The Distributed Systems section and the Integration Architecture section both appear in top-30. The Ageras billing sync SQS reference surfaces.",
+      "evaluation_criteria": "Both chunks appear in top-30. At least one chunk explicitly references 'SQS' and 'Lambda' in the same passage.",
+      "severity_if_failed": "MEDIUM",
+      "expected_chunk_patterns": ["SQS", "Lambda", "Ageras"],
+      "min_recall_at_k": 1,
+      "top_k": 30,
+      "is_negative_test": false
+    }
+  ]
+}
