@@ -7,9 +7,11 @@ const valid = {
   timestamp: "2026-06-18T10:00:00.000Z",
   questionHash: "abcdef01234567ab",
   responseHash: "0123456789abcdef",
+  questionText: "We are looking for a senior TypeScript engineer.",
+  responseText: "Daniel is a strong fit based on his work at ...",
   rating: "positive" as const,
   locale: "en",
-  schemaVersion: "1" as const,
+  schemaVersion: "2" as const,
 };
 
 describe("feedbackBodySchema", () => {
@@ -72,12 +74,26 @@ describe("feedbackBodySchema", () => {
 
   it("rejects wrong schemaVersion", () => {
     expect(
-      feedbackBodySchema.safeParse({ ...valid, schemaVersion: "2" }).success
+      feedbackBodySchema.safeParse({ ...valid, schemaVersion: "1" }).success
     ).toBe(false);
   });
 
   it("rejects missing timestamp", () => {
     const { timestamp: _t, ...rest } = valid;
     expect(feedbackBodySchema.safeParse(rest).success).toBe(false);
+  });
+
+  it("rejects missing questionText", () => {
+    const { questionText: _q, ...rest } = valid;
+    expect(feedbackBodySchema.safeParse(rest).success).toBe(false);
+  });
+
+  it("rejects questionText over 12000 chars", () => {
+    expect(
+      feedbackBodySchema.safeParse({
+        ...valid,
+        questionText: "a".repeat(12001),
+      }).success
+    ).toBe(false);
   });
 });

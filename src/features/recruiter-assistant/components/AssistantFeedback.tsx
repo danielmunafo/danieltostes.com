@@ -17,7 +17,7 @@ import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   submitFeedback,
   type FeedbackReason,
@@ -74,6 +74,16 @@ export function AssistantFeedback({
   const isDisabled = phase !== "idle";
   const isExpanding = phase === "negative-expand";
   const isDone = phase === "done";
+
+  const expandPanelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (isExpanding) {
+      expandPanelRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [isExpanding]);
 
   const doSubmit = useCallback(
     (r: "positive" | "negative", reason?: FeedbackReason, c?: string) => {
@@ -236,7 +246,7 @@ export function AssistantFeedback({
       </Box>
 
       <Collapse in={isExpanding} unmountOnExit>
-        <Stack spacing={1} sx={{ pt: 0.25 }}>
+        <Stack ref={expandPanelRef} spacing={1} sx={{ pt: 0.25 }}>
           <Typography variant="caption" color="text.secondary">
             {t("feedbackWhatWentWrong")}
           </Typography>

@@ -9,6 +9,8 @@ export const feedbackBodySchema = z.object({
   timestamp: z.string().datetime(),
   questionHash: z.string().length(16),
   responseHash: z.string().length(16),
+  questionText: z.string().max(12000),
+  responseText: z.string().max(100000),
   rating: z.enum(["positive", "negative"]),
   reason: z
     .enum(["wrong_fit", "off_topic", "missing_context", "too_long", "other"])
@@ -19,7 +21,7 @@ export const feedbackBodySchema = z.object({
     .refine((s) => !CONTROL_CHAR_REGEX.test(s), { message: "invalid_chars" })
     .optional(),
   locale: z.string().max(10),
-  schemaVersion: z.literal("1"),
+  schemaVersion: z.literal("2"),
 });
 
 export type FeedbackBody = z.infer<typeof feedbackBodySchema>;
