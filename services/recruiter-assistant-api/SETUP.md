@@ -30,9 +30,14 @@ Stores one JSON object per feedback submission (append-only, one file per record
 | Name                 | Example                             |
 | -------------------- | ----------------------------------- |
 | `FEEDBACK_S3_BUCKET` | `danieltostes-recruiter-feedback`   |
-| `FEEDBACK_S3_PREFIX` | `v1` (default; omit to use default) |
+| `FEEDBACK_S3_PREFIX` | `v2` (default; omit to use default) |
 
-Object key pattern: `v2/{YYYYMMDD}_{epoch}_{safeRequestId}.json`
+Object key patterns (prefix defaults to `v2/`):
+
+- Feedback record: `{prefix}{YYYYMMDD}_{epoch}_{safeRequestId}.json`
+- AI trace: `{prefix}traces/{YYYYMMDD}_{safeRequestId}.json`
+
+Correlate feedback with its trace by matching `requestId` across the two object types.
 
 If `FEEDBACK_S3_BUCKET` is not set on the Lambda, the `/feedback` endpoint still returns `200 { ok: true }` (no-op) — safe to deploy without configuring this bucket.
 
@@ -92,11 +97,6 @@ Add **inline policy** (tighten ARNs to your account):
     },
     {
       "Effect": "Allow",
-      "Action": ["s3:GetObject", "s3:DeleteObject"],
-      "Resource": "arn:aws:s3:::YOUR_FEEDBACK_BUCKET/*/traces/*"
-    },
-    {
-      "Effect": "Allow",
       "Action": ["secretsmanager:GetSecretValue"],
       "Resource": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR_OPENAI_SECRET*"
     }
@@ -104,7 +104,7 @@ Add **inline policy** (tighten ARNs to your account):
 }
 ```
 
-> **Note:** The embeddings bucket only needs `s3:GetObject` (read-only at runtime). The feedback bucket needs `s3:PutObject` (write-only). Keep them separate — never grant `PutObject` on the embeddings bucket to this role.
+> **Note:** The embeddings bucket is read-only at runtime (`s3:GetObject`). The feedback bucket is write-only (`s3:PutObject` — feedback records and AI traces are written as separate objects, correlated by `requestId` at analysis time). Keep them separate — never grant `PutObject` on the embeddings bucket to this role.
 
 ---
 
@@ -129,7 +129,7 @@ Add **inline policy** (tighten ARNs to your account):
 | `ALLOWED_ORIGIN`               | Comma-separated, **exact** `Origin` match: prod `https://…` hosts plus local dev `http://localhost:3000` **and** `http://127.0.0.1:3000` if you ever open Next on the loopback IP                                                                                                                       |
 | `RECAPTCHA_SECRET_KEY`         | reCAPTCHA v2 **secret** key for server-side `siteverify` on chat POST. Omit locally to skip verification. Pair with `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` on the Next build (see §8).                                                                                                                        |
 | `FEEDBACK_S3_BUCKET`           | S3 bucket name for feedback records (§1b). If omitted, `/feedback` still returns `200` but does not persist anything.                                                                                                                                                                                   |
-| `FEEDBACK_S3_PREFIX`           | Optional key prefix inside the feedback bucket. Defaults to `v1`. Change to start a new schema version without deleting old records.                                                                                                                                                                    |
+| `FEEDBACK_S3_PREFIX`           | Optional key prefix inside the feedback bucket. Defaults to `v2`. Change to start a new schema version without deleting old records.                                                                                                                                                                    |
 
 Do **not** set `OPENAI_API_KEY` in Lambda env (use the secret only).
 
