@@ -19,6 +19,7 @@ const eslintConfig = defineConfig([
     "test-results/**",
     "services/recruiter-assistant-api/dist/**",
     "services/recruiter-assistant-api/embeddings/**",
+    ".claude/**",
   ]),
 ]);
 
