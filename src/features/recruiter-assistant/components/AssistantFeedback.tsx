@@ -66,9 +66,8 @@ export function AssistantFeedback({
 
   const [phase, setPhase] = useState<FeedbackPhase>("idle");
   const [rating, setRating] = useState<"positive" | "negative" | null>(null);
-  const [submitting, setSubmitting] = useState<"positive" | "negative" | null>(
-    null
-  );
+  const [submitting, setSubmitting] = useState<"positive" | null>(null);
+  const [submittingNegative, setSubmittingNegative] = useState(false);
   const [pendingReason, setPendingReason] = useState<FeedbackReason | null>(
     null
   );
@@ -119,17 +118,18 @@ export function AssistantFeedback({
 
   const handleThumbDown = useCallback(() => {
     if (isDisabled || submitting) return;
-    setSubmitting("negative");
-    setTimeout(() => {
-      setSubmitting(null);
-      setRating("negative");
-      setPhase("negative-expand");
-    }, 200);
+    setRating("negative");
+    setPhase("negative-expand");
   }, [isDisabled, submitting]);
 
   const handleSubmitNegative = useCallback(() => {
-    doSubmit("negative", pendingReason ?? undefined, comment);
-  }, [doSubmit, pendingReason, comment]);
+    if (submittingNegative) return;
+    setSubmittingNegative(true);
+    setTimeout(() => {
+      setSubmittingNegative(false);
+      doSubmit("negative", pendingReason ?? undefined, comment);
+    }, 200);
+  }, [submittingNegative, doSubmit, pendingReason, comment]);
 
   const reasons: { key: FeedbackReason; label: string }[] = [
     { key: "wrong_fit", label: t("feedbackReasonWrongFit") },
@@ -246,13 +246,7 @@ export function AssistantFeedback({
                 ...(isExpanding ? { color: "error.main" } : {}),
               }}
             >
-              {submitting === "negative" ? (
-                <CircularProgress
-                  size={16}
-                  thickness={4}
-                  sx={{ color: "text.secondary" }}
-                />
-              ) : isExpanding ? (
+              {isExpanding ? (
                 <ThumbDownRoundedIcon sx={{ fontSize: 18 }} />
               ) : (
                 <ThumbDownOutlinedIcon sx={{ fontSize: 18 }} />
@@ -308,10 +302,12 @@ export function AssistantFeedback({
               component="button"
               type="button"
               onClick={handleSubmitNegative}
+              disabled={submittingNegative}
               sx={{
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
+                gap: 0.75,
                 px: 1.5,
                 py: 0.5,
                 border: "none",
@@ -321,10 +317,17 @@ export function AssistantFeedback({
                 fontSize: "0.8125rem",
                 fontWeight: 600,
                 lineHeight: 1.5,
-                cursor: "pointer",
-                "&:hover": { opacity: 0.88 },
+                cursor: submittingNegative ? "default" : "pointer",
+                "&:hover": { opacity: submittingNegative ? 1 : 0.88 },
               }}
             >
+              {submittingNegative && (
+                <CircularProgress
+                  size={12}
+                  thickness={4}
+                  sx={{ color: "error.contrastText" }}
+                />
+              )}
               {t("feedbackSubmit")}
             </Box>
           </Box>
