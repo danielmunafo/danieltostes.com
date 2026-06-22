@@ -11,5 +11,6 @@
 | [search-index.md](./search-index.md)                                     | How the search index is built; section/content requirements for search                |
 | [plans/README.md](./plans/README.md)                                     | Implementation and execution plans (scaffolding, parallax, recruiter assistant, etc.) |
 | [plans/recruiter-assistant-plan.md](./plans/recruiter-assistant-plan.md) | Recruiter AI chat: RAG, Lambda streaming, security, CI                                |
+| [plans/reliability-layer-plan.md](./plans/reliability-layer-plan.md)     | Recruiter pipeline reliability: timeouts, retries, degradation, cancellation          |
 
 When code, config, or behavior changes in a way that affects a doc, update that doc. See `.cursor/rules/documentation.mdc` for conventions.
