@@ -21,8 +21,8 @@ Personal blog/CV site. Next.js static export (`output: 'export'`), S3 + CloudFro
 
 ## AI workflow
 
-- Map: `.cursor/AI_INDEX.md` → scoped rules in `.cursor/rules/*.mdc`
-- Skills: `.cursor/skills/<name>/` — mention the skill by name in your prompt
+- Start with `.cursor/AI_INDEX.md`: code map ("Where code lives") + scoped rules (`.cursor/rules/*.mdc`) + skills. In Cursor, rules auto-attach by file glob; other agents (Claude Code, etc.) open the matching rule/skill manually.
+- Skills: `.cursor/skills/<name>/SKILL.md` — read the matching one when the task fits.
 - Before finishing: `.cursor/rules/code-review.mdc`
 
 ## Git workflow
