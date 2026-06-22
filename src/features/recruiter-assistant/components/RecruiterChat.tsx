@@ -1,8 +1,6 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
-import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -97,6 +95,7 @@ import { AssistantBriefingBody } from "./AssistantBriefingBody";
 import { AssistantBriefingProgress } from "./AssistantBriefingProgress";
 import { AssistantEvidenceReview } from "./AssistantEvidenceReview";
 import { AssistantJobContextPanel } from "./AssistantJobContextPanel";
+import { AssistantFeedback } from "./AssistantFeedback";
 import { AssistantMatchProfileSkeleton } from "./AssistantMatchProfileSkeleton";
 import { AssistantThinkingIndicator } from "./AssistantThinkingIndicator";
 
@@ -898,6 +897,12 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
               mainBody.trim() !== "" &&
               !showBodySkeleton &&
               !isStreamingThisMessage;
+            const questionText =
+              !isUser && messageIndex > 0
+                ? getRecruiterAssistantMessagePlainText(
+                    messages[messageIndex - 1]!
+                  )
+                : "";
             return (
               <Box
                 key={m.id}
@@ -1084,81 +1089,20 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                         ) : null}
                       </Box>
                       {hasBriefingToCopy ? (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "flex-start",
-                            alignItems: "center",
-                            gap: 0.25,
-                            mt: 0.25,
-                            flexShrink: 0,
-                          }}
-                        >
-                          <Tooltip
-                            title={
-                              copiedMessageId === m.id
-                                ? t("copyBriefingCopied")
-                                : t("copyBriefing")
-                            }
-                            placement="top"
-                            arrow
-                            describeChild
-                          >
-                            <span>
-                              <IconButton
-                                type="button"
-                                size="small"
-                                aria-label={
-                                  copiedMessageId === m.id
-                                    ? t("copyBriefingCopied")
-                                    : t("copyBriefing")
-                                }
-                                onClick={() =>
-                                  handleCopyBriefing(m.id, mainBody)
-                                }
-                                sx={{
-                                  color: "text.secondary",
-                                  borderRadius: 1.5,
-                                  width: 32,
-                                  height: 32,
-                                  "&:hover": {
-                                    bgcolor: "action.hover",
-                                    color: "text.primary",
-                                  },
-                                }}
-                              >
-                                <ContentCopyRoundedIcon sx={{ fontSize: 18 }} />
-                              </IconButton>
-                            </span>
-                          </Tooltip>
-                          <Tooltip
-                            title={t("cleanResponse")}
-                            placement="top"
-                            arrow
-                            describeChild
-                          >
-                            <span>
-                              <IconButton
-                                type="button"
-                                size="small"
-                                aria-label={t("cleanResponse")}
-                                onClick={handleCleanResponse}
-                                sx={{
-                                  color: "text.secondary",
-                                  borderRadius: 1.5,
-                                  width: 32,
-                                  height: 32,
-                                  "&:hover": {
-                                    bgcolor: "action.hover",
-                                    color: "text.primary",
-                                  },
-                                }}
-                              >
-                                <RestartAltRoundedIcon sx={{ fontSize: 18 }} />
-                              </IconButton>
-                            </span>
-                          </Tooltip>
-                        </Box>
+                        <AssistantFeedback
+                          messageId={m.id}
+                          questionText={questionText}
+                          responseText={mainBody}
+                          locale={locale}
+                          onCopy={() => handleCopyBriefing(m.id, mainBody)}
+                          copyLabel={
+                            copiedMessageId === m.id
+                              ? t("copyBriefingCopied")
+                              : t("copyBriefing")
+                          }
+                          onClean={handleCleanResponse}
+                          cleanLabel={t("cleanResponse")}
+                        />
                       ) : null}
                     </Box>
                   </Stack>

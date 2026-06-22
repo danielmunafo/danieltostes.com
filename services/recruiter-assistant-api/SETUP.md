@@ -15,7 +15,35 @@ No Terraform: create resources once in the AWS console or with the AWS CLI, then
 
 ---
 
-## 1b. Interests pack (optional)
+## 1b. Feedback S3 bucket
+
+Stores one JSON object per feedback submission (append-only, one file per record). Lambda writes here after a recruiter clicks 👍/👎.
+
+- Name example: `danieltostes-recruiter-feedback`
+- Block Public Access: **On**
+- Versioning: Off (records are immutable by design)
+- Default encryption: **SSE-S3**
+- Lifecycle rule (optional): transition objects to S3 Glacier after 90 days
+
+**Lambda environment variables** (§5):
+
+| Name                 | Example                             |
+| -------------------- | ----------------------------------- |
+| `FEEDBACK_S3_BUCKET` | `danieltostes-recruiter-feedback`   |
+| `FEEDBACK_S3_PREFIX` | `v2` (default; omit to use default) |
+
+Object key patterns (prefix defaults to `v2/`):
+
+- Feedback record: `{prefix}{YYYYMMDD}_{epoch}_{safeRequestId}.json`
+- AI trace: `{prefix}traces/{YYYYMMDD}_{safeRequestId}.json`
+
+Correlate feedback with its trace by matching `requestId` across the two object types.
+
+If `FEEDBACK_S3_BUCKET` is not set on the Lambda, the `/feedback` endpoint still returns `200 { ok: true }` (no-op) — safe to deploy without configuring this bucket.
+
+---
+
+## 1c. Interests pack (optional)
 
 Private JD-vs-preferences rubric for the optional interests evaluator (not in git). Same bucket as embeddings is fine; use a separate object key.
 
@@ -64,12 +92,19 @@ Add **inline policy** (tighten ARNs to your account):
     },
     {
       "Effect": "Allow",
+      "Action": ["s3:PutObject"],
+      "Resource": "arn:aws:s3:::YOUR_FEEDBACK_BUCKET/*"
+    },
+    {
+      "Effect": "Allow",
       "Action": ["secretsmanager:GetSecretValue"],
       "Resource": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR_OPENAI_SECRET*"
     }
   ]
 }
 ```
+
+> **Note:** The embeddings bucket is read-only at runtime (`s3:GetObject`). The feedback bucket is write-only (`s3:PutObject` — feedback records and AI traces are written as separate objects, correlated by `requestId` at analysis time). Keep them separate — never grant `PutObject` on the embeddings bucket to this role.
 
 ---
 
@@ -93,6 +128,8 @@ Add **inline policy** (tighten ARNs to your account):
 | `RECRUITER_CHAT_MODEL`         | Optional. OpenAI chat model id for all LLM stages. Set **per Lambda** in the AWS console (or CLI) so dev and prod can differ. If omitted, the runtime uses the code default **`gpt-4.1-nano`** (`CHAT_MODEL` in `src/constants.ts`). CI deploy updates **code only** and does not change this variable. |
 | `ALLOWED_ORIGIN`               | Comma-separated, **exact** `Origin` match: prod `https://…` hosts plus local dev `http://localhost:3000` **and** `http://127.0.0.1:3000` if you ever open Next on the loopback IP                                                                                                                       |
 | `RECAPTCHA_SECRET_KEY`         | reCAPTCHA v2 **secret** key for server-side `siteverify` on chat POST. Omit locally to skip verification. Pair with `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` on the Next build (see §8).                                                                                                                        |
+| `FEEDBACK_S3_BUCKET`           | S3 bucket name for feedback records (§1b). If omitted, `/feedback` still returns `200` but does not persist anything.                                                                                                                                                                                   |
+| `FEEDBACK_S3_PREFIX`           | Optional key prefix inside the feedback bucket. Defaults to `v2`. Change to start a new schema version without deleting old records.                                                                                                                                                                    |
 
 Do **not** set `OPENAI_API_KEY` in Lambda env (use the secret only).
 
