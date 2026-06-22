@@ -25,6 +25,16 @@ Personal blog/CV site. Next.js static export (`output: 'export'`), S3 + CloudFro
 - Skills: `.cursor/skills/<name>/SKILL.md` — read the matching one when the task fits.
 - Before finishing: `.cursor/rules/code-review.mdc`
 
+## Cross-tool wiring
+
+Canonical instruction sources are aliased by **symlink** so each tool finds them at its native path — one source, no drift. **Edit the canonical file, never the alias:**
+
+- `AGENTS.md` (this file) — read natively by opencode, Cursor, Codex, Claude Code.
+- `.github/copilot-instructions.md` → `AGENTS.md` (GitHub Copilot).
+- `.claude/skills/*` → `.cursor/skills/*` (same `SKILL.md`; Claude Code + Cursor).
+
+Symlinks resolve in the working tree (where these tools read). Formatters skip them: lint-staged filters symlinks (`.lintstagedrc.mjs`), and `prettier --check .` / `eslint` skip them during directory traversal. A cloud agent that reads git blobs instead would need a real file, not a symlink.
+
 ## Git workflow
 
 **Worktrees are not PR branches.** Claude Code may run inside a worktree on a branch named `claude/<slug>`. That branch is internal scaffolding — it is never the branch a PR tracks. Before any commit+push:
