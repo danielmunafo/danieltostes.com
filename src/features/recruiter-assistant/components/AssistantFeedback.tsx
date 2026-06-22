@@ -8,6 +8,7 @@ import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import ThumbUpRoundedIcon from "@mui/icons-material/ThumbUpRounded";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
 import Collapse from "@mui/material/Collapse";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
@@ -65,6 +66,9 @@ export function AssistantFeedback({
 
   const [phase, setPhase] = useState<FeedbackPhase>("idle");
   const [rating, setRating] = useState<"positive" | "negative" | null>(null);
+  const [submitting, setSubmitting] = useState<"positive" | "negative" | null>(
+    null
+  );
   const [pendingReason, setPendingReason] = useState<FeedbackReason | null>(
     null
   );
@@ -104,16 +108,24 @@ export function AssistantFeedback({
   );
 
   const handleThumbUp = useCallback(() => {
-    if (isDisabled) return;
-    setRating("positive");
-    doSubmit("positive");
-  }, [isDisabled, doSubmit]);
+    if (isDisabled || submitting) return;
+    setSubmitting("positive");
+    setTimeout(() => {
+      setSubmitting(null);
+      setRating("positive");
+      doSubmit("positive");
+    }, 200);
+  }, [isDisabled, submitting, doSubmit]);
 
   const handleThumbDown = useCallback(() => {
-    if (isDisabled) return;
-    setRating("negative");
-    setPhase("negative-expand");
-  }, [isDisabled]);
+    if (isDisabled || submitting) return;
+    setSubmitting("negative");
+    setTimeout(() => {
+      setSubmitting(null);
+      setRating("negative");
+      setPhase("negative-expand");
+    }, 200);
+  }, [isDisabled, submitting]);
 
   const handleSubmitNegative = useCallback(() => {
     doSubmit("negative", pendingReason ?? undefined, comment);
@@ -201,7 +213,13 @@ export function AssistantFeedback({
                 ...(rating === "positive" ? { color: "success.main" } : {}),
               }}
             >
-              {rating === "positive" ? (
+              {submitting === "positive" ? (
+                <CircularProgress
+                  size={16}
+                  thickness={4}
+                  sx={{ color: "success.main" }}
+                />
+              ) : rating === "positive" ? (
                 <ThumbUpRoundedIcon sx={{ fontSize: 18 }} />
               ) : (
                 <ThumbUpOutlinedIcon sx={{ fontSize: 18 }} />
@@ -228,7 +246,13 @@ export function AssistantFeedback({
                 ...(isExpanding ? { color: "error.main" } : {}),
               }}
             >
-              {isExpanding ? (
+              {submitting === "negative" ? (
+                <CircularProgress
+                  size={16}
+                  thickness={4}
+                  sx={{ color: "text.secondary" }}
+                />
+              ) : isExpanding ? (
                 <ThumbDownRoundedIcon sx={{ fontSize: 18 }} />
               ) : (
                 <ThumbDownOutlinedIcon sx={{ fontSize: 18 }} />
