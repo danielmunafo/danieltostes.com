@@ -38,8 +38,8 @@ For a **file map and command cheat sheet**, open [reference.md](reference.md).
 - **Lambda HTTP:** `parseAndValidateRecruiterRequest` (input guard, rate limit, CORS, optional reCAPTCHA) → `runIntentGate` → `runRecruiterAssistantPipeline`.
 - **Pipeline orchestration (ordered):** `contextAgent.createContext` (`RecruiterRetriever` in `src/retrieval/`; default `custom`, optional LlamaIndex via `RECRUITER_RETRIEVER_PROVIDER`) → `evidenceEvaluationAgent.evaluateEvidence` (streamed in `THINKING_*`) → `recruiterAgent.evaluateOffTopic` → `hardGatesAgent.assessHardGates` (server-only) → `interestsAgent.scheduleEvaluation` (background, server-only) → `evidenceAnalysisAgent.analyzeEvidence` (streamed) → `THINKING_CLOSE` → `recruiterAgent.projectBriefingAndChart` (briefing stream + chart JSON in parallel when on-topic) → `recruiterAgent.generatePitch` → `recruiterAgent.syncChartWithPitch` → `referencesAgent.generateReferences`.
 - **Sub-agents:** `briefingAgent` and `chartAgent` are invoked inside `recruiterAgent.projectBriefingAndChart`; prompts in `agents/briefing/` and `agents/chart/`.
-- **Corpus index:** `scripts/build-llamaindex-index.mjs` → `llamaindex-index.json` at runtime (local path or S3).
-- **Interests pack (optional):** `scripts/build-interests-pack.mjs` from `private/interests.source.md`; load via `INTERESTS_PACK_JSON_PATH` or S3 (see `SETUP.md`).
+- **Corpus index:** `services/recruiter-assistant-api/scripts/build-llamaindex-index.mjs` (`npm run build:llamaindex-index` in the service) → `llamaindex-index.json` at runtime (local path or S3).
+- **Interests pack (optional):** `services/recruiter-assistant-api/scripts/build-interests-pack.mjs` (`npm run build:interests-pack` in the service) from `private/interests.source.md`; load via `INTERESTS_PACK_JSON_PATH` or S3 (see `SETUP.md`).
 
 ## Agent workflow
 

@@ -47,7 +47,7 @@ Keep API `constants.ts` and `src/features/recruiter-assistant/lib/split-thinking
 - **Change model behavior / stage order:** `agents/**/instructions.md`, `agents/*/assemblePrompt.ts`, `runRecruiterAssistantPipeline.ts`, associated tests.
 - **Tune match profile chart:** `agents/chart/assembleChartPrompt.ts`, `chartDataSchema.ts`, `runRecruiterAssistantPipeline.ts` (briefing + chart steps), `syncChartWithPitch.ts`.
 - **Stricter or looser input:** `inputGuard.ts`, `intentGate.ts`, tests.
-- **New indexed content:** ensure the build script picks it up, run `npm run build:llamaindex-index`, upload/update per `SETUP.md` or CI job.
+- **New indexed content:** ensure the build script picks it up, run `npm run build:llamaindex-index` (from `services/recruiter-assistant-api/`), upload/update per `SETUP.md` or CI job.
 - **New UI copy:** messages JSON (all locales) + components; long legal body in terms `.md` files.
 
 ## Local dev commands
@@ -60,4 +60,4 @@ npm run dev
 cd services/recruiter-assistant-api && npm run dev
 ```
 
-Set `NEXT_PUBLIC_RECRUITER_API_URL` at Next build time; in `next dev` the app can default to `http://127.0.0.1:3001` when unset (see RULE.md).
+Set `NEXT_PUBLIC_RECRUITER_API_URL` at Next build time; in `next dev` the app can default to `http://127.0.0.1:3001` when unset (see `.cursor/rules/recruiter-assistant.mdc`).

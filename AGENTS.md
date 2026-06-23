@@ -21,9 +21,19 @@ Personal blog/CV site. Next.js static export (`output: 'export'`), S3 + CloudFro
 
 ## AI workflow
 
-- Map: `.cursor/AI_INDEX.md` → scoped rules in `.cursor/rules/*.mdc`
-- Skills: `.cursor/skills/<name>/` — mention the skill by name in your prompt
+- Start with `.cursor/AI_INDEX.md`: code map ("Where code lives") + scoped rules (`.cursor/rules/*.mdc`) + skills. In Cursor, rules auto-attach by file glob; other agents (Claude Code, etc.) open the matching rule/skill manually.
+- Skills: `.cursor/skills/<name>/SKILL.md` — read the matching one when the task fits.
 - Before finishing: `.cursor/rules/code-review.mdc`
+
+## Cross-tool wiring
+
+Canonical instruction sources are aliased by **symlink** so each tool finds them at its native path — one source, no drift. **Edit the canonical file, never the alias:**
+
+- `AGENTS.md` (this file) — read natively by opencode, Cursor, Codex, Claude Code.
+- `.github/copilot-instructions.md` → `AGENTS.md` (GitHub Copilot).
+- `.claude/skills/*` → `.cursor/skills/*` (same `SKILL.md`; Claude Code + Cursor).
+
+Symlinks resolve in the working tree (where these tools read). Formatters skip them: lint-staged filters symlinks (`.lintstagedrc.mjs`), and `prettier --check .` / `eslint` skip them during directory traversal. A cloud agent that reads git blobs instead would need a real file, not a symlink.
 
 ## Git workflow
 
