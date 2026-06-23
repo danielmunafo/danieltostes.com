@@ -6,7 +6,7 @@ import {
   type RecruiterNavLocale,
 } from "../../../constants.js";
 import { logWarn } from "../../../logging/logger.js";
-import { traceGenerate } from "../../../tracing/requestTrace.js";
+import { runModelStage } from "../../../reliability/withReliability.js";
 import { getAgentInstruction } from "../../prompt/getAgentInstruction.js";
 import { parseEvaluatorTable } from "../../../rag/hardGates/parseEvaluatorTable.js";
 import { hardGateExtractionSchema } from "../../../rag/hardGates/schema.js";
@@ -44,11 +44,11 @@ export async function extractHardGateRows(
   evaluationMarkdown: string
 ): Promise<HardGateRequirementRow[]> {
   try {
-    const { object } = await traceGenerate(
+    const { object } = await runModelStage(
       "hard_gates",
-      CHAT_MODEL,
       "chat",
-      () =>
+      CHAT_MODEL,
+      ({ abortSignal, maxRetries }) =>
         generateObject({
           model: openai(CHAT_MODEL),
           schema: hardGateExtractionSchema,
@@ -60,6 +60,8 @@ export async function extractHardGateRows(
           ),
           temperature: 0,
           maxTokens: HARD_GATE_EXTRACTION_MAX_TOKENS,
+          abortSignal,
+          maxRetries,
         })
     );
     const rows = object.rows

@@ -17,7 +17,8 @@ import {
   REFERENCE_RETRIEVAL_PREFERENCE_SCORE_DELTA,
 } from "../constants.js";
 import { logWarn } from "../logging/logger.js";
-import { traceGenerate } from "../tracing/requestTrace.js";
+import { getActiveTrace } from "../tracing/requestTrace.js";
+import { runModelStage } from "../reliability/withReliability.js";
 import {
   buildClaimExtractionPrompt,
   buildClaimExtractionPromptForTest,
@@ -127,16 +128,18 @@ export async function buildReferencesMarkdown(
   let claims: readonly string[];
   let gaps: readonly string[];
   try {
-    const { object } = await traceGenerate(
+    const { object } = await runModelStage(
       "references_claims",
-      CHAT_MODEL,
       "chat",
-      () =>
+      CHAT_MODEL,
+      ({ abortSignal, maxRetries }) =>
         generateObject({
           model: openai(CHAT_MODEL),
           schema: claimsSchema,
           maxTokens: CLAIM_EXTRACTION_MAX_TOKENS,
           prompt: buildClaimExtractionPrompt(trimmed),
+          abortSignal,
+          maxRetries,
         })
     );
     claims = object.claims
@@ -148,6 +151,8 @@ export async function buildReferencesMarkdown(
       .filter((g) => g.length > 0)
       .slice(0, REFERENCE_MAX_CLAIMS);
   } catch (err) {
+    // Optional enrichment: omit the References block, keep the assessment.
+    getActiveTrace()?.recordDegradation("references_claims");
     logWarn("references", "claim extraction failed", { err });
     return "";
   }
@@ -155,18 +160,21 @@ export async function buildReferencesMarkdown(
 
   let embeddings: number[][];
   try {
-    const res = await traceGenerate(
+    const res = await runModelStage(
       "references_embed",
-      EMBEDDING_MODEL,
       "embedding",
-      () =>
+      EMBEDDING_MODEL,
+      ({ abortSignal, maxRetries }) =>
         embedMany({
           model: openai.embedding(EMBEDDING_MODEL),
           values: [...claims],
+          abortSignal,
+          maxRetries,
         })
     );
     embeddings = res.embeddings;
   } catch (err) {
+    getActiveTrace()?.recordDegradation("references_embed");
     logWarn("references", "claim embedding failed", { err });
     return "";
   }

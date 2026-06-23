@@ -8,6 +8,10 @@ import {
   type RequestTrace,
 } from "../tracing/requestTrace.js";
 import { saveChatTrace } from "../feedback/writeFeedbackToS3.js";
+import {
+  CLIENT_CANCEL_REASON,
+  runWithCancellation,
+} from "../reliability/requestCancellation.js";
 import type {
   RecruiterAssistantDependencies,
   ValidRecruiterRequest,
@@ -17,8 +21,11 @@ export function createRecruiterAssistantStreamResponse(params: {
   request: ValidRecruiterRequest;
   dependencies: RecruiterAssistantDependencies;
   trace: RequestTrace;
+  cancellationController?: AbortController;
 }): Response {
-  const { request, dependencies, trace } = params;
+  const { request, dependencies, trace, cancellationController } = params;
+  const cancellationSignal =
+    cancellationController?.signal ?? new AbortController().signal;
 
   return createDataStreamResponse({
     headers: corsHeadersFor(request.origin),
@@ -29,15 +36,24 @@ export function createRecruiterAssistantStreamResponse(params: {
     execute: async (dataStream) => {
       try {
         await runWithTrace(trace, () =>
-          runRecruiterAssistantPipeline({
-            request,
-            openai: dependencies.openai,
-            dataStream,
-          })
+          runWithCancellation(cancellationSignal, () =>
+            runRecruiterAssistantPipeline({
+              request,
+              openai: dependencies.openai,
+              dataStream,
+            })
+          )
         );
-        trace.setOutcome("success");
+        const outcome = cancellationSignal.aborted ? "cancelled" : "success";
+        trace.setOutcome(outcome);
       } catch (err) {
-        trace.setOutcome("error", err);
+        const isCancelled =
+          cancellationSignal.aborted &&
+          (err instanceof Error
+            ? err.message === CLIENT_CANCEL_REASON ||
+              (err as { reason?: unknown }).reason === CLIENT_CANCEL_REASON
+            : false);
+        trace.setOutcome(isCancelled ? "cancelled" : "error", err);
         throw err;
       } finally {
         trace.finish();

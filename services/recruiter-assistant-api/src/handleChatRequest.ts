@@ -22,7 +22,8 @@ import { createRequestTrace, runWithTrace } from "./tracing/requestTrace.js";
  * Core HTTP handler: returns a Web `Response` (streaming body for POST / chat).
  */
 export async function handleChatRequest(
-  event: LambdaHttpEvent
+  event: LambdaHttpEvent,
+  cancellationController?: AbortController
 ): Promise<Response> {
   const path = getPath(event);
   if (path === "/feedback" || path === "/feedback/") {
@@ -61,6 +62,7 @@ export async function handleChatRequest(
       request: parsedRequest.value,
       dependencies,
       trace,
+      cancellationController,
     });
   } catch (err) {
     logInternalServerError("handleChatRequest", err);

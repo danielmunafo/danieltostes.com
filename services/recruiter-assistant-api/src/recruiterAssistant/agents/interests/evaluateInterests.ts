@@ -8,7 +8,7 @@ import { evaluateOffTopic } from "../recruiter/evaluateOffTopic.js";
 import type { InterestsPack } from "../../../interests/loadInterestsPack.js";
 import { shouldOmitInterestsOutputMarkdown } from "../../../interests/loadInterestsPack.js";
 import { logInfo, logWarn } from "../../../logging/logger.js";
-import { traceGenerate } from "../../../tracing/requestTrace.js";
+import { runModelStage } from "../../../reliability/withReliability.js";
 import type { OpenAiProvider } from "../../types.js";
 import {
   buildInterestsEvaluatorSystemPrompt,
@@ -31,11 +31,11 @@ export async function evaluateInterests(params: {
   }
 
   try {
-    const { text: rawInterests } = await traceGenerate(
+    const { text: rawInterests } = await runModelStage(
       "interests",
-      CHAT_MODEL,
       "chat",
-      () =>
+      CHAT_MODEL,
+      ({ abortSignal, maxRetries }) =>
         generateText({
           model: params.openai(CHAT_MODEL),
           system: buildInterestsEvaluatorSystemPrompt(params.navLocale),
@@ -45,6 +45,8 @@ export async function evaluateInterests(params: {
             params.interestsPack!.criteriaMarkdown
           ),
           maxTokens: INTERESTS_ALIGNMENT_MAX_TOKENS,
+          abortSignal,
+          maxRetries,
         })
     );
 

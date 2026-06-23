@@ -14,7 +14,10 @@ import {
   buildEvidenceAnalystSystemPrompt,
   buildEvidenceAnalystUserPrompt,
 } from "./assemblePrompt.js";
-import { makeStreamTraceOnFinish } from "../../../tracing/requestTrace.js";
+import { logWarn } from "../../../logging/logger.js";
+import { getActiveTrace } from "../../../tracing/requestTrace.js";
+import { streamModelStage } from "../../../reliability/withReliability.js";
+import { getCancellationSignal } from "../../../reliability/requestCancellation.js";
 
 export async function analyzeEvidence(params: {
   openai: OpenAiProvider;
@@ -33,24 +36,39 @@ export async function analyzeEvidence(params: {
     params.hardGateAssessmentMarkdown
   );
 
-  const startedAt = Date.now();
-  const evidenceAnalysisResult = streamText({
-    model: params.openai(CHAT_MODEL),
-    system: buildEvidenceAnalystSystemPrompt(params.navLocale),
-    prompt: evidenceAnalystUserPrompt,
-    maxTokens: EVIDENCE_BRIEF_MAX_TOKENS,
-    experimental_transform: recruiterStreamTextSmoothTransform,
-    onFinish: makeStreamTraceOnFinish(
-      "evidence_analysis",
-      CHAT_MODEL,
-      startedAt
-    ),
-  });
+  const evidenceAnalysisResult = streamModelStage(
+    "evidence_analysis",
+    CHAT_MODEL,
+    ({ abortSignal, maxRetries, onError, onFinish }) =>
+      streamText({
+        model: params.openai(CHAT_MODEL),
+        system: buildEvidenceAnalystSystemPrompt(params.navLocale),
+        prompt: evidenceAnalystUserPrompt,
+        maxTokens: EVIDENCE_BRIEF_MAX_TOKENS,
+        experimental_transform: recruiterStreamTextSmoothTransform,
+        abortSignal,
+        maxRetries,
+        onError,
+        onFinish,
+      })
+  );
   evidenceAnalysisResult.mergeIntoDataStream(params.dataStream, {
     experimental_sendFinish: false,
   });
 
-  const evidenceAnalysisMarkdown = (await evidenceAnalysisResult.text).trim();
-
-  return { evidenceAnalysisMarkdown };
+  try {
+    const evidenceAnalysisMarkdown = (await evidenceAnalysisResult.text).trim();
+    return { evidenceAnalysisMarkdown };
+  } catch (err) {
+    // Cancellation propagates; a genuine failure degrades to "no analyst brief"
+    // and the pipeline continues on the evaluation alone.
+    if (getCancellationSignal()?.aborted) throw err;
+    getActiveTrace()?.recordDegradation("evidence_analysis");
+    logWarn(
+      "evidenceAnalysis",
+      "analysis failed; continuing without analyst brief",
+      { err, navLocale: params.navLocale }
+    );
+    return { evidenceAnalysisMarkdown: "" };
+  }
 }

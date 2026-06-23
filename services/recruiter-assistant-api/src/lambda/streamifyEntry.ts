@@ -7,6 +7,7 @@ import {
 } from "../http/errors.js";
 import { logWarn } from "../logging/logger.js";
 import type { LambdaHttpEvent } from "../http/lambdaHttpEvent.js";
+import { CLIENT_CANCEL_REASON } from "../reliability/requestCancellation.js";
 
 type AwslambdaGlobal = {
   streamifyResponse: (
@@ -52,9 +53,19 @@ async function streamifyHandler(
     return;
   }
 
+  const cancellationController = new AbortController();
+  // Propagate client disconnect → pipeline abort. The responseStream 'close'
+  // fires when AWS Lambda's HttpResponseStream detects the client has gone away.
+  const abortOnClose = () => cancellationController.abort(CLIENT_CANCEL_REASON);
+  responseStream.once("close", abortOnClose);
+  responseStream.once("error", abortOnClose);
+
   let webResponse: Response;
   try {
-    webResponse = await handleChatRequest(event as LambdaHttpEvent);
+    webResponse = await handleChatRequest(
+      event as LambdaHttpEvent,
+      cancellationController
+    );
   } catch (err) {
     logInternalServerError("streamifyHandler", err);
     const out = awslambda.HttpResponseStream.from(responseStream, {
@@ -94,6 +105,8 @@ async function streamifyHandler(
     }
   } finally {
     reader.releaseLock();
+    responseStream.off("close", abortOnClose);
+    responseStream.off("error", abortOnClose);
     out.end();
   }
 }

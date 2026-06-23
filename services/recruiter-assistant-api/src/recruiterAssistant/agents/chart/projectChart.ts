@@ -6,7 +6,7 @@ import {
   type RecruiterNavLocale,
 } from "../../../constants.js";
 import { logError, logInfo, logWarn } from "../../../logging/logger.js";
-import { traceGenerate } from "../../../tracing/requestTrace.js";
+import { runModelStage } from "../../../reliability/withReliability.js";
 import {
   alignChartAssessmentWithHardGates,
   logChartAssessmentAlignment,
@@ -61,17 +61,19 @@ export async function projectChart(params: {
 
   for (const [attemptIndex, attempt] of CHART_PROJECTION_ATTEMPTS.entries()) {
     try {
-      const { object: rawChart } = await traceGenerate(
+      const { object: rawChart } = await runModelStage(
         "chart",
-        CHAT_MODEL,
         "chat",
-        () =>
+        CHAT_MODEL,
+        ({ abortSignal, maxRetries }) =>
           generateObject({
             model: params.openai(CHAT_MODEL),
             schema: chartDataSchemaForModelOutput,
             maxTokens: attempt.maxTokens,
             system: buildChartProjectionSystemPrompt(attempt.compact),
             prompt,
+            abortSignal,
+            maxRetries,
           })
       );
       const { chart: chartForValidation, adjustments } =

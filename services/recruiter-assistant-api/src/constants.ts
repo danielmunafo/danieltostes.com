@@ -162,6 +162,18 @@ export const EVIDENCE_BRIEF_MAX_TOKENS = 1024;
 /** Max tokens for stage-2 streamed executive brief (concise recruiter-facing markdown). */
 export const RECRUITER_PITCH_MAX_TOKENS = 1800;
 
+/** Appended to the data stream when the pitch is cut off mid-generation due to a transient error. */
+export const RECRUITER_STREAM_INTERRUPTED_NOTICE: Record<
+  RecruiterNavLocale,
+  string
+> = {
+  en: "\n\n---\n*Assessment was interrupted before completing. Please try again.*",
+  "pt-BR":
+    "\n\n---\n*A avaliação foi interrompida antes de concluir. Por favor, tente novamente.*",
+  es: "\n\n---\n*La evaluación fue interrumpida antes de completarse. Por favor, inténtalo de nuevo.*",
+  it: "\n\n---\n*La valutazione è stata interrotta prima di completarsi. Si prega di riprovare.*",
+};
+
 /** In-memory rate limit: max requests per window per client IP. */
 export const RATE_LIMIT_MAX_REQUESTS = 20;
 

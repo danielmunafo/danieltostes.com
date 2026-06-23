@@ -8,7 +8,7 @@ import {
 
 export type StageStatus = "success" | "error";
 export type ModelCallKind = "chat" | "embedding";
-export type RequestOutcome = "success" | "error" | "unknown";
+export type RequestOutcome = "success" | "error" | "unknown" | "cancelled";
 
 /** One model call within a request (LLM or embedding). */
 export type StageRecord = {
@@ -21,6 +21,11 @@ export type StageRecord = {
   tokens?: number;
   costUSD?: number;
   errorName?: string;
+  // Reliability fields (optional; set by the reliability wrapper).
+  attempts?: number;
+  retried?: boolean;
+  timedOut?: boolean;
+  errorClass?: string;
 };
 
 export type RetrievalStats = {
@@ -40,6 +45,10 @@ export type RecordStageInput = {
   latencyMs: number;
   usage?: AnyTokenUsage;
   errorName?: string;
+  attempts?: number;
+  retried?: boolean;
+  timedOut?: boolean;
+  errorClass?: string;
 };
 
 function errorNameOf(err: unknown): string {
@@ -70,6 +79,7 @@ export class RequestTrace {
   private outcome: RequestOutcome = "unknown";
   private errorName: string | undefined;
   private readonly stages: StageRecord[] = [];
+  private readonly degradedStages = new Set<string>();
   private retrieval: RetrievalStats | null = null;
 
   constructor(
@@ -90,6 +100,10 @@ export class RequestTrace {
       latencyMs: input.latencyMs,
     };
     if (input.errorName) record.errorName = input.errorName;
+    if (input.attempts !== undefined) record.attempts = input.attempts;
+    if (input.retried) record.retried = true;
+    if (input.timedOut) record.timedOut = true;
+    if (input.errorClass) record.errorClass = input.errorClass;
     const usage = input.usage;
     if (usage && input.kind === "chat" && "promptTokens" in usage) {
       record.promptTokens = finiteOrUndefined(usage.promptTokens);
@@ -107,6 +121,16 @@ export class RequestTrace {
   recordRetrieval(stats: RetrievalStats): void {
     if (this.finished) return;
     this.retrieval = stats;
+  }
+
+  /**
+   * Marks a stage as gracefully degraded (produced a fallback instead of its
+   * full output). Surfaced in the request-level rollup so dashboards can track
+   * degradation rate without it counting as a hard error.
+   */
+  recordDegradation(stage: string): void {
+    if (this.finished) return;
+    this.degradedStages.add(stage);
   }
 
   setOutcome(outcome: RequestOutcome, err?: unknown): void {
@@ -136,6 +160,13 @@ export class RequestTrace {
         anyCostKnown = true;
       }
     }
+    const retriedStages = this.stages
+      .filter((stage) => stage.retried)
+      .map((stage) => stage.stage);
+    const timedOutStages = this.stages
+      .filter((stage) => stage.timedOut)
+      .map((stage) => stage.stage);
+    const degradedStages = [...this.degradedStages];
     const endedAtMs = this.finishedAtMs ?? Date.now();
     return {
       requestId: this.requestId,
@@ -152,6 +183,11 @@ export class RequestTrace {
         embeddingTokens,
         totalTokens: promptTokens + completionTokens + embeddingTokens,
         estimatedCostUSD: anyCostKnown ? round6(costUSD) : null,
+        degraded: degradedStages.length > 0,
+        cancelled: this.outcome === "cancelled",
+        degradedStages,
+        retriedStages,
+        timedOutStages,
       },
     };
   }
@@ -196,7 +232,8 @@ type MaybeUsage = {
   };
 };
 
-function extractUsage(
+/** Reads AI SDK token usage off a generate/embed result for trace recording. */
+export function extractUsage(
   result: unknown,
   kind: ModelCallKind
 ): AnyTokenUsage | undefined {
