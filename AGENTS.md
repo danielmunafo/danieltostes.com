@@ -56,6 +56,22 @@ Symlinks resolve in the working tree (where these tools read). Formatters skip t
 
 **One commit per logical change.** Don't bundle unrelated fixes into a single commit to work around a pre-push hook failure. Fix the root cause (e.g. add `.claude/**` to `.prettierignore` and `eslint.config.mjs` ignore list) as a separate commit, then push the intended change.
 
+## Recruiter-assistant prompt versioning
+
+`services/recruiter-assistant-api` has an explicit prompt registry at
+`src/recruiterAssistant/prompt/promptRegistry.ts`. Every LLM stage has a `promptId`,
+semantic `version`, and `lastUpdated` date tracked there.
+
+**Any edit to a prompt must be accompanied by a registry bump in the same commit.** There
+are no exceptions:
+
+- Editing an `.md` instruction file → bump `version` + `lastUpdated` on its registry entry.
+- Editing an inline prompt symbol (e.g. `INTENT_GATE_SYSTEM` in `src/security/intentGate.ts`) → same.
+- `.md` files contain prompt text only — never add version comments or frontmatter to them.
+- The registry is the sole source of version truth. See
+  `services/recruiter-assistant-api/docs/prompt-registry.md` for bump guidance (PATCH /
+  MINOR / MAJOR) and how versions connect to traces and evals.
+
 ## Dev (summary)
 
 Node 20 · `npm run dev` (:3000) · `npm run build` → `out/` · pre-push: format:check, lint, test · details: `docs/development.md`
