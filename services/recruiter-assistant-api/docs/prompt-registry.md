@@ -49,12 +49,22 @@ that every referenced file loads with non-empty content.
 
 ## How to bump a prompt version
 
-1. Edit the prompt text — the `.md` instruction file, or the inline `symbol` named in `source`.
-2. Bump `version` on that entry:
+The **registry is the sole source of version truth.** `.md` instruction files contain prompt
+text only — no frontmatter, no version comments. Never add version metadata to an `.md` file.
+
+To ship a prompt change:
+
+1. Edit the prompt text in its canonical location:
+   - **File-backed prompt** (`source.kind === "file"`): edit the `.md` file(s) listed in
+     `source.files`.
+   - **Inline prompt** (`source.kind === "inline"`): edit the `symbol` in the `module` named
+     on the entry (e.g. `INTENT_GATE_SYSTEM` in `src/security/intentGate.ts`).
+2. In `promptRegistry.ts`, bump `version` on that entry:
    - **PATCH** — wording/clarity tweak, no intended behavior change.
    - **MINOR** — new guidance or capability, backward-compatible output shape.
-   - **MAJOR** — output contract or behavior changes (downstream parsers/evals may need updating).
-3. Update `lastUpdated` to today.
+   - **MAJOR** — output contract or behavior changes (downstream parsers/evals may need
+     updating).
+3. In the same registry entry, update `lastUpdated` to today (`YYYY-MM-DD`).
 4. Run `npm test`.
 
 The `promptId` and `stage` are **stable across bumps** — only `version`/`lastUpdated` move.
