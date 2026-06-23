@@ -27,6 +27,13 @@ Personal blog/CV site. Next.js static export (`output: 'export'`), S3 + CloudFro
 
 ## Git workflow
 
+**Branch naming — every PR branch describes its work.** The name is `<type>/<kebab-slug>` where `<type>` is a Conventional-Commits prefix (`feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `perf`). The slug is 2–5 words naming the change, and matches the existing family for related work.
+
+- ✅ `feat/recruiter-assistant-prompt-registry` (sibling of `feat/recruiter-assistant-tracing`), `docs/branch-naming-convention`, `fix/chart-clamp-off-by-one`
+- ❌ `claude/<slug>` worktree scaffolding, plus `patch-1`, `wip`, `temp`, `update`, initials, dates, or any auto-generated/random name
+
+**Never let a worktree slug become a PR branch.** A `claude/<slug>` branch is auto-generated scaffolding you did not choose. Before the first commit of a deliverable, cut a properly named branch off `main` — `git checkout -b <type>/<slug> main` — and commit there. If the branch already exists in a worktree where `main` is checked out elsewhere, creating a _new_ branch from `main` still works; only checking out `main` itself is blocked.
+
 **Worktrees are not PR branches.** Claude Code may run inside a worktree on a branch named `claude/<slug>`. That branch is internal scaffolding — it is never the branch a PR tracks. Before any commit+push:
 
 1. Run `gh pr list --state open` or `gh pr view <N>` to find the actual PR branch (`headRefName`).
