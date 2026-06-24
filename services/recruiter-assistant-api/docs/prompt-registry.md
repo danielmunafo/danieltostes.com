@@ -6,7 +6,7 @@ version to attach to a trace, compare across an eval run, or point at in a revie
 
 The registry ([`src/recruiterAssistant/prompt/promptRegistry.ts`](../src/recruiterAssistant/prompt/promptRegistry.ts))
 makes each prompt version **explicit**, **attachable to traces**, and **easy to discuss**.
-It is pure metadata: it changes no prompt wording and no runtime behavior. Canonical prompt
+It is pure metadata: it changes no prompt wording and no model behavior. Canonical prompt
 text still lives where it always did — in the `.md` instruction files (loaded via
 [`getAgentInstruction.ts`](../src/recruiterAssistant/prompt/getAgentInstruction.ts)) or in
 the inline system string noted on the entry.
@@ -82,14 +82,15 @@ const { promptId, version } = getPromptByStage(stage);
 // record promptId + version on the StageRecord
 ```
 
-This wiring is **deferred on purpose**: adding optional `promptId`/`promptVersion` to
-`StageRecord` and threading it through `traceGenerate` / `makeStreamTraceOnFinish` touches the
-shared AI-call wrappers, which reliability work owns in a separate worktree. The registry
-already exposes `getPromptByStage`, so that future change is one line per call site.
+This is wired at the `RequestTrace.recordStage` boundary with a non-throwing stage lookup.
+Registered prompt-backed stages attach optional `promptId` and `promptVersion` fields to
+their `StageRecord`; unregistered technical stages such as `retrieval_embed` and
+`references_embed` remain valid and omit those fields.
 
-**Evals.** Eval runs (`npm run eval:*`) can pin and label results by `promptId@version`. That
-turns "the pitch got worse" into "pitch `1.2.0` regressed vs `1.1.0` on these JDs", and lets a
-trace be replayed against the exact prompt version that produced it.
+**Evals.** The E2E eval runner (`npm run eval:e2e`) prints the active registry versions as
+`promptId@version` at the start and end of the run. That turns "the pitch got worse" into
+"pitch `1.2.0` regressed vs `1.1.0` on these JDs", and lets a trace be replayed against the
+exact prompt version that produced it.
 
 Together this is a step toward AI production-lifecycle maturity: prompts become versioned,
 owned artifacts whose changes are reviewable, traceable, and measurable — not just diffs in git.

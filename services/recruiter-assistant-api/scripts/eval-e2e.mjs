@@ -18,6 +18,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  formatPromptVersionStamps,
+  loadPromptVersionStamps,
+} from "./lib/prompt-version-stamps.mjs";
 import { loadServiceEnvFiles } from "./load-local-env.mjs";
 
 loadServiceEnvFiles();
@@ -385,7 +389,11 @@ async function main() {
     process.exit(1);
   }
 
+  const promptVersionStamps = loadPromptVersionStamps(serviceRoot);
+  const promptVersionLine = formatPromptVersionStamps(promptVersionStamps);
+
   console.log(`\n[eval:e2e] Server: ${SERVER_URL}`);
+  console.log(`[eval:e2e] Prompt versions: ${promptVersionLine}`);
   console.log(
     `[eval:e2e] Running ${toRun.length} case(s) — timeout ${timeoutMs}ms each\n`
   );
@@ -472,8 +480,9 @@ async function main() {
   const critStr =
     totals.critical > 0 ? ` (${RED}${totals.critical} CRITICAL${RESET})` : "";
   console.log(
-    `\n[eval:e2e] Results: ${totals.pass} passed, ${totals.fail} failed${critStr}${errorStr}\n`
+    `\n[eval:e2e] Results: ${totals.pass} passed, ${totals.fail} failed${critStr}${errorStr}`
   );
+  console.log(`[eval:e2e] Prompt versions: ${promptVersionLine}\n`);
 
   if (totals.fail > 0 || totals.error > 0) process.exit(1);
 }
