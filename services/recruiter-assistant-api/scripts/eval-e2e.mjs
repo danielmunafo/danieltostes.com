@@ -26,6 +26,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const serviceRoot = join(__dirname, "..");
 const repoRoot = join(serviceRoot, "../..");
 const casesPath = join(repoRoot, "evals/e2e/cases.json");
+const manifestPath = join(serviceRoot, "prompts.manifest.json");
+
+function loadPromptVersions() {
+  if (!existsSync(manifestPath)) return null;
+  try {
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    return manifest.prompts ?? null;
+  } catch {
+    return null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // CLI args
@@ -385,7 +396,15 @@ async function main() {
     process.exit(1);
   }
 
+  const promptVersions = loadPromptVersions();
+
   console.log(`\n[eval:e2e] Server: ${SERVER_URL}`);
+  if (promptVersions) {
+    const stamp = promptVersions
+      .map((p) => `${p.promptId}@${p.version}`)
+      .join("  ");
+    console.log(`[eval:e2e] Prompt versions: ${stamp}`);
+  }
   console.log(
     `[eval:e2e] Running ${toRun.length} case(s) — timeout ${timeoutMs}ms each\n`
   );
@@ -472,8 +491,15 @@ async function main() {
   const critStr =
     totals.critical > 0 ? ` (${RED}${totals.critical} CRITICAL${RESET})` : "";
   console.log(
-    `\n[eval:e2e] Results: ${totals.pass} passed, ${totals.fail} failed${critStr}${errorStr}\n`
+    `\n[eval:e2e] Results: ${totals.pass} passed, ${totals.fail} failed${critStr}${errorStr}`
   );
+  if (promptVersions) {
+    const stamp = promptVersions
+      .map((p) => `${p.promptId}@${p.version}`)
+      .join("  ");
+    console.log(`[eval:e2e] Prompt versions: ${stamp}`);
+  }
+  console.log();
 
   if (totals.fail > 0 || totals.error > 0) process.exit(1);
 }

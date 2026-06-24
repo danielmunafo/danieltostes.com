@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-24T09:47:32.227Z",
+  "prompts": [
+    {
+      "promptId": "intent-gate",
+      "version": "1.0.0",
+      "stage": "intent_gate",
+      "contentHash": "6be8f8943053cf3fc9a42317085b1b2688070e7909f6c25ad3c7b65730fb1689",
+      "lastUpdated": "2026-06-22"
+    },
+    {
+      "promptId": "evidence-evaluation",
+      "version": "1.0.0",
+      "stage": "evidence_evaluation",
+      "contentHash": "e0707fa1393b848c7c4d95cd5d9a14d9067f7ab7633c176dc32d1f9266efd37c",
+      "lastUpdated": "2026-06-22"
+    },
+    {
+      "promptId": "hard-gates",
+      "version": "1.0.0",
+      "stage": "hard_gates",
+      "contentHash": "cb79f18468592a9e97559672e8cc1d7b549e3ecf6aaf7c83cdfdf2247d64367d",
+      "lastUpdated": "2026-06-22"
+    },
+    {
+      "promptId": "evidence-analysis",
+      "version": "1.0.0",
+      "stage": "evidence_analysis",
+      "contentHash": "1eeaead9e59c61070dff6b942d80198573e055ad3d49e7ca052d86148bbbe598",
+      "lastUpdated": "2026-06-22"
+    },
+    {
+      "promptId": "briefing",
+      "version": "1.0.0",
+      "stage": "briefing_prep",
+      "contentHash": "51eeaa3ae43e5cc5ebd20ef845dfece70a6b507af27c5e8dc7dfcf665f80a8d7",
+      "lastUpdated": "2026-06-22"
+    },
+    {
+      "promptId": "chart",
+      "version": "1.0.0",
+      "stage": "chart",
+      "contentHash": "9272ae533fabfccd288f82feec766c02405f9dd2903ec4ec1df25c99d35592f7",
+      "lastUpdated": "2026-06-22"
+    },
+    {
+      "promptId": "pitch",
+      "version": "1.0.0",
+      "stage": "pitch",
+      "contentHash": "55c0d7ca61a459e7d3f0b2f774f0160945b8d04b74cc0ec32ada5b4bdc3a136e",
+      "lastUpdated": "2026-06-22"
+    },
+    {
+      "promptId": "references-claims",
+      "version": "1.0.0",
+      "stage": "references_claims",
+      "contentHash": "a5dcc1dbbb02dd66f427c069244cc1aecf573310860931d1223d6f8fd82b54d7",
+      "lastUpdated": "2026-06-22"
+    },
+    {
+      "promptId": "interests",
+      "version": "1.0.0",
+      "stage": "interests",
+      "contentHash": "fdcf005092e341ab4d08f3a3fa7a2e63d808b99c32cdca0b4288a9aaa533f1eb",
+      "lastUpdated": "2026-06-22"
+    }
+  ]
+}
