@@ -50,6 +50,14 @@ export type PromptMetadata = {
   lastUpdated: string;
   /** Accountable owner handle. */
   owner: string;
+  /**
+   * SHA-256 hex of the prompt text at the time `version` was set.
+   * For file-backed prompts: sha256 of all files concatenated with "\n".
+   * For inline prompts: sha256 of the exported symbol string.
+   * The integrity test recomputes this from live text and fails if it drifts —
+   * ensuring a version bump is required whenever the text changes.
+   */
+  contentHash: string;
 };
 
 const OWNER = "daniel-tostes";
@@ -69,6 +77,8 @@ const PROMPT_REGISTRY = [
       "Classifies a single user message as RECRUITER or OFF_TOPIC before the pipeline runs.",
     lastUpdated: SEEDED_AT,
     owner: OWNER,
+    contentHash:
+      "6be8f8943053cf3fc9a42317085b1b2688070e7909f6c25ad3c7b65730fb1689",
   },
   {
     promptId: "evidence-evaluation",
@@ -82,6 +92,8 @@ const PROMPT_REGISTRY = [
       "Scores JD requirements against retrieved portfolio evidence, applying hard score caps.",
     lastUpdated: SEEDED_AT,
     owner: OWNER,
+    contentHash:
+      "e0707fa1393b848c7c4d95cd5d9a14d9067f7ab7633c176dc32d1f9266efd37c",
   },
   {
     promptId: "hard-gates",
@@ -92,6 +104,8 @@ const PROMPT_REGISTRY = [
       "Extracts structured hard-gate requirement rows (must-have constraints) from the JD.",
     lastUpdated: SEEDED_AT,
     owner: OWNER,
+    contentHash:
+      "cb79f18468592a9e97559672e8cc1d7b549e3ecf6aaf7c83cdfdf2247d64367d",
   },
   {
     promptId: "evidence-analysis",
@@ -105,6 +119,8 @@ const PROMPT_REGISTRY = [
       "Analyzes retrieved evidence into a structured brief used downstream by the pitch.",
     lastUpdated: SEEDED_AT,
     owner: OWNER,
+    contentHash:
+      "1eeaead9e59c61070dff6b942d80198573e055ad3d49e7ca052d86148bbbe598",
   },
   {
     promptId: "briefing",
@@ -118,6 +134,8 @@ const PROMPT_REGISTRY = [
       "Streams the recruiter-facing briefing prep before the chart and pitch.",
     lastUpdated: SEEDED_AT,
     owner: OWNER,
+    contentHash:
+      "51eeaa3ae43e5cc5ebd20ef845dfece70a6b507af27c5e8dc7dfcf665f80a8d7",
   },
   {
     promptId: "chart",
@@ -134,6 +152,8 @@ const PROMPT_REGISTRY = [
       "Projects the fit chart (per-dimension scores + assessment summary); compact variant appended on demand.",
     lastUpdated: SEEDED_AT,
     owner: OWNER,
+    contentHash:
+      "9272ae533fabfccd288f82feec766c02405f9dd2903ec4ec1df25c99d35592f7",
   },
   {
     promptId: "pitch",
@@ -144,6 +164,8 @@ const PROMPT_REGISTRY = [
       "Generates the streamed recruiter pitch grounded in the evidence brief.",
     lastUpdated: SEEDED_AT,
     owner: OWNER,
+    contentHash:
+      "55c0d7ca61a459e7d3f0b2f774f0160945b8d04b74cc0ec32ada5b4bdc3a136e",
   },
   {
     promptId: "references-claims",
@@ -157,6 +179,8 @@ const PROMPT_REGISTRY = [
       "Extracts verifiable claims from the pitch for reference grounding.",
     lastUpdated: SEEDED_AT,
     owner: OWNER,
+    contentHash:
+      "a5dcc1dbbb02dd66f427c069244cc1aecf573310860931d1223d6f8fd82b54d7",
   },
   {
     promptId: "interests",
@@ -167,6 +191,8 @@ const PROMPT_REGISTRY = [
       "Evaluates the candidate's interest alignment against the role.",
     lastUpdated: SEEDED_AT,
     owner: OWNER,
+    contentHash:
+      "fdcf005092e341ab4d08f3a3fa7a2e63d808b99c32cdca0b4288a9aaa533f1eb",
   },
 ] as const satisfies readonly PromptMetadata[];
 
@@ -197,6 +223,14 @@ export function getPromptByStage(stage: PromptStage): PromptMetadata {
     throw new Error(`Unknown prompt stage: ${stage}`);
   }
   return entry;
+}
+
+/**
+ * Non-throwing variant for use in the tracing layer. Embedding stages (e.g.
+ * `references_embed`) have no registered prompt and return `undefined`.
+ */
+export function findPromptByStage(stage: string): PromptMetadata | undefined {
+  return PROMPT_REGISTRY.find((p) => p.stage === stage);
 }
 
 /** Instruction files referenced by a prompt entry (empty for inline prompts). */

@@ -29,6 +29,8 @@ jobs:
         working-directory: services/recruiter-assistant-api
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -42,6 +44,9 @@ jobs:
 
       - name: Unit tests
         run: npm test
+
+      - name: Prompt version-bump check
+        run: node scripts/check-prompt-version-bump.mjs
 
       - name: Bundle Lambda
         run: npm run build

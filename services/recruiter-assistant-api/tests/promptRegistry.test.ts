@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { listAgentInstructionPaths } from "../src/recruiterAssistant/prompt/getAgentInstruction.js";
 import {
+  findPromptByStage,
   getPromptById,
   getPromptByStage,
   getAgentInstruction,
@@ -45,6 +46,17 @@ describe("promptRegistry lookup", () => {
       expect(getPromptById(prompt.promptId)).toBe(prompt);
     }
   });
+
+  it("findPromptByStage returns entry for registered stage", () => {
+    const result = findPromptByStage("pitch");
+    expect(result).toBeDefined();
+    expect(result?.promptId).toBe("pitch");
+  });
+
+  it("findPromptByStage returns undefined for unregistered stage", () => {
+    expect(findPromptByStage("references_embed")).toBeUndefined();
+    expect(findPromptByStage("nonexistent_stage")).toBeUndefined();
+  });
 });
 
 describe("promptRegistry metadata consistency", () => {
@@ -65,6 +77,7 @@ describe("promptRegistry metadata consistency", () => {
       expect(prompt.description.trim().length, prompt.promptId).toBeGreaterThan(
         0
       );
+      expect(prompt.contentHash, prompt.promptId).toMatch(/^[0-9a-f]{64}$/);
       assertSourceShape(prompt);
     }
   });

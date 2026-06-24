@@ -22,7 +22,7 @@ const OBVIOUS_OFF_TOPIC_REGEXES: readonly RegExp[] = [
   /\b(write|give)\s+me\s+a\s+(joke|poem|story)\b/i,
 ];
 
-const INTENT_GATE_SYSTEM = `You classify one user message for a field labeled for job descriptions and recruiter/hiring context.
+export const INTENT_GATE_SYSTEM = `You classify one user message for a field labeled for job descriptions and recruiter/hiring context.
 
 Return OFF_TOPIC when the message is primarily NOT about hiring, for example:
 - general news, current events, or "latest updates"
