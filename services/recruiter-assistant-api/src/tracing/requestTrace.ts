@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { logInfo } from "../logging/logger.js";
+import { findPromptByStage } from "../recruiterAssistant/prompt/promptRegistry.js";
 import {
   estimateChatCostUSD,
   estimateEmbeddingCostUSD,
@@ -21,6 +22,10 @@ export type StageRecord = {
   tokens?: number;
   costUSD?: number;
   errorName?: string;
+  /** Prompt registry id for this stage, if registered. Additive/optional — safe to absorb during reliability refactor. */
+  promptId?: string;
+  /** Prompt version at call time, if registered. */
+  promptVersion?: string;
 };
 
 export type RetrievalStats = {
@@ -90,6 +95,11 @@ export class RequestTrace {
       latencyMs: input.latencyMs,
     };
     if (input.errorName) record.errorName = input.errorName;
+    const promptEntry = findPromptByStage(input.stage);
+    if (promptEntry) {
+      record.promptId = promptEntry.promptId;
+      record.promptVersion = promptEntry.version;
+    }
     const usage = input.usage;
     if (usage && input.kind === "chat" && "promptTokens" in usage) {
       record.promptTokens = finiteOrUndefined(usage.promptTokens);

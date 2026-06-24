@@ -222,6 +222,39 @@ describe("traceGenerate + AsyncLocalStorage", () => {
   });
 });
 
+describe("RequestTrace prompt registry wiring", () => {
+  it("attaches promptId and promptVersion for a registered stage", () => {
+    const trace = newTrace();
+    trace.recordStage({
+      stage: "pitch",
+      model: "gpt-4.1-nano",
+      kind: "chat",
+      status: "success",
+      latencyMs: 50,
+    });
+    const stages = trace.toLog().stages as Array<Record<string, unknown>>;
+    expect(stages[0]).toMatchObject({
+      promptId: "pitch",
+      promptVersion: "1.0.0",
+    });
+  });
+
+  it("does not attach prompt fields for an unregistered stage", () => {
+    const trace = newTrace();
+    trace.recordStage({
+      stage: "references_embed",
+      model: "text-embedding-3-small",
+      kind: "embedding",
+      status: "success",
+      latencyMs: 20,
+      usage: { tokens: 100 },
+    });
+    const stages = trace.toLog().stages as Array<Record<string, unknown>>;
+    expect(stages[0].promptId).toBeUndefined();
+    expect(stages[0].promptVersion).toBeUndefined();
+  });
+});
+
 describe("trace wiring through createDataStreamResponse", () => {
   it("propagates ALS into execute and emits one trace when the stream is consumed", async () => {
     const spy = vi.spyOn(loggerModule, "logInfo").mockImplementation(() => {});
