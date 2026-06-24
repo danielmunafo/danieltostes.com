@@ -5,6 +5,7 @@ const CONTROL_CHAR_REGEX = /[--]/;
 
 export const feedbackBodySchema = z.object({
   requestId: z.string().min(1).max(128),
+  messageId: z.string().min(1).max(128).optional(),
   sessionId: z.string().min(1).max(128),
   timestamp: z.string().datetime(),
   questionHash: z.string().length(16),

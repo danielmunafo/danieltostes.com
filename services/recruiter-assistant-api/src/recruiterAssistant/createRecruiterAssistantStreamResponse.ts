@@ -2,6 +2,7 @@ import { createDataStreamResponse } from "ai";
 import { corsHeadersFor } from "../http/cors.js";
 import { logStreamError } from "../http/errors.js";
 import { runRecruiterAssistantPipeline } from "./pipeline/runRecruiterAssistantPipeline.js";
+import { writeRequestTraceAnnotation } from "./stream/requestTraceAnnotation.js";
 import {
   logRequestTrace,
   runWithTrace,
@@ -27,6 +28,7 @@ export function createRecruiterAssistantStreamResponse(params: {
       return "stream_error";
     },
     execute: async (dataStream) => {
+      writeRequestTraceAnnotation(dataStream, trace.requestId);
       try {
         await runWithTrace(trace, () =>
           runRecruiterAssistantPipeline({
