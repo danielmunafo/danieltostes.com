@@ -79,6 +79,12 @@ npm run eval:retrieval -- --locale pt-BR
 
 Requires `OPENAI_API_KEY` to embed the queries. Everything else is pure math against the snapshot — no LLM call.
 
+### CI gate
+
+`.github/workflows/recruiter-api.yml` runs `eval:retrieval` in the existing `rag-index` job after `build:llamaindex-index` and `eval:snapshot`. That keeps the gate cheap: CI reuses the LlamaIndex artifact it already builds for deployment, then embeds only the labeled retrieval queries.
+
+The gate hard-fails same-repository PRs and `main` pushes before uploading a new index to S3. Fork PRs skip the gate with a GitHub Actions notice because `OPENAI_API_KEY` and AWS artifacts are intentionally unavailable to untrusted `pull_request` workflows. Full E2E LLM evals are not part of this CI gate.
+
 ### Step 3 — E2E evals (full pipeline)
 
 ```bash
