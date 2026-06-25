@@ -36,6 +36,24 @@ describe("RequestTrace.recordStage", () => {
     });
   });
 
+  it("attaches prompt metadata for a registered prompt-backed stage", () => {
+    const trace = newTrace();
+    trace.recordStage({
+      stage: "pitch",
+      model: "gpt-4.1-nano",
+      kind: "chat",
+      status: "success",
+      latencyMs: 120,
+      usage: { promptTokens: 1_000_000, completionTokens: 0 },
+    });
+    const stages = trace.toLog().stages as Array<Record<string, unknown>>;
+    expect(stages[0]).toMatchObject({
+      stage: "pitch",
+      promptId: "pitch",
+      promptVersion: "1.0.0",
+    });
+  });
+
   it("records an embedding stage with token count and cost", () => {
     const trace = newTrace();
     trace.recordStage({
@@ -48,6 +66,26 @@ describe("RequestTrace.recordStage", () => {
     });
     const stages = trace.toLog().stages as Array<Record<string, unknown>>;
     expect(stages[0]).toMatchObject({ tokens: 1_000_000, costUSD: 0.02 });
+  });
+
+  it("leaves unregistered technical stages without prompt metadata", () => {
+    const trace = newTrace();
+    for (const stage of ["retrieval_embed", "references_embed"]) {
+      trace.recordStage({
+        stage,
+        model: "text-embedding-3-small",
+        kind: "embedding",
+        status: "success",
+        latencyMs: 30,
+        usage: { tokens: 100 },
+      });
+    }
+    const stages = trace.toLog().stages as Array<Record<string, unknown>>;
+    expect(stages).toHaveLength(2);
+    for (const stage of stages) {
+      expect(stage.promptId).toBeUndefined();
+      expect(stage.promptVersion).toBeUndefined();
+    }
   });
 
   it("aggregates tokens and cost across mixed stages", () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { listAgentInstructionPaths } from "../src/recruiterAssistant/prompt/getAgentInstruction.js";
 import {
+  findPromptByStage,
   getPromptById,
   getPromptByStage,
   getAgentInstruction,
@@ -44,6 +45,17 @@ describe("promptRegistry lookup", () => {
       expect(getPromptByStage(prompt.stage)).toBe(prompt);
       expect(getPromptById(prompt.promptId)).toBe(prompt);
     }
+  });
+
+  it("finds a registered prompt by stage without throwing", () => {
+    const pitch = findPromptByStage("pitch");
+    expect(pitch?.promptId).toBe("pitch");
+    expect(pitch?.version).toBe("1.0.0");
+  });
+
+  it("returns undefined for unregistered technical stages", () => {
+    expect(findPromptByStage("retrieval_embed")).toBeUndefined();
+    expect(findPromptByStage("references_embed")).toBeUndefined();
   });
 });
 

@@ -199,6 +199,14 @@ export function getPromptByStage(stage: PromptStage): PromptMetadata {
   return entry;
 }
 
+/**
+ * Non-throwing lookup for runtime trace enrichment. Technical stages such as
+ * retrieval/reference embeddings are intentionally unregistered and return undefined.
+ */
+export function findPromptByStage(stage: string): PromptMetadata | undefined {
+  return PROMPT_REGISTRY.find((p) => p.stage === stage);
+}
+
 /** Instruction files referenced by a prompt entry (empty for inline prompts). */
 export function promptInstructionFiles(
   metadata: PromptMetadata

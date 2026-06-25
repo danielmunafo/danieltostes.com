@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { logInfo } from "../logging/logger.js";
+import { findPromptByStage } from "../recruiterAssistant/prompt/promptRegistry.js";
 import {
   estimateChatCostUSD,
   estimateEmbeddingCostUSD,
@@ -21,6 +22,8 @@ export type StageRecord = {
   tokens?: number;
   costUSD?: number;
   errorName?: string;
+  promptId?: string;
+  promptVersion?: string;
 };
 
 export type RetrievalStats = {
@@ -90,6 +93,11 @@ export class RequestTrace {
       latencyMs: input.latencyMs,
     };
     if (input.errorName) record.errorName = input.errorName;
+    const prompt = findPromptByStage(input.stage);
+    if (prompt) {
+      record.promptId = prompt.promptId;
+      record.promptVersion = prompt.version;
+    }
     const usage = input.usage;
     if (usage && input.kind === "chat" && "promptTokens" in usage) {
       record.promptTokens = finiteOrUndefined(usage.promptTokens);
