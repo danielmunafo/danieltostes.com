@@ -131,11 +131,13 @@ export async function buildReferencesMarkdown(
       "references_claims",
       CHAT_MODEL,
       "chat",
-      () =>
+      (abortSignal) =>
         generateObject({
           model: openai(CHAT_MODEL),
           schema: claimsSchema,
           maxTokens: CLAIM_EXTRACTION_MAX_TOKENS,
+          abortSignal,
+          maxRetries: 0,
           prompt: buildClaimExtractionPrompt(trimmed),
         })
     );
@@ -159,10 +161,12 @@ export async function buildReferencesMarkdown(
       "references_embed",
       EMBEDDING_MODEL,
       "embedding",
-      () =>
+      (abortSignal) =>
         embedMany({
           model: openai.embedding(EMBEDDING_MODEL),
           values: [...claims],
+          abortSignal,
+          maxRetries: 0,
         })
     );
     embeddings = res.embeddings;

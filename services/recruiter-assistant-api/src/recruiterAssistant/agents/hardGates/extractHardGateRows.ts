@@ -48,7 +48,7 @@ export async function extractHardGateRows(
       "hard_gates",
       CHAT_MODEL,
       "chat",
-      () =>
+      (abortSignal) =>
         generateObject({
           model: openai(CHAT_MODEL),
           schema: hardGateExtractionSchema,
@@ -60,6 +60,8 @@ export async function extractHardGateRows(
           ),
           temperature: 0,
           maxTokens: HARD_GATE_EXTRACTION_MAX_TOKENS,
+          abortSignal,
+          maxRetries: 0,
         })
     );
     const rows = object.rows

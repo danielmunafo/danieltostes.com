@@ -35,7 +35,7 @@ export async function evaluateInterests(params: {
       "interests",
       CHAT_MODEL,
       "chat",
-      () =>
+      (abortSignal) =>
         generateText({
           model: params.openai(CHAT_MODEL),
           system: buildInterestsEvaluatorSystemPrompt(params.navLocale),
@@ -45,6 +45,8 @@ export async function evaluateInterests(params: {
             params.interestsPack!.criteriaMarkdown
           ),
           maxTokens: INTERESTS_ALIGNMENT_MAX_TOKENS,
+          abortSignal,
+          maxRetries: 0,
         })
     );
 

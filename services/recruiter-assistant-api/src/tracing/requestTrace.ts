@@ -1,5 +1,9 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { logInfo } from "../logging/logger.js";
+import {
+  runReliableModelCall,
+  type ReliableModelCallOptions,
+} from "../reliability/modelCallReliability.js";
 import { findPromptByStage } from "../recruiterAssistant/prompt/promptRegistry.js";
 import {
   estimateChatCostUSD,
@@ -232,12 +236,16 @@ export async function traceGenerate<T>(
   stage: string,
   model: string,
   kind: ModelCallKind,
-  fn: () => Promise<T>
+  fn: (signal: AbortSignal) => Promise<T>,
+  reliability?: Omit<ReliableModelCallOptions, "label">
 ): Promise<T> {
   const trace = getActiveTrace();
   const startedAt = Date.now();
   try {
-    const result = await fn();
+    const result = await runReliableModelCall(
+      { label: stage, ...reliability },
+      fn
+    );
     trace?.recordStage({
       stage,
       model,
