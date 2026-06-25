@@ -54,6 +54,12 @@ describe("buildRequestTraceMetricEnvelopes", () => {
       ],
       totals: {
         llmCalls: 2,
+        usageKnownCalls: 2,
+        usageMissingCalls: 0,
+        costKnownCalls: 2,
+        costMissingCalls: 0,
+        tokenUsageComplete: true,
+        costEstimateComplete: true,
         promptTokens: 100,
         completionTokens: 25,
         embeddingTokens: 10,
@@ -91,6 +97,10 @@ describe("buildRequestTraceMetricEnvelopes", () => {
       RequestErrorCount: 0,
       RequestLatencyMs: 2500,
       LlmCallCount: 2,
+      UsageKnownCallCount: 2,
+      UsageMissingCallCount: 0,
+      CostKnownCallCount: 2,
+      CostMissingCallCount: 0,
       PromptTokens: 100,
       CompletionTokens: 25,
       EmbeddingTokens: 10,
@@ -107,6 +117,8 @@ describe("buildRequestTraceMetricEnvelopes", () => {
         "RequestCount",
         "RequestErrorCount",
         "RequestLatencyMs",
+        "UsageMissingCallCount",
+        "CostMissingCallCount",
         "TotalTokens",
         "EstimatedCostUSD",
         "RetrievalLatencyMs",
@@ -174,6 +186,12 @@ describe("buildRequestTraceMetricEnvelopes", () => {
       ],
       totals: {
         llmCalls: 1,
+        usageKnownCalls: 1,
+        usageMissingCalls: 0,
+        costKnownCalls: 0,
+        costMissingCalls: 1,
+        tokenUsageComplete: true,
+        costEstimateComplete: false,
         promptTokens: 10,
         completionTokens: 5,
         embeddingTokens: 0,
@@ -188,9 +206,59 @@ describe("buildRequestTraceMetricEnvelopes", () => {
     );
 
     expect(requestPayload.EstimatedCostUSD).toBeUndefined();
+    expect(requestPayload.CostKnownCallCount).toBe(0);
+    expect(requestPayload.CostMissingCallCount).toBe(1);
     expect(stagePayload.StageEstimatedCostUSD).toBeUndefined();
     expect(metricNames(requestPayload)).not.toContain("EstimatedCostUSD");
     expect(metricNames(stagePayload)).not.toContain("StageEstimatedCostUSD");
+  });
+
+  it("emits missing usage and cost counters for partial request totals", () => {
+    const traceLog: RequestTraceLogEnvelope = {
+      requestId: "req-1",
+      navLocale: "en",
+      outcome: "success",
+      totalLatencyMs: 100,
+      retrieval: null,
+      stages: [
+        {
+          stage: "pitch",
+          model: "gpt-4.1-nano",
+          status: "success",
+          latencyMs: 50,
+        },
+      ],
+      totals: {
+        llmCalls: 1,
+        usageKnownCalls: 0,
+        usageMissingCalls: 1,
+        costKnownCalls: 0,
+        costMissingCalls: 1,
+        tokenUsageComplete: false,
+        costEstimateComplete: false,
+        promptTokens: 0,
+        completionTokens: 0,
+        embeddingTokens: 0,
+        totalTokens: 0,
+        estimatedCostUSD: null,
+      },
+    };
+
+    const [requestPayload, stagePayload] = buildRequestTraceMetricEnvelopes(
+      traceLog,
+      { environment: "dev", timestampMs: 1 }
+    );
+
+    expect(requestPayload).toMatchObject({
+      UsageKnownCallCount: 0,
+      UsageMissingCallCount: 1,
+      CostKnownCallCount: 0,
+      CostMissingCallCount: 1,
+      TotalTokens: 0,
+    });
+    expect(requestPayload.EstimatedCostUSD).toBeUndefined();
+    expect(stagePayload.StageEstimatedCostUSD).toBeUndefined();
+    expect(stagePayload.StageTotalTokens).toBeUndefined();
   });
 });
 

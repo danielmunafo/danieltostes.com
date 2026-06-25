@@ -37,6 +37,10 @@ const METRIC_UNITS = {
   RequestErrorCount: "Count",
   RequestLatencyMs: "Milliseconds",
   LlmCallCount: "Count",
+  UsageKnownCallCount: "Count",
+  UsageMissingCallCount: "Count",
+  CostKnownCallCount: "Count",
+  CostMissingCallCount: "Count",
   PromptTokens: "Count",
   CompletionTokens: "Count",
   EmbeddingTokens: "Count",
@@ -211,6 +215,30 @@ function buildRequestMetricPayload(params: {
     traceLog.totalLatencyMs
   );
   addMetric(metricValues, metricDefinitions, "LlmCallCount", totals.llmCalls);
+  addMetric(
+    metricValues,
+    metricDefinitions,
+    "UsageKnownCallCount",
+    totals.usageKnownCalls
+  );
+  addMetric(
+    metricValues,
+    metricDefinitions,
+    "UsageMissingCallCount",
+    totals.usageMissingCalls
+  );
+  addMetric(
+    metricValues,
+    metricDefinitions,
+    "CostKnownCallCount",
+    totals.costKnownCalls
+  );
+  addMetric(
+    metricValues,
+    metricDefinitions,
+    "CostMissingCallCount",
+    totals.costMissingCalls
+  );
   addMetric(
     metricValues,
     metricDefinitions,

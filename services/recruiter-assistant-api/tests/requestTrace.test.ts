@@ -5,6 +5,7 @@ import {
   RequestTrace,
   getActiveTrace,
   logRequestTrace,
+  makeStreamTraceOnFinish,
   runWithTrace,
   traceGenerate,
 } from "../src/tracing/requestTrace.js";
@@ -106,8 +107,14 @@ describe("RequestTrace.recordStage", () => {
       latencyMs: 20,
       usage: { tokens: 500_000 },
     });
-    const totals = trace.toLog().totals as Record<string, number>;
+    const totals = trace.toLog().totals as Record<string, unknown>;
     expect(totals.llmCalls).toBe(2);
+    expect(totals.usageKnownCalls).toBe(2);
+    expect(totals.usageMissingCalls).toBe(0);
+    expect(totals.costKnownCalls).toBe(2);
+    expect(totals.costMissingCalls).toBe(0);
+    expect(totals.tokenUsageComplete).toBe(true);
+    expect(totals.costEstimateComplete).toBe(true);
     expect(totals.promptTokens).toBe(1_000_000);
     expect(totals.completionTokens).toBe(1_000_000);
     expect(totals.embeddingTokens).toBe(500_000);
@@ -131,6 +138,66 @@ describe("RequestTrace.recordStage", () => {
     expect(stages[0].costUSD).toBeUndefined();
     const totals = trace.toLog().totals as Record<string, unknown>;
     expect(totals.estimatedCostUSD).toBeNull();
+    expect(totals.usageKnownCalls).toBe(1);
+    expect(totals.usageMissingCalls).toBe(0);
+    expect(totals.costKnownCalls).toBe(0);
+    expect(totals.costMissingCalls).toBe(1);
+    expect(totals.tokenUsageComplete).toBe(true);
+    expect(totals.costEstimateComplete).toBe(false);
+  });
+
+  it("does not record misleading zero cost when chat usage is invalid", () => {
+    const trace = newTrace();
+    trace.recordStage({
+      stage: "pitch",
+      model: "gpt-4.1-nano",
+      kind: "chat",
+      status: "success",
+      latencyMs: 100,
+      usage: { promptTokens: Number.NaN, completionTokens: Number.NaN },
+    });
+
+    const log = trace.toLog();
+    const stages = log.stages as Array<Record<string, unknown>>;
+    expect(stages[0]).toMatchObject({
+      stage: "pitch",
+      status: "success",
+      latencyMs: 100,
+    });
+    expect(stages[0].promptTokens).toBeUndefined();
+    expect(stages[0].completionTokens).toBeUndefined();
+    expect(stages[0].costUSD).toBeUndefined();
+    expect(log.totals).toMatchObject({
+      usageKnownCalls: 0,
+      usageMissingCalls: 1,
+      costKnownCalls: 0,
+      costMissingCalls: 1,
+      tokenUsageComplete: false,
+      costEstimateComplete: false,
+      estimatedCostUSD: null,
+    });
+  });
+
+  it("omits token and cost fields from stream finish events with unavailable usage", async () => {
+    const trace = newTrace();
+    await runWithTrace(trace, async () => {
+      const onFinish = makeStreamTraceOnFinish("pitch", "gpt-4.1-nano", 1000);
+      onFinish({
+        usage: { promptTokens: Number.NaN, completionTokens: Number.NaN },
+      });
+    });
+
+    const log = trace.toLog();
+    const stages = log.stages as Array<Record<string, unknown>>;
+    expect(stages[0]).toMatchObject({
+      stage: "pitch",
+      status: "success",
+    });
+    expect(stages[0].promptTokens).toBeUndefined();
+    expect(stages[0].completionTokens).toBeUndefined();
+    expect(stages[0].costUSD).toBeUndefined();
+    expect(log.totals.usageMissingCalls).toBe(1);
+    expect(log.totals.costMissingCalls).toBe(1);
   });
 
   it("captures error status and error name", () => {
