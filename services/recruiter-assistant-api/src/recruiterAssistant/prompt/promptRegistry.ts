@@ -72,30 +72,30 @@ const PROMPT_REGISTRY = [
   },
   {
     promptId: "evidence-evaluation",
-    version: "1.0.0",
+    version: "1.0.1",
     stage: "evidence_evaluation",
     source: {
       kind: "file",
       files: ["agents/evidenceEvaluation/instructions.md"],
     },
     description:
-      "Scores JD requirements against retrieved portfolio evidence, applying hard score caps.",
-    lastUpdated: SEEDED_AT,
+      "Scores JD requirements against retrieved portfolio evidence, applying hard score caps while treating non-language practical constraints as soft.",
+    lastUpdated: "2026-06-25",
     owner: OWNER,
   },
   {
     promptId: "hard-gates",
-    version: "1.0.0",
+    version: "1.0.1",
     stage: "hard_gates",
     source: { kind: "file", files: ["agents/hardGates/instructions.md"] },
     description:
-      "Extracts structured hard-gate requirement rows (must-have constraints) from the JD.",
-    lastUpdated: SEEDED_AT,
+      "Extracts structured hard-gate requirement rows for language, primary-stack, and specialist-domain constraints.",
+    lastUpdated: "2026-06-25",
     owner: OWNER,
   },
   {
     promptId: "evidence-analysis",
-    version: "1.0.0",
+    version: "1.0.1",
     stage: "evidence_analysis",
     source: {
       kind: "file",
@@ -103,7 +103,7 @@ const PROMPT_REGISTRY = [
     },
     description:
       "Analyzes retrieved evidence into a structured brief used downstream by the pitch.",
-    lastUpdated: SEEDED_AT,
+    lastUpdated: "2026-06-25",
     owner: OWNER,
   },
   {
@@ -137,12 +137,12 @@ const PROMPT_REGISTRY = [
   },
   {
     promptId: "pitch",
-    version: "1.0.0",
+    version: "1.0.1",
     stage: "pitch",
     source: { kind: "file", files: ["agents/pitch/instructions.md"] },
     description:
       "Generates the streamed recruiter pitch grounded in the evidence brief.",
-    lastUpdated: SEEDED_AT,
+    lastUpdated: "2026-06-25",
     owner: OWNER,
   },
   {

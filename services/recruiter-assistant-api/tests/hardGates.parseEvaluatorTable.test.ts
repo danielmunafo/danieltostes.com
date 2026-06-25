@@ -7,6 +7,9 @@ const enTable = `# Requirement Coverage
 |---|---|---|---|
 | German fluency | Must-have | Not evidenced | JD requires German |
 | Production Golang | Must-have | Not evidenced | No Go excerpts |
+| EU work authorization | Must-have | Not evidenced | Practical constraint |
+| CET timezone overlap | Must-have | Not evidenced | Practical constraint |
+| Full-time employee only | Must-have | Not evidenced | Practical constraint |
 | TypeScript systems | Must-have | Direct | Strong fintech evidence |
 # Match Score Guidance
 **Recommended match strength:** 6/10
@@ -27,6 +30,9 @@ describe("parseEvaluatorTable", () => {
     expect(rows.length).toBeGreaterThanOrEqual(2);
     expect(rows.some((r) => r.category === "spoken_language")).toBe(true);
     expect(rows.some((r) => r.category === "primary_stack")).toBe(true);
+    expect(rows.some((r) => r.category === "work_authorization")).toBe(false);
+    expect(rows.some((r) => r.category === "timezone")).toBe(false);
+    expect(rows.some((r) => r.category === "employment_type")).toBe(false);
   });
 
   it("parses pt-BR localized evidence tokens", () => {
