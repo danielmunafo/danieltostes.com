@@ -234,7 +234,6 @@ function createAttemptScope(
   readonly cleanup: () => void;
 } {
   const controller = new AbortController();
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
   let rejectAbortPromise: (err: unknown) => void = () => {};
 
   const abortPromise = new Promise<never>((_, reject) => {
@@ -252,7 +251,7 @@ function createAttemptScope(
   parentSignal.addEventListener("abort", onParentAbort, { once: true });
   if (parentSignal.aborted) onParentAbort();
 
-  timeoutId = setTimeout(() => {
+  const timeoutId = setTimeout(() => {
     abortAttempt(new ModelCallTimeoutError(label, timeoutMs));
   }, timeoutMs);
 
@@ -260,7 +259,7 @@ function createAttemptScope(
     signal: controller.signal,
     abortPromise,
     cleanup: () => {
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
       parentSignal.removeEventListener("abort", onParentAbort);
     },
   };
