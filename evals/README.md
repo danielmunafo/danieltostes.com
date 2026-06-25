@@ -85,7 +85,31 @@ Requires `OPENAI_API_KEY` to embed the queries. Everything else is pure math aga
 
 The gate hard-fails same-repository PRs and `main` pushes before uploading a new index to S3. Fork PRs skip the gate with a GitHub Actions notice because `OPENAI_API_KEY` and AWS artifacts are intentionally unavailable to untrusted `pull_request` workflows. Full E2E LLM evals are not part of this CI gate.
 
-### Step 3 — E2E evals (full pipeline)
+### Step 3 — Hard-gate evals (offline deterministic clamp rules)
+
+```bash
+npm run eval:hard-gates
+# Run a single case:
+npm run eval:hard-gates -- --case HG-04
+```
+
+The hard-gate runner executes the committed `HG-*` cases by constructing the case-defined requirement rows and passing them through the same deterministic clamp/recommendation rules used by the service. It prints a stable scorecard and exits nonzero on assertion failures.
+
+This slice does not run the live `generateObject` extractor yet; the missing extractor fixture pass is tracked as a follow-up so prompt/model variance does not block deterministic rule coverage.
+
+### Step 4 — Reference evals (deterministic gaps + vector matching)
+
+```bash
+npm run eval:references
+# Run deterministic legacy-chunk exclusion without a corpus snapshot:
+npm run eval:references -- --case REF-08
+# Run against a specific locale:
+npm run eval:references -- --locale pt-BR
+```
+
+`REF-06` and `REF-08` run offline from committed case data. Claim-matching reference cases require `OPENAI_API_KEY` plus `evals/retrieval/fixtures/corpus-snapshot.json` from `npm run eval:snapshot`; they embed the committed claim text, match it against the snapshot, render deterministic References markdown, and assert support level, similarity, source-link, caveat, and chunk-text expectations.
+
+### Step 5 — E2E evals (full pipeline)
 
 ```bash
 # Terminal 1: start the dev server in E2E mode (skips reCAPTCHA)
@@ -101,12 +125,14 @@ The e2e runner checks deterministic assertions (recommendation label, technical 
 
 ### When to run each layer
 
-| When                                   | Run                                                  |
-| -------------------------------------- | ---------------------------------------------------- |
-| Every commit                           | `eval:retrieval` (no LLM cost, fast)                 |
-| Before any prompt change ships         | `eval:retrieval` + `eval:e2e` on the priority-12 set |
-| Before a release                       | Full `eval:e2e` suite                                |
-| After corpus/portfolio content changes | `eval:snapshot` then `eval:retrieval`                |
+| When                                        | Run                                                  |
+| ------------------------------------------- | ---------------------------------------------------- |
+| Every commit                                | `eval:retrieval` (no LLM cost, fast)                 |
+| Before hard-gate rule changes               | `eval:hard-gates`                                    |
+| Before reference rendering/matching changes | `eval:references`                                    |
+| Before any prompt change ships              | `eval:retrieval` + `eval:e2e` on the priority-12 set |
+| Before a release                            | Full `eval:e2e` suite                                |
+| After corpus/portfolio content changes      | `eval:snapshot` then `eval:retrieval`                |
 
 ---
 

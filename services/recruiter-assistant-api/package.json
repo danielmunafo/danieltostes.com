@@ -17,6 +17,8 @@
     "test:watch": "vitest",
     "eval:snapshot": "node scripts/eval-snapshot-corpus.mjs",
     "eval:retrieval": "node scripts/eval-retrieval.mjs",
+    "eval:hard-gates": "node scripts/eval-hard-gates.mjs",
+    "eval:references": "node scripts/eval-references.mjs",
     "eval:e2e": "node scripts/eval-e2e.mjs"
   },
   "dependencies": {
