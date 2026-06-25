@@ -39,6 +39,8 @@ jobs:
         working-directory: services/recruiter-assistant-api
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Note retrieval eval skip for fork PRs
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
@@ -56,6 +58,11 @@ jobs:
 
       - name: Unit tests
         run: npm test
+
+      - name: Prompt version-bump check
+        env:
+          PROMPT_MANIFEST_BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: npm run check:prompt-version-bump
 
       - name: Bundle Lambda
         run: npm run build
