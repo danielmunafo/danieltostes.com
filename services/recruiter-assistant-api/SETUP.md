@@ -17,7 +17,7 @@ No Terraform: create resources once in the AWS console or with the AWS CLI, then
 
 ## 1b. Feedback S3 bucket
 
-Stores one JSON object per feedback submission (append-only, one file per record). Lambda writes here after a recruiter clicks 👍/👎.
+Stores one JSON object per feedback submission (append-only, one file per record). Lambda writes here after a recruiter clicks 👍/👎. Feedback records include reviewable fields such as the submitted question text, assistant response text, rating, optional reason/comment, hashes, and request/message/session identifiers. Keep the public terms in `public/content/recruiter-assistant/terms/<locale>.md` aligned with this storage behavior.
 
 - Name example: `danieltostes-recruiter-feedback`
 - Block Public Access: **On**

@@ -1,6 +1,6 @@
 # Assistente IA per recruiter — Termini d’uso e uso leale
 
-**In vigore dal:** 15 maggio 2026
+**In vigore dal:** 25 giugno 2026
 
 Questi termini si applicano quando usi l’**Assistente IA per recruiter** su questo sito portfolio (l’“**Assistente**”). Descrivono un uso leale, come vengono trattate le informazioni che invii e cosa puoi ragionevolmente aspettarti dall’output. Se la tua organizzazione richiede una revisione legale, rivolgiti a un professionista abilitato.
 
@@ -12,8 +12,9 @@ L’Assistente è uno strumento **sperimentale e informativo**. Confronta il tes
 
 - **Cosa puoi inviare:** Testo che scegli di incollare (ad esempio descrizione del ruolo, responsabilità, competenze obbligatorie, sede o fascia retributiva). Evita di incollare dati personali non necessari su candidati o terzi. Non inviare informazioni riservate o proprietarie che normalmente non condivideresti con sistemi di IA di terze parti.
 - **Cosa succede tecnicamente:** Il testo viene inviato a un **servizio backend** controllato dal titolare del sito e, per l’inferenza del modello, a **fornitori di IA terzi** (ad esempio OpenAI) secondo i loro termini e l’informativa privacy. Il trattamento è limitato a **produrre una risposta** alla tua richiesta e a far funzionare il servizio (ad esempio sicurezza, rate limit e log di breve durata, secondo la configurazione).
+- **Revisione del feedback:** Se usi i controlli pollice su/pollice giù, l’invio del feedback può includere il testo inviato, la risposta dell’Assistente, hash di entrambi, valutazione, motivo/commento opzionale, identificatori di sessione/messaggio e un identificatore di richiesta del backend. Questo viene usato per revisionare manualmente problemi di qualità, fare debug della risposta e migliorare la funzione. Non inviare feedback se il testo inviato o la risposta contengono informazioni che non vuoi siano conservate per revisione.
 - **Protezione anti-bot:** Prima di inviare una job description, il sito può chiederti di completare **Google reCAPTCHA** (prevenzione abusi). Il servizio è soggetto all’[Informativa privacy](https://policies.google.com/privacy) e ai [Termini di servizio](https://policies.google.com/terms) di Google.
-- **Conservazione:** Il titolare mira a mantenere la conservazione **minima** (ad esempio elaborazione transitoria e log operativi). La conservazione effettiva dipende dall’hosting e dalle impostazioni del fornitore. L’Assistente non è pensato per funzionare come sistema di archiviazione documentale a lungo termine.
+- **Conservazione:** Il titolare mira a mantenere la conservazione **limitata a ciò che è utile per gestire, fare debug e migliorare la funzione** (ad esempio elaborazione transitoria, log operativi e record di feedback quando inviati). La conservazione effettiva dipende dall’hosting, dal fornitore e dalle impostazioni di archiviazione. L’Assistente non è pensato per funzionare come sistema di archiviazione documentale a lungo termine.
 - **Base giuridica (impostazione tipo SEE/Regno Unito):** A seconda del contesto, il trattamento può basarsi sull’**esecuzione del servizio che richiedi** (rispondere al prompt), **interessi legittimi** (gestire e proteggere una demo portfolio di piccola scala, migliorare l’affidabilità) e, ove richiesto, su altre basi. **Le categorie sensibili di dati personali** non devono essere inviate; se l’incolla include dati di categoria particolare, non usare l’Assistente per quel contenuto.
 - **Trasferimenti internazionali:** I fornitori possono elaborare dati al di fuori del tuo Paese. I fornitori terzi possono basarsi su clausole contrattuali standard o meccanismi simili per i trasferimenti internazionali di dati.
 
