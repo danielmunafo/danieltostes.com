@@ -86,6 +86,7 @@ import {
   recruiterAssistantBriefingMarkdownH1Sx,
   recruiterAssistantBriefingSectionHeadingSx,
 } from "../lib/recruiter-assistant-briefing-heading-sx";
+import { getFeedbackRequestIdForMessage } from "../lib/recruiter-assistant-trace-annotation";
 import { logMatchProfileClientDebug } from "../lib/match-profile-debug";
 import { ensureRecruiterRecaptchaScriptLoaded } from "../lib/ensure-recruiter-recaptcha-script-loaded";
 import { AssistantCheckboxRecaptcha } from "./AssistantCheckboxRecaptcha";
@@ -903,6 +904,9 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                     messages[messageIndex - 1]!
                   )
                 : "";
+            const feedbackRequestId = isUser
+              ? null
+              : getFeedbackRequestIdForMessage(m);
             return (
               <Box
                 key={m.id}
@@ -1090,6 +1094,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                       </Box>
                       {hasBriefingToCopy ? (
                         <AssistantFeedback
+                          requestId={feedbackRequestId ?? m.id}
                           messageId={m.id}
                           questionText={questionText}
                           responseText={mainBody}

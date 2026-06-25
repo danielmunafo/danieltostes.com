@@ -30,6 +30,7 @@ async function sha256Hex16(text: string): Promise<string> {
 }
 
 export type SubmitFeedbackParams = {
+  requestId: string;
   messageId: string;
   questionText: string;
   responseText: string;
@@ -43,6 +44,7 @@ export async function submitFeedback(
   params: SubmitFeedbackParams
 ): Promise<void> {
   const {
+    requestId,
     messageId,
     questionText,
     responseText,
@@ -58,7 +60,8 @@ export async function submitFeedback(
   ]);
 
   const body: Record<string, string> = {
-    requestId: messageId,
+    requestId,
+    messageId,
     sessionId: getFeedbackSessionId(),
     timestamp: new Date().toISOString(),
     questionHash,

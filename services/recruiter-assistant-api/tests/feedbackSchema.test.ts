@@ -3,6 +3,7 @@ import { feedbackBodySchema } from "../src/feedback/feedbackSchema.js";
 
 const valid = {
   requestId: "abc-123",
+  messageId: "message-123",
   sessionId: "session-xyz",
   timestamp: "2026-06-18T10:00:00.000Z",
   questionHash: "abcdef01234567ab",
@@ -17,6 +18,14 @@ const valid = {
 describe("feedbackBodySchema", () => {
   it("accepts a valid positive record", () => {
     expect(feedbackBodySchema.safeParse(valid).success).toBe(true);
+  });
+
+  it("accepts records without the optional UI message id", () => {
+    const recordWithoutMessageId: Record<string, unknown> = { ...valid };
+    delete recordWithoutMessageId.messageId;
+    expect(feedbackBodySchema.safeParse(recordWithoutMessageId).success).toBe(
+      true
+    );
   });
 
   it("accepts a valid negative record with reason and comment", () => {
@@ -36,8 +45,17 @@ describe("feedbackBodySchema", () => {
   });
 
   it("rejects missing rating", () => {
-    const { rating: _r, ...rest } = valid;
-    expect(feedbackBodySchema.safeParse(rest).success).toBe(false);
+    const recordWithoutRating: Record<string, unknown> = { ...valid };
+    delete recordWithoutRating.rating;
+    expect(feedbackBodySchema.safeParse(recordWithoutRating).success).toBe(
+      false
+    );
+  });
+
+  it("rejects empty UI message ids", () => {
+    expect(
+      feedbackBodySchema.safeParse({ ...valid, messageId: "" }).success
+    ).toBe(false);
   });
 
   it("rejects invalid reason enum", () => {
@@ -79,13 +97,19 @@ describe("feedbackBodySchema", () => {
   });
 
   it("rejects missing timestamp", () => {
-    const { timestamp: _t, ...rest } = valid;
-    expect(feedbackBodySchema.safeParse(rest).success).toBe(false);
+    const recordWithoutTimestamp: Record<string, unknown> = { ...valid };
+    delete recordWithoutTimestamp.timestamp;
+    expect(feedbackBodySchema.safeParse(recordWithoutTimestamp).success).toBe(
+      false
+    );
   });
 
   it("rejects missing questionText", () => {
-    const { questionText: _q, ...rest } = valid;
-    expect(feedbackBodySchema.safeParse(rest).success).toBe(false);
+    const recordWithoutQuestionText: Record<string, unknown> = { ...valid };
+    delete recordWithoutQuestionText.questionText;
+    expect(
+      feedbackBodySchema.safeParse(recordWithoutQuestionText).success
+    ).toBe(false);
   });
 
   it("rejects questionText over 12000 chars", () => {

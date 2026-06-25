@@ -26,6 +26,7 @@ import {
 type FeedbackPhase = "idle" | "negative-expand" | "done";
 
 export type AssistantFeedbackProps = {
+  requestId: string;
   messageId: string;
   questionText: string;
   responseText: string;
@@ -53,6 +54,7 @@ const ROW_SX = {
 } as const;
 
 export function AssistantFeedback({
+  requestId,
   messageId,
   questionText,
   responseText,
@@ -89,6 +91,7 @@ export function AssistantFeedback({
     (r: "positive" | "negative", reason?: FeedbackReason, c?: string) => {
       setPhase("done");
       submitFeedback({
+        requestId,
         messageId,
         questionText,
         responseText,
@@ -103,7 +106,7 @@ export function AssistantFeedback({
         setComment("");
       });
     },
-    [messageId, questionText, responseText, locale]
+    [requestId, messageId, questionText, responseText, locale]
   );
 
   const handleThumbUp = useCallback(() => {
