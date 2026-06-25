@@ -109,6 +109,9 @@ describe("buildEvidenceEvaluatorSystemPrompt", () => {
     expect(EVIDENCE_EVALUATOR_HARD_CAP_RULES_EN).toContain(
       "required spoken language fluency"
     );
+    expect(EVIDENCE_EVALUATOR_HARD_CAP_RULES_EN).toContain(
+      "Non-language practical constraints are soft"
+    );
   });
 
   it("evidence confidence rubric allows Medium when strong evidence exists for some must-haves", () => {
@@ -400,7 +403,7 @@ describe("buildRecruiterPitchSystemPrompt", () => {
     expect(s).toContain(
       "Do **not** output **Strong pursue** or **Pursue** when **multiple**"
     );
-    expect(s).toContain("required spoken language or other practical gate");
+    expect(s).toContain("required spoken language hard gate");
     expect(s).toContain(
       "does not confirm the role's hard-gate requirements as written"
     );

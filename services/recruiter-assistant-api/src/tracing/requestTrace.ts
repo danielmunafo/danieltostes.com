@@ -10,6 +10,7 @@ import {
   estimateEmbeddingCostUSD,
   type AnyTokenUsage,
 } from "./costEstimator.js";
+import { emitRequestTraceMetrics } from "./requestTraceMetrics.js";
 
 export type StageStatus = "success" | "error";
 export type ModelCallKind = "chat" | "embedding";
@@ -49,6 +50,32 @@ export type RecordStageInput = {
   errorName?: string;
 };
 
+export type RequestTraceTotals = {
+  llmCalls: number;
+  usageKnownCalls: number;
+  usageMissingCalls: number;
+  costKnownCalls: number;
+  costMissingCalls: number;
+  tokenUsageComplete: boolean;
+  costEstimateComplete: boolean;
+  promptTokens: number;
+  completionTokens: number;
+  embeddingTokens: number;
+  totalTokens: number;
+  estimatedCostUSD: number | null;
+};
+
+export type RequestTraceLogEnvelope = {
+  requestId: string;
+  navLocale: string;
+  outcome: RequestOutcome;
+  errorName?: string;
+  totalLatencyMs: number;
+  retrieval: RetrievalStats | null;
+  stages: StageRecord[];
+  totals: RequestTraceTotals;
+};
+
 function errorNameOf(err: unknown): string {
   if (err instanceof Error && err.name) return err.name;
   return "UnknownError";
@@ -60,6 +87,35 @@ function round6(value: number): number {
 
 function finiteOrUndefined(value: number): number | undefined {
   return Number.isFinite(value) ? value : undefined;
+}
+
+function hasRecordedUsage(stage: StageRecord): boolean {
+  return (
+    stage.promptTokens !== undefined ||
+    stage.completionTokens !== undefined ||
+    stage.tokens !== undefined
+  );
+}
+
+function chatUsageOrUndefined(
+  usage: AnyTokenUsage
+): Extract<AnyTokenUsage, { promptTokens: number }> | null {
+  if (!("promptTokens" in usage)) return null;
+  const promptTokens = finiteOrUndefined(usage.promptTokens);
+  const completionTokens = finiteOrUndefined(usage.completionTokens);
+  if (promptTokens === undefined || completionTokens === undefined) {
+    return null;
+  }
+  return { promptTokens, completionTokens };
+}
+
+function embeddingUsageOrUndefined(
+  usage: AnyTokenUsage
+): Extract<AnyTokenUsage, { tokens: number }> | null {
+  if (!("tokens" in usage)) return null;
+  const tokens = finiteOrUndefined(usage.tokens);
+  if (tokens === undefined) return null;
+  return { tokens };
 }
 
 /**
@@ -103,14 +159,24 @@ export class RequestTrace {
       record.promptVersion = prompt.version;
     }
     const usage = input.usage;
-    if (usage && input.kind === "chat" && "promptTokens" in usage) {
-      record.promptTokens = finiteOrUndefined(usage.promptTokens);
-      record.completionTokens = finiteOrUndefined(usage.completionTokens);
-      const cost = estimateChatCostUSD(input.model, usage);
+    if (usage && input.kind === "chat") {
+      const chatUsage = chatUsageOrUndefined(usage);
+      if (chatUsage) {
+        record.promptTokens = chatUsage.promptTokens;
+        record.completionTokens = chatUsage.completionTokens;
+      }
+      const cost = chatUsage
+        ? estimateChatCostUSD(input.model, chatUsage)
+        : null;
       if (cost !== null) record.costUSD = round6(cost);
-    } else if (usage && input.kind === "embedding" && "tokens" in usage) {
-      record.tokens = finiteOrUndefined(usage.tokens);
-      const cost = estimateEmbeddingCostUSD(input.model, usage);
+    } else if (usage && input.kind === "embedding") {
+      const embeddingUsage = embeddingUsageOrUndefined(usage);
+      if (embeddingUsage) {
+        record.tokens = embeddingUsage.tokens;
+      }
+      const cost = embeddingUsage
+        ? estimateEmbeddingCostUSD(input.model, embeddingUsage)
+        : null;
       if (cost !== null) record.costUSD = round6(cost);
     }
     this.stages.push(record);
@@ -133,22 +199,38 @@ export class RequestTrace {
   }
 
   /** Serializable envelope for the single end-of-request log line. */
-  toLog(): Record<string, unknown> {
+  toLog(): RequestTraceLogEnvelope {
     let promptTokens = 0;
     let completionTokens = 0;
     let embeddingTokens = 0;
     let costUSD = 0;
     let anyCostKnown = false;
+    let usageKnownCalls = 0;
+    let usageMissingCalls = 0;
+    let costKnownCalls = 0;
+    let costMissingCalls = 0;
     for (const stage of this.stages) {
       if (stage.promptTokens) promptTokens += stage.promptTokens;
       if (stage.completionTokens) completionTokens += stage.completionTokens;
       if (stage.tokens) embeddingTokens += stage.tokens;
+      if (stage.status === "success") {
+        if (hasRecordedUsage(stage)) {
+          usageKnownCalls += 1;
+        } else {
+          usageMissingCalls += 1;
+        }
+      }
       if (stage.costUSD !== undefined) {
         costUSD += stage.costUSD;
         anyCostKnown = true;
+        if (stage.status === "success") costKnownCalls += 1;
+      } else if (stage.status === "success") {
+        costMissingCalls += 1;
       }
     }
     const endedAtMs = this.finishedAtMs ?? Date.now();
+    const tokenUsageComplete = usageMissingCalls === 0;
+    const costEstimateComplete = costMissingCalls === 0;
     return {
       requestId: this.requestId,
       navLocale: this.navLocale,
@@ -159,6 +241,12 @@ export class RequestTrace {
       stages: this.stages,
       totals: {
         llmCalls: this.stages.length,
+        usageKnownCalls,
+        usageMissingCalls,
+        costKnownCalls,
+        costMissingCalls,
+        tokenUsageComplete,
+        costEstimateComplete,
         promptTokens,
         completionTokens,
         embeddingTokens,
@@ -195,7 +283,9 @@ export function getActiveTrace(): RequestTrace | undefined {
 
 /** Emits the single structured trace log for a completed request. */
 export function logRequestTrace(trace: RequestTrace): void {
-  logInfo("recruiter.trace", "request trace", trace.toLog());
+  const traceLog = trace.toLog();
+  logInfo("recruiter.trace", "request trace", traceLog);
+  emitRequestTraceMetrics(traceLog);
 }
 
 // --- Call-site recorders (no-op when no active trace) -----------------------
@@ -214,14 +304,23 @@ function extractUsage(
 ): AnyTokenUsage | undefined {
   const usage = (result as MaybeUsage | null)?.usage;
   if (!usage) return undefined;
-  if (kind === "chat" && typeof usage.promptTokens === "number") {
+  if (
+    kind === "chat" &&
+    typeof usage.promptTokens === "number" &&
+    typeof usage.completionTokens === "number" &&
+    Number.isFinite(usage.promptTokens) &&
+    Number.isFinite(usage.completionTokens)
+  ) {
     return {
       promptTokens: usage.promptTokens,
-      completionTokens:
-        typeof usage.completionTokens === "number" ? usage.completionTokens : 0,
+      completionTokens: usage.completionTokens,
     };
   }
-  if (kind === "embedding" && typeof usage.tokens === "number") {
+  if (
+    kind === "embedding" &&
+    typeof usage.tokens === "number" &&
+    Number.isFinite(usage.tokens)
+  ) {
     return { tokens: usage.tokens };
   }
   return undefined;
@@ -283,7 +382,7 @@ export function makeStreamTraceOnFinish(
   model: string,
   startedAtMs: number
 ): (event: {
-  usage: { promptTokens: number; completionTokens: number };
+  usage?: { promptTokens?: number; completionTokens?: number };
 }) => void {
   return ({ usage }) => {
     getActiveTrace()?.recordStage({
@@ -292,7 +391,16 @@ export function makeStreamTraceOnFinish(
       kind: "chat",
       status: "success",
       latencyMs: Date.now() - startedAtMs,
-      usage,
+      usage:
+        typeof usage?.promptTokens === "number" &&
+        typeof usage.completionTokens === "number" &&
+        Number.isFinite(usage.promptTokens) &&
+        Number.isFinite(usage.completionTokens)
+          ? {
+              promptTokens: usage.promptTokens,
+              completionTokens: usage.completionTokens,
+            }
+          : undefined,
     });
   };
 }

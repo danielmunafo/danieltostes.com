@@ -3,6 +3,7 @@ import {
   RECRUITER_EVIDENCE_EVALUATOR_LABELS,
 } from "../../constants.js";
 import {
+  BACKEND_HARD_GATE_CATEGORIES,
   type EvidenceLevel,
   type HardGateCategory,
   type HardGateRequirementRow,
@@ -135,19 +136,7 @@ function isHardGateRow(
 ): boolean {
   if (importance !== "must_have") return false;
   if (evidenceLevel === "direct") return false;
-  return (
-    category === "primary_stack" ||
-    category === "specialist_domain" ||
-    [
-      "spoken_language",
-      "work_authorization",
-      "location",
-      "timezone",
-      "hybrid_onsite",
-      "travel",
-      "employment_type",
-    ].includes(category)
-  );
+  return BACKEND_HARD_GATE_CATEGORIES.has(category);
 }
 
 function inferSeverity(

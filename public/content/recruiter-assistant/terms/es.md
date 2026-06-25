@@ -1,6 +1,6 @@
 # Asistente de IA para reclutadores — Términos de uso y uso razonable
 
-**Vigencia:** 15 de mayo de 2026
+**Vigencia:** 25 de junio de 2026
 
 Estos términos se aplican cuando usas el **Asistente de IA para reclutadores** en este sitio de portafolio (el “**Asistente**”). Describen un uso razonable, cómo se trata la información que envías y qué puedes esperar razonablemente de las respuestas. Si tu organización requiere revisión legal, consulta a un profesional cualificado.
 
@@ -12,8 +12,9 @@ El Asistente es una herramienta **experimental e informativa**. Compara el texto
 
 - **Qué puedes enviar:** Texto que decidas pegar (por ejemplo descripción del rol, responsabilidades, requisitos imprescindibles, ubicación o banda salarial). Evita pegar datos personales innecesarios sobre candidatos o terceros. No envíes información confidencial o propietaria que normalmente no compartirías con sistemas de IA de terceros.
 - **Qué ocurre técnicamente:** Tu texto se envía a un **servicio backend** controlado por el titular del sitio y, para la inferencia del modelo, a **proveedores de IA externos** (por ejemplo OpenAI), según sus términos y políticas de privacidad. El tratamiento se limita a **producir una respuesta** a tu solicitud y a operar el servicio (por ejemplo seguridad, límites de tasa y registros de corta duración según la configuración).
+- **Revisión de feedback:** Si usas los controles de pulgar arriba/pulgar abajo, el envío de feedback puede incluir el texto enviado, la respuesta del Asistente, hashes de ambos, valoración, motivo/comentario opcional, identificadores de sesión/mensaje y un identificador de solicitud del backend. Esto se usa para revisar manualmente problemas de calidad, depurar la respuesta y mejorar la función. No envíes feedback si el texto enviado o la respuesta contienen información que no quieres que se conserve para revisión.
 - **Protección contra bots:** Antes de enviar una descripción de puesto, el sitio puede pedirte completar **Google reCAPTCHA** (prevención de abuso). Ese servicio está sujeto a la [Política de privacidad](https://policies.google.com/privacy) y a las [Condiciones del servicio](https://policies.google.com/terms) de Google.
-- **Conservación:** El titular del sitio procura una conservación **mínima** (por ejemplo procesamiento transitorio y registros operativos). La conservación exacta depende del alojamiento y de la configuración del proveedor. El Asistente no está pensado para funcionar como sistema de almacenamiento de documentos a largo plazo.
+- **Conservación:** El titular del sitio procura que la conservación esté **limitada a lo útil para operar, depurar y mejorar la función** (por ejemplo procesamiento transitorio, registros operativos y registros de feedback cuando se envían). La conservación exacta depende del alojamiento, del proveedor y de la configuración de almacenamiento. El Asistente no está pensado para funcionar como sistema de almacenamiento de documentos a largo plazo.
 - **Base jurídica (marco tipo EEE/Reino Unido):** Según el contexto, el tratamiento puede basarse en la **ejecución del servicio que solicitas** (responder a tu mensaje), **intereses legítimos** (operar y asegurar una demo de portafolio pequeña, mejorar la fiabilidad) y, cuando proceda, otras bases. **No debes enviar categorías sensibles de datos personales**; si tu texto incluye datos de categoría especial, no uses el Asistente para ese contenido.
 - **Transferencias internacionales:** Los proveedores pueden tratar datos fuera de tu país. Los proveedores externos pueden basarse en cláusulas contractuales tipo u otros mecanismos similares para transferencias internacionales de datos.
 

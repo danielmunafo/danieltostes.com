@@ -33,12 +33,48 @@ describe("computeHardGateAssessment", () => {
     expect(assessment.rulesFired).toContain("no_hard_gate_miss");
   });
 
+  it("ignores non-language practical constraints as hard gates", () => {
+    const assessment = computeHardGateAssessment([
+      row({
+        requirement: "EU work authorization",
+        category: "work_authorization",
+      }),
+      row({
+        requirement: "CET timezone overlap",
+        category: "timezone",
+      }),
+      row({
+        requirement: "Full-time employee only",
+        category: "employment_type",
+      }),
+    ]);
+    expect(assessment.maxTechnicalFit).toBe(10);
+    expect(assessment.missingHardGateCount).toBe(0);
+    expect(assessment.allowedRecommendations).toContain("strong_pursue");
+    expect(assessment.allowedRecommendations).toContain("pursue");
+    expect(assessment.rulesFired).toContain("no_hard_gate_miss");
+  });
+
   it("caps at 6 for one role-defining hard gate missing", () => {
     const assessment = computeHardGateAssessment([
       row({
         requirement: "Legacy PHP Symfony band",
         category: "specialist_domain",
         evidenceLevel: "adjacent",
+      }),
+    ]);
+    expect(assessment.maxTechnicalFit).toBe(6);
+    expect(assessment.rulesFired).toContain(
+      "one_role_defining_hard_gate_cap_6"
+    );
+    expect(assessment.blockedRecommendations).toEqual(["strong_pursue"]);
+  });
+
+  it("caps at 6 for one mandatory spoken-language gate", () => {
+    const assessment = computeHardGateAssessment([
+      row({
+        requirement: "German fluency",
+        category: "spoken_language",
       }),
     ]);
     expect(assessment.maxTechnicalFit).toBe(6);

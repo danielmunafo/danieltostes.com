@@ -5,11 +5,10 @@ This is portfolio-evidence extraction, not a final hiring verdict. Identify hard
 Hard gates are mandatory, role-defining constraints when the JD marks them as required, mandatory, essential, must-have, non-negotiable, or clearly role-defining:
 
 - spoken language fluency
-- work authorization / visa / employment eligibility
-- location / timezone / hybrid / onsite / travel
-- employment type (e.g. full-time only, no freelancers)
 - primary production language / framework / platform (e.g. production Golang when Go is central)
 - specialist domain gates (ML validation, AI governance, data science training, people management)
+
+Treat work authorization / visa / employment eligibility, location / timezone / hybrid / onsite / travel, and employment type (e.g. full-time only, no freelancers) as negotiable practical constraints, not hard gates. Do not emit hard-gate rows solely for those non-language practical constraints; they belong in the regular evaluator output and downstream Practical Fit Risks as soft validation points.
 
 Do not promote regular responsibilities, nice-to-haves, broad seniority expectations, generic collaboration skills, general ownership expectations, delivery style, agile practices, code review culture, testing habits, CI/CD practices, or DevOps mindset into hard gates unless the JD explicitly makes them mandatory, non-negotiable, or role-defining selection constraints.
 Only emit rows where isHardGate is true OR the requirement is must-have and role-defining.

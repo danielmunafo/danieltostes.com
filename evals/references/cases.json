@@ -1,114 +1,148 @@
 {
-  "description": "Reference quality eval cases. For each case, either check the references output from a complete pipeline run, or inject a fixture pitch text and assert the resulting references markdown. Tests claim citation accuracy, below-threshold caveats, gap surfacing, and legacy chunk exclusion.",
+  "description": "Deterministic reference helper fixtures for Vitest. These cases use synthetic chunks and embeddings; they do not call OpenAI or require a generated corpus snapshot.",
   "reference_match_threshold": 0.4,
   "cases": [
     {
       "test_id": "REF-01",
       "category": "references",
-      "claim": "Daniel designed event-driven workflows using Kafka and Avro at Itaú.",
-      "fixture_pitch": "fixtures/pitch-output/REF-01-kafka-pitch.md",
-      "expected_outcome": "Matched chunk is from the Distributed Systems section. Cosine similarity >= 0.60. Support level = strong. No below-threshold caveat shown.",
-      "evaluation_criteria": "Matched chunk text contains 'Kafka' and 'Itaú'. Score >= 0.60. referenceSupportLevelKey(score) == 'strong'. No threshold caveat line in rendered markdown.",
+      "claim": "Daniel designed event-driven workflows using Kafka and Avro at Itau.",
       "severity_if_failed": "MEDIUM",
-      "expected_chunk_text_contains": ["Kafka", "Itaú"],
-      "min_similarity": 0.6,
-      "expected_support_level": "strong",
-      "should_appear_in_gaps": false,
-      "expect_below_threshold_caveat": false
-    },
-    {
-      "test_id": "REF-02",
-      "category": "references",
-      "claim": "Daniel built a RAG pipeline with staged LLM evaluation and post-stream reference grounding.",
-      "fixture_pitch": "fixtures/pitch-output/REF-02-rag-pitch.md",
-      "expected_outcome": "Matched chunk is from the AI-Native Engineering section. Similarity >= 0.55. Support level = strong or moderate.",
-      "evaluation_criteria": "Chunk text includes 'RAG', 'staged', or 'cosine retrieval'. Score >= 0.55. Support level not 'weak' or 'unsupported'.",
-      "severity_if_failed": "HIGH",
-      "expected_chunk_text_contains_any": ["RAG", "staged", "cosine retrieval"],
-      "min_similarity": 0.55,
-      "expected_support_level_any": ["strong", "moderate"],
-      "should_appear_in_gaps": false,
-      "expect_below_threshold_caveat": false
+      "queryEmbedding": [1, 0, 0],
+      "chunks": [
+        {
+          "id": "en-section-professional-context-item-1-s0-p0",
+          "text": "Distributed systems work at Itau used Kafka, Avro, schema evolution, and event-driven workflows.",
+          "embedding": [1, 0, 0],
+          "metadata": {
+            "locale": "en",
+            "sectionId": "professionalContext",
+            "scrollTargetId": "section-professional-context-item-1",
+            "title": "Distributed Systems",
+            "category": "distributed-systems"
+          }
+        },
+        {
+          "id": "en-section-experience-item-0-s0-p0",
+          "text": "Frontend delivery and stakeholder alignment.",
+          "embedding": [0, 1, 0],
+          "metadata": {
+            "locale": "en",
+            "sectionId": "experience",
+            "scrollTargetId": "section-experience-item-0",
+            "title": "Klarna",
+            "category": "experience"
+          }
+        }
+      ],
+      "expected": {
+        "matchedChunkId": "en-section-professional-context-item-1-s0-p0",
+        "minSimilarity": 0.6,
+        "supportLevel": "strong",
+        "chunkTextContainsAll": ["Kafka", "Itau"],
+        "belowThresholdCaveat": false
+      }
     },
     {
       "test_id": "REF-03",
       "category": "references",
       "claim": "Daniel has experience with Golang microservices.",
-      "fixture_pitch": "fixtures/pitch-output/REF-03-golang-claim-pitch.md",
-      "expected_outcome": "No chunk achieves >= 0.40 similarity. Below-threshold caveat is rendered. This claim either does not survive claim extraction (preferred) or is marked unsupported.",
-      "evaluation_criteria": "If the claim survives extraction, matched chunk score must be < 0.40. matchScoreBelowThresholdSuffix line must appear in rendered reference. Support level == 'unsupported' or 'weak'.",
       "severity_if_failed": "CRITICAL",
-      "max_similarity": 0.4,
-      "expected_support_level_any": ["unsupported", "weak"],
-      "expect_below_threshold_caveat": true,
-      "preferred_outcome": "claim does not survive extraction"
-    },
-    {
-      "test_id": "REF-04",
-      "category": "references",
-      "claim": "Daniel has led engineering practices across teams, reducing onboarding time significantly.",
-      "fixture_pitch": "fixtures/pitch-output/REF-04-leadership-pitch.md",
-      "expected_outcome": "Matched chunk from Technical Leadership section, citing MercadoLivre scaffolds. Similarity >= 0.50. Support level = strong or moderate.",
-      "evaluation_criteria": "Chunk references MercadoLivre or scaffold or 'days to under an hour'. Score >= 0.50. Support == 'strong' or 'moderate'.",
-      "severity_if_failed": "MEDIUM",
-      "expected_chunk_text_contains_any": [
-        "MercadoLivre",
-        "scaffold",
-        "days to under an hour"
+      "queryEmbedding": [1, 0, 0],
+      "chunks": [
+        {
+          "id": "en-section-experience-item-2-s0-p0",
+          "text": "TypeScript and Node.js backend services with AWS Lambda and SQS.",
+          "embedding": [0, 1, 0],
+          "metadata": {
+            "locale": "en",
+            "sectionId": "experience",
+            "scrollTargetId": "section-experience-item-2",
+            "title": "Ageras",
+            "category": "experience"
+          }
+        }
       ],
-      "min_similarity": 0.5,
-      "expected_support_level_any": ["strong", "moderate"],
-      "should_appear_in_gaps": false
-    },
-    {
-      "test_id": "REF-05",
-      "category": "references",
-      "claim": "Daniel implemented SLO-driven observability with Datadog and CloudWatch.",
-      "fixture_pitch": "fixtures/pitch-output/REF-05-observability-pitch.md",
-      "expected_outcome": "Matched chunk from Observability and Reliability section. Similarity >= 0.55. Excerpt includes Datadog and CloudWatch or SLO.",
-      "evaluation_criteria": "Chunk text contains 'Datadog' and 'SLO' or 'CloudWatch'. Score >= 0.55.",
-      "severity_if_failed": "MEDIUM",
-      "expected_chunk_text_contains_all": ["Datadog"],
-      "expected_chunk_text_contains_any": ["SLO", "CloudWatch"],
-      "min_similarity": 0.55,
-      "expected_support_level_any": ["strong", "moderate"]
+      "expected": {
+        "maxSimilarity": 0.4,
+        "supportLevelAny": ["unsupported", "weak"],
+        "belowThresholdCaveat": true
+      }
     },
     {
       "test_id": "REF-06",
       "category": "references",
-      "claim": "Gap test: pitch generated for a Golang role — Golang must appear in the evidence gaps section.",
-      "fixture_pitch": "fixtures/pitch-output/REF-06-golang-gap-pitch.md",
-      "expected_outcome": "Golang or Go appears in the '## Not evidenced' section of the references output. It does not appear as a positive citation with a chunk match.",
-      "evaluation_criteria": "Rendered references markdown contains a gaps section. 'Go' or 'Golang' appears under the gaps heading. No chunk is linked to a Golang claim.",
+      "claim": "Gap test: pitch generated for a Golang role - Golang must appear in the evidence gaps section.",
       "severity_if_failed": "HIGH",
-      "should_appear_in_gaps": true,
-      "gap_terms": ["Golang", "Go"],
-      "must_not_appear_as_citation": true
+      "gaps": ["Golang", "Go"],
+      "expected": {
+        "notEvidencedSection": true,
+        "gapTerms": ["Golang", "Go"],
+        "noPositiveCitation": true
+      }
     },
     {
       "test_id": "REF-07",
       "category": "references",
       "claim": "Daniel delivered cross-platform mobile experiences with React Native.",
-      "fixture_pitch": "fixtures/pitch-output/REF-07-react-native-pitch.md",
-      "expected_outcome": "Matched chunk cites Ageras BKYC (React Native + React web + Solaris integrations). Similarity >= 0.50. Source link resolves to a valid portfolio deep-link path.",
-      "evaluation_criteria": "Chunk text references React Native and a company context (Ageras or BKYC). Score >= 0.50. Source link href matches pattern '/<locale>#<scrollTargetId>'.",
       "severity_if_failed": "LOW",
-      "expected_chunk_text_contains_all": ["React Native"],
-      "expected_chunk_text_contains_any": ["Ageras", "BKYC"],
-      "min_similarity": 0.5,
-      "expect_source_link": true
+      "queryEmbedding": [0, 1, 0],
+      "chunks": [
+        {
+          "id": "en-section-experience-item-3-s0-p0",
+          "text": "Ageras BKYC delivery included React Native, React web, and third-party Solaris integrations.",
+          "embedding": [0, 1, 0],
+          "metadata": {
+            "locale": "en",
+            "sectionId": "experience",
+            "scrollTargetId": "section-experience-item-3",
+            "title": "Ageras",
+            "category": "experience"
+          }
+        }
+      ],
+      "expected": {
+        "matchedChunkId": "en-section-experience-item-3-s0-p0",
+        "minSimilarity": 0.5,
+        "chunkTextContainsAll": ["React Native"],
+        "chunkTextContainsAny": ["Ageras", "BKYC"],
+        "sourceLinkContains": "/en#section-experience-item-3"
+      }
     },
     {
       "test_id": "REF-08",
       "category": "references",
       "claim": "Legacy chunk exclusion: no chunk with sectionId='ragEvidence' should ever be cited.",
-      "fixture_pitch": "fixtures/pitch-output/REF-08-any-pitch.md",
-      "expected_outcome": "No ReferenceItem in the output has chunk.metadata.sectionId === 'ragEvidence'. filterChunksForReferenceMatching correctly excludes these chunks.",
-      "evaluation_criteria": "Inspect all returned ReferenceItem objects. Assert no item.chunk.metadata.sectionId === 'ragEvidence'. This is a deterministic test runnable with a mock corpus containing a legacy chunk.",
       "severity_if_failed": "HIGH",
-      "forbidden_section_ids": ["ragEvidence"],
-      "is_deterministic": true,
-      "note": "Can be run with a mock corpus that includes a synthetic ragEvidence chunk with artificially high similarity."
+      "queryEmbedding": [1, 0, 0],
+      "chunks": [
+        {
+          "id": "legacy-rag-evidence",
+          "text": "Synthetic legacy chunk with perfect claim overlap.",
+          "embedding": [1, 0, 0],
+          "metadata": {
+            "locale": "en",
+            "sectionId": "ragEvidence",
+            "scrollTargetId": "section-rag-evidence-en",
+            "title": "Legacy RAG Evidence"
+          }
+        },
+        {
+          "id": "eligible-professional-context",
+          "text": "Synthetic eligible professional context chunk.",
+          "embedding": [0.95, 0.05, 0],
+          "metadata": {
+            "locale": "en",
+            "sectionId": "professionalContext",
+            "scrollTargetId": "section-professional-context-item-0",
+            "title": "Professional Context",
+            "category": "technical-leadership"
+          }
+        }
+      ],
+      "expected": {
+        "matchedChunkId": "eligible-professional-context",
+        "forbiddenSectionIds": ["ragEvidence"]
+      }
     }
   ]
 }

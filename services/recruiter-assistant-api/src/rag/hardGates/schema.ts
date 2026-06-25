@@ -107,19 +107,15 @@ export const SPECIALIST_DOMAIN_CAPS: Readonly<
   },
 };
 
+export const BACKEND_HARD_GATE_CATEGORIES: ReadonlySet<HardGateCategory> =
+  new Set(["spoken_language", "primary_stack", "specialist_domain"]);
+
 export const PRACTICAL_GATE_CATEGORIES: ReadonlySet<HardGateCategory> = new Set(
-  [
-    "spoken_language",
-    "work_authorization",
-    "location",
-    "timezone",
-    "hybrid_onsite",
-    "travel",
-    "employment_type",
-  ]
+  ["spoken_language"]
 );
 
 export const ROLE_DEFINING_CATEGORIES: ReadonlySet<HardGateCategory> = new Set([
+  "spoken_language",
   "primary_stack",
   "specialist_domain",
 ]);

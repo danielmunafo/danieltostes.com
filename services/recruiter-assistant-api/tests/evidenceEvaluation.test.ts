@@ -91,7 +91,9 @@ describe("evidence evaluation scaffolding (fixtures)", () => {
     expect(evalUser).toContain("German");
     const evalSystem = buildEvidenceEvaluatorSystemPrompt("en");
     expect(evalSystem).toContain("Two or more role-defining hard gates");
-    expect(evalSystem).toContain("Practical hard gate + another missing gate");
+    expect(evalSystem).toContain(
+      "Spoken-language hard gate + another missing gate"
+    );
     const fiskalyEval = `# Requirement Coverage
 | Requirement | Importance | Evidence Level | Notes |
 |---|---|---|---|
