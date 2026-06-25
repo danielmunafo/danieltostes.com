@@ -4,9 +4,14 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
+      - ".github/workflows/recruiter-api.yml"
       - "services/recruiter-assistant-api/**"
       - "e2e/**"
+      - "evals/**"
+      - "public/content/impact/**"
+      - "public/content/recruiter-assistant/professional-context/**"
       - "src/features/recruiter-assistant/**"
+      - "src/messages/**"
       - "playwright.config.ts"
       - "package.json"
       - "package-lock.json"
@@ -14,9 +19,14 @@ on:
     branches:
       - main
     paths:
+      - ".github/workflows/recruiter-api.yml"
       - "services/recruiter-assistant-api/**"
       - "e2e/**"
+      - "evals/**"
+      - "public/content/impact/**"
+      - "public/content/recruiter-assistant/professional-context/**"
       - "src/features/recruiter-assistant/**"
+      - "src/messages/**"
       - "playwright.config.ts"
       - "package.json"
       - "package-lock.json"
@@ -29,6 +39,10 @@ jobs:
         working-directory: services/recruiter-assistant-api
     steps:
       - uses: actions/checkout@v4
+
+      - name: Note retrieval eval skip for fork PRs
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: echo "::notice::Recruiter retrieval eval gate is skipped for fork PRs because OPENAI_API_KEY and AWS artifacts are not available to untrusted pull_request workflows."
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -120,6 +134,14 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
         run: node scripts/build-llamaindex-index.mjs
+
+      - name: Snapshot retrieval eval corpus
+        run: npm run eval:snapshot
+
+      - name: Retrieval eval gate
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || vars.OPENAI_API_KEY }}
+        run: npm run eval:retrieval
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
