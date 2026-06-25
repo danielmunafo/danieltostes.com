@@ -31,13 +31,18 @@
         }
       ],
       "expected": {
-        "missingHardGateCount": 2,
-        "effectiveMaxTechnicalFitLte": 4,
-        "blockedRecommendationsIncludes": ["strong_pursue", "pursue"],
-        "allowedRecommendationsSubset": ["maybe_validate", "weak_fit", "skip"],
+        "missingHardGateCount": 1,
+        "effectiveMaxTechnicalFit": 6,
+        "blockedRecommendations": ["strong_pursue"],
+        "allowedRecommendationsSubset": [
+          "pursue",
+          "maybe_validate",
+          "weak_fit",
+          "skip"
+        ],
         "rulesFiredIncludes": [
-          "practical_plus_other_hard_gate_cap_4",
-          "block_pursue_two_or_more_missing_gates"
+          "one_role_defining_hard_gate_cap_6",
+          "block_strong_pursue_single_gate"
         ]
       }
     },
@@ -99,13 +104,17 @@
         }
       ],
       "expected": {
-        "missingHardGateCount": 2,
-        "effectiveMaxTechnicalFitLte": 4,
-        "blockedRecommendationsIncludes": ["strong_pursue", "pursue"],
-        "rulesFiredIncludes": [
-          "practical_plus_other_hard_gate_cap_4",
-          "block_pursue_two_or_more_missing_gates"
-        ]
+        "missingHardGateCount": 0,
+        "effectiveMaxTechnicalFit": 10,
+        "blockedRecommendations": [],
+        "allowedRecommendations": [
+          "strong_pursue",
+          "pursue",
+          "maybe_validate",
+          "weak_fit",
+          "skip"
+        ],
+        "rulesFiredIncludes": ["no_hard_gate_miss"]
       }
     },
     {

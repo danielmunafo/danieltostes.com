@@ -12,10 +12,12 @@ export async function embedRetrievalQueries(
     "retrieval_embed",
     EMBEDDING_MODEL,
     "embedding",
-    () =>
+    (abortSignal) =>
       embedMany({
         model: openai.embedding(EMBEDDING_MODEL),
         values: [...queries],
+        abortSignal,
+        maxRetries: 0,
       })
   );
   return embeddings;

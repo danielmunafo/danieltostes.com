@@ -65,13 +65,15 @@ export async function projectChart(params: {
         "chart",
         CHAT_MODEL,
         "chat",
-        () =>
+        (abortSignal) =>
           generateObject({
             model: params.openai(CHAT_MODEL),
             schema: chartDataSchemaForModelOutput,
             maxTokens: attempt.maxTokens,
             system: buildChartProjectionSystemPrompt(attempt.compact),
             prompt,
+            abortSignal,
+            maxRetries: 0,
           })
       );
       const { chart: chartForValidation, adjustments } =
