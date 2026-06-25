@@ -26,7 +26,7 @@ import {
 type FeedbackPhase = "idle" | "negative-expand" | "done";
 
 export type AssistantFeedbackProps = {
-  requestId: string;
+  requestId: string | null;
   messageId: string;
   questionText: string;
   responseText: string;
@@ -78,6 +78,7 @@ export function AssistantFeedback({
   const isDisabled = phase !== "idle";
   const isExpanding = phase === "negative-expand";
   const isDone = phase === "done";
+  const canSubmitFeedback = requestId !== null;
 
   const expandPanelRef = useRef<HTMLDivElement>(null);
   const scrollExpandIntoView = useCallback(() => {
@@ -89,6 +90,7 @@ export function AssistantFeedback({
 
   const doSubmit = useCallback(
     (r: "positive" | "negative", reason?: FeedbackReason, c?: string) => {
+      if (requestId === null) return;
       setPhase("done");
       submitFeedback({
         requestId,
@@ -110,20 +112,20 @@ export function AssistantFeedback({
   );
 
   const handleThumbUp = useCallback(() => {
-    if (isDisabled || submitting) return;
+    if (!canSubmitFeedback || isDisabled || submitting) return;
     setSubmitting("positive");
     setTimeout(() => {
       setSubmitting(null);
       setRating("positive");
       doSubmit("positive");
     }, 200);
-  }, [isDisabled, submitting, doSubmit]);
+  }, [canSubmitFeedback, isDisabled, submitting, doSubmit]);
 
   const handleThumbDown = useCallback(() => {
-    if (isDisabled || submitting) return;
+    if (!canSubmitFeedback || isDisabled || submitting) return;
     setRating("negative");
     setPhase("negative-expand");
-  }, [isDisabled, submitting]);
+  }, [canSubmitFeedback, isDisabled, submitting]);
 
   const handleSubmitNegative = useCallback(() => {
     if (submittingNegative) return;
@@ -172,6 +174,15 @@ export function AssistantFeedback({
       </span>
     </Tooltip>
   );
+
+  if (!canSubmitFeedback) {
+    return (
+      <Box sx={{ ...ROW_SX, mt: 2 }}>
+        {copyButton}
+        {cleanButton}
+      </Box>
+    );
+  }
 
   if (isDone) {
     return (

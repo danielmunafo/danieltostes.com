@@ -1094,7 +1094,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                       </Box>
                       {hasBriefingToCopy ? (
                         <AssistantFeedback
-                          requestId={feedbackRequestId ?? m.id}
+                          requestId={feedbackRequestId}
                           messageId={m.id}
                           questionText={questionText}
                           responseText={mainBody}

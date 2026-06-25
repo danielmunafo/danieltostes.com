@@ -8,8 +8,6 @@ const valid = {
   timestamp: "2026-06-18T10:00:00.000Z",
   questionHash: "abcdef01234567ab",
   responseHash: "0123456789abcdef",
-  questionText: "We are looking for a senior TypeScript engineer.",
-  responseText: "Daniel is a strong fit based on his work at ...",
   rating: "positive" as const,
   locale: "en",
   schemaVersion: "2" as const,
@@ -90,6 +88,15 @@ describe("feedbackBodySchema", () => {
     ).toBe(false);
   });
 
+  it("rejects non-hex hashes", () => {
+    expect(
+      feedbackBodySchema.safeParse({
+        ...valid,
+        responseHash: "not-hex-hash123",
+      }).success
+    ).toBe(false);
+  });
+
   it("rejects wrong schemaVersion", () => {
     expect(
       feedbackBodySchema.safeParse({ ...valid, schemaVersion: "1" }).success
@@ -104,20 +111,21 @@ describe("feedbackBodySchema", () => {
     );
   });
 
-  it("rejects missing questionText", () => {
-    const recordWithoutQuestionText: Record<string, unknown> = { ...valid };
-    delete recordWithoutQuestionText.questionText;
-    expect(
-      feedbackBodySchema.safeParse(recordWithoutQuestionText).success
-    ).toBe(false);
-  });
-
-  it("rejects questionText over 12000 chars", () => {
+  it("rejects raw question or response text fields", () => {
     expect(
       feedbackBodySchema.safeParse({
         ...valid,
-        questionText: "a".repeat(12001),
+        questionText: "We are looking for a senior TypeScript engineer.",
+        responseText: "Daniel is a strong fit based on his work at ...",
       }).success
+    ).toBe(false);
+  });
+
+  it("rejects missing questionHash", () => {
+    const recordWithoutQuestionHash: Record<string, unknown> = { ...valid };
+    delete recordWithoutQuestionHash.questionHash;
+    expect(
+      feedbackBodySchema.safeParse(recordWithoutQuestionHash).success
     ).toBe(false);
   });
 });

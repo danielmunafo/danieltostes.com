@@ -40,6 +40,6 @@ export function getRequestTraceIdFromAnnotations(
 
 export function getFeedbackRequestIdForMessage(
   message: AnnotatedMessage
-): string {
-  return getRequestTraceIdFromAnnotations(message.annotations) ?? message.id;
+): string | null {
+  return getRequestTraceIdFromAnnotations(message.annotations);
 }

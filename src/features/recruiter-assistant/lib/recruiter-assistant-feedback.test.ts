@@ -48,13 +48,13 @@ describe("submitFeedback", () => {
       requestId: "trace-123",
       messageId: "message-456",
       sessionId: "session-123",
-      questionText: "Senior TypeScript role",
-      responseText: "Briefing body",
+      questionHash: "ff9180052432cc68",
+      responseHash: "e8f07038cbee9d5e",
       rating: "positive",
       locale: "en",
       schemaVersion: "2",
     });
-    expect(body.questionHash).toHaveLength(16);
-    expect(body.responseHash).toHaveLength(16);
+    expect(body).not.toHaveProperty("questionText");
+    expect(body).not.toHaveProperty("responseText");
   });
 });

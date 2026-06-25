@@ -15,12 +15,12 @@ describe("recruiter assistant trace annotations", () => {
     ).toBe("trace-123");
   });
 
-  it("falls back to the UI message id when a trace annotation is absent", () => {
+  it("does not substitute the UI message id when a trace annotation is absent", () => {
     expect(
       getFeedbackRequestIdForMessage({
         id: "message-123",
         annotations: [{ type: "other", requestId: "ignored" }],
       })
-    ).toBe("message-123");
+    ).toBeNull();
   });
 });

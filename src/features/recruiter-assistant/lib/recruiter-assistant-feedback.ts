@@ -66,8 +66,6 @@ export async function submitFeedback(
     timestamp: new Date().toISOString(),
     questionHash,
     responseHash,
-    questionText,
-    responseText,
     rating,
     locale,
     schemaVersion: "2",
