@@ -5,6 +5,7 @@ import {
   RequestTrace,
   getActiveTrace,
   logRequestTrace,
+  makeStreamTraceOnFinish,
   runWithTrace,
   traceGenerate,
 } from "../src/tracing/requestTrace.js";
@@ -106,8 +107,14 @@ describe("RequestTrace.recordStage", () => {
       latencyMs: 20,
       usage: { tokens: 500_000 },
     });
-    const totals = trace.toLog().totals as Record<string, number>;
+    const totals = trace.toLog().totals as Record<string, unknown>;
     expect(totals.llmCalls).toBe(2);
+    expect(totals.usageKnownCalls).toBe(2);
+    expect(totals.usageMissingCalls).toBe(0);
+    expect(totals.costKnownCalls).toBe(2);
+    expect(totals.costMissingCalls).toBe(0);
+    expect(totals.tokenUsageComplete).toBe(true);
+    expect(totals.costEstimateComplete).toBe(true);
     expect(totals.promptTokens).toBe(1_000_000);
     expect(totals.completionTokens).toBe(1_000_000);
     expect(totals.embeddingTokens).toBe(500_000);
@@ -131,6 +138,66 @@ describe("RequestTrace.recordStage", () => {
     expect(stages[0].costUSD).toBeUndefined();
     const totals = trace.toLog().totals as Record<string, unknown>;
     expect(totals.estimatedCostUSD).toBeNull();
+    expect(totals.usageKnownCalls).toBe(1);
+    expect(totals.usageMissingCalls).toBe(0);
+    expect(totals.costKnownCalls).toBe(0);
+    expect(totals.costMissingCalls).toBe(1);
+    expect(totals.tokenUsageComplete).toBe(true);
+    expect(totals.costEstimateComplete).toBe(false);
+  });
+
+  it("does not record misleading zero cost when chat usage is invalid", () => {
+    const trace = newTrace();
+    trace.recordStage({
+      stage: "pitch",
+      model: "gpt-4.1-nano",
+      kind: "chat",
+      status: "success",
+      latencyMs: 100,
+      usage: { promptTokens: Number.NaN, completionTokens: Number.NaN },
+    });
+
+    const log = trace.toLog();
+    const stages = log.stages as Array<Record<string, unknown>>;
+    expect(stages[0]).toMatchObject({
+      stage: "pitch",
+      status: "success",
+      latencyMs: 100,
+    });
+    expect(stages[0].promptTokens).toBeUndefined();
+    expect(stages[0].completionTokens).toBeUndefined();
+    expect(stages[0].costUSD).toBeUndefined();
+    expect(log.totals).toMatchObject({
+      usageKnownCalls: 0,
+      usageMissingCalls: 1,
+      costKnownCalls: 0,
+      costMissingCalls: 1,
+      tokenUsageComplete: false,
+      costEstimateComplete: false,
+      estimatedCostUSD: null,
+    });
+  });
+
+  it("omits token and cost fields from stream finish events with unavailable usage", async () => {
+    const trace = newTrace();
+    await runWithTrace(trace, async () => {
+      const onFinish = makeStreamTraceOnFinish("pitch", "gpt-4.1-nano", 1000);
+      onFinish({
+        usage: { promptTokens: Number.NaN, completionTokens: Number.NaN },
+      });
+    });
+
+    const log = trace.toLog();
+    const stages = log.stages as Array<Record<string, unknown>>;
+    expect(stages[0]).toMatchObject({
+      stage: "pitch",
+      status: "success",
+    });
+    expect(stages[0].promptTokens).toBeUndefined();
+    expect(stages[0].completionTokens).toBeUndefined();
+    expect(stages[0].costUSD).toBeUndefined();
+    expect(log.totals.usageMissingCalls).toBe(1);
+    expect(log.totals.costMissingCalls).toBe(1);
   });
 
   it("captures error status and error name", () => {
@@ -197,16 +264,28 @@ describe("RequestTrace metadata", () => {
 });
 
 describe("logRequestTrace", () => {
-  it("emits exactly one recruiter.trace log line", () => {
+  it("emits exactly one recruiter.trace log line plus request metrics", () => {
     const spy = vi.spyOn(loggerModule, "logInfo").mockImplementation(() => {});
-    const trace = newTrace();
-    trace.finish(1500);
-    logRequestTrace(trace);
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy.mock.calls[0]?.[0]).toBe("recruiter.trace");
-    expect(spy.mock.calls[0]?.[1]).toBe("request trace");
-    expect(spy.mock.calls[0]?.[2]).toMatchObject({ requestId: "req-1" });
-    spy.mockRestore();
+    try {
+      const trace = newTrace();
+      trace.finish(1500);
+      logRequestTrace(trace);
+
+      const traceCalls = spy.mock.calls.filter(
+        (call) => call[0] === "recruiter.trace"
+      );
+      const metricCalls = spy.mock.calls.filter(
+        (call) => call[0] === "recruiter.metrics"
+      );
+
+      expect(traceCalls).toHaveLength(1);
+      expect(traceCalls[0]?.[1]).toBe("request trace");
+      expect(traceCalls[0]?.[2]).toMatchObject({ requestId: "req-1" });
+      expect(metricCalls).toHaveLength(1);
+      expect(metricCalls[0]?.[1]).toBe("request trace metrics");
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
 
@@ -263,41 +342,55 @@ describe("traceGenerate + AsyncLocalStorage", () => {
 describe("trace wiring through createDataStreamResponse", () => {
   it("propagates ALS into execute and emits one trace when the stream is consumed", async () => {
     const spy = vi.spyOn(loggerModule, "logInfo").mockImplementation(() => {});
-    const trace = newTrace();
+    try {
+      const trace = newTrace();
 
-    // Mirrors createRecruiterAssistantStreamResponse: ALS is established inside
-    // `execute`, a deep call records via getActiveTrace(), and the single trace
-    // log is emitted in `finally` once the stream completes.
-    const response = createDataStreamResponse({
-      execute: async (dataStream) => {
-        try {
-          await runWithTrace(trace, async () => {
-            await traceGenerate("pitch", "gpt-4.1-nano", "chat", async () => ({
-              text: "ok",
-              usage: { promptTokens: 50, completionTokens: 10 },
-            }));
-            dataStream.write(formatDataStreamPart("text", "hi"));
-          });
-          trace.setOutcome("success");
-        } finally {
-          trace.finish();
-          logRequestTrace(trace);
-        }
-      },
-    });
+      // Mirrors createRecruiterAssistantStreamResponse: ALS is established inside
+      // `execute`, a deep call records via getActiveTrace(), and the single trace
+      // log is emitted in `finally` once the stream completes.
+      const response = createDataStreamResponse({
+        execute: async (dataStream) => {
+          try {
+            await runWithTrace(trace, async () => {
+              await traceGenerate(
+                "pitch",
+                "gpt-4.1-nano",
+                "chat",
+                async () => ({
+                  text: "ok",
+                  usage: { promptTokens: 50, completionTokens: 10 },
+                })
+              );
+              dataStream.write(formatDataStreamPart("text", "hi"));
+            });
+            trace.setOutcome("success");
+          } finally {
+            trace.finish();
+            logRequestTrace(trace);
+          }
+        },
+      });
 
-    await response.text();
+      await response.text();
 
-    const traceCalls = spy.mock.calls.filter((c) => c[0] === "recruiter.trace");
-    expect(traceCalls).toHaveLength(1);
-    const payload = traceCalls[0]?.[2] as {
-      outcome: string;
-      stages: unknown[];
-      totals: { estimatedCostUSD: number | null };
-    };
-    expect(payload.outcome).toBe("success");
-    expect(payload.stages).toHaveLength(1);
-    expect(payload.totals.estimatedCostUSD).toBeGreaterThan(0);
-    spy.mockRestore();
+      const traceCalls = spy.mock.calls.filter(
+        (call) => call[0] === "recruiter.trace"
+      );
+      const metricCalls = spy.mock.calls.filter(
+        (call) => call[0] === "recruiter.metrics"
+      );
+      expect(traceCalls).toHaveLength(1);
+      expect(metricCalls).toHaveLength(2);
+      const payload = traceCalls[0]?.[2] as {
+        outcome: string;
+        stages: unknown[];
+        totals: { estimatedCostUSD: number | null };
+      };
+      expect(payload.outcome).toBe("success");
+      expect(payload.stages).toHaveLength(1);
+      expect(payload.totals.estimatedCostUSD).toBeGreaterThan(0);
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
