@@ -6,6 +6,7 @@ import {
   estimateEmbeddingCostUSD,
   type AnyTokenUsage,
 } from "./costEstimator.js";
+import { emitRequestTraceMetrics } from "./requestTraceMetrics.js";
 
 export type StageStatus = "success" | "error";
 export type ModelCallKind = "chat" | "embedding";
@@ -43,6 +44,26 @@ export type RecordStageInput = {
   latencyMs: number;
   usage?: AnyTokenUsage;
   errorName?: string;
+};
+
+export type RequestTraceTotals = {
+  llmCalls: number;
+  promptTokens: number;
+  completionTokens: number;
+  embeddingTokens: number;
+  totalTokens: number;
+  estimatedCostUSD: number | null;
+};
+
+export type RequestTraceLogEnvelope = {
+  requestId: string;
+  navLocale: string;
+  outcome: RequestOutcome;
+  errorName?: string;
+  totalLatencyMs: number;
+  retrieval: RetrievalStats | null;
+  stages: StageRecord[];
+  totals: RequestTraceTotals;
 };
 
 function errorNameOf(err: unknown): string {
@@ -129,7 +150,7 @@ export class RequestTrace {
   }
 
   /** Serializable envelope for the single end-of-request log line. */
-  toLog(): Record<string, unknown> {
+  toLog(): RequestTraceLogEnvelope {
     let promptTokens = 0;
     let completionTokens = 0;
     let embeddingTokens = 0;
@@ -191,7 +212,9 @@ export function getActiveTrace(): RequestTrace | undefined {
 
 /** Emits the single structured trace log for a completed request. */
 export function logRequestTrace(trace: RequestTrace): void {
-  logInfo("recruiter.trace", "request trace", trace.toLog());
+  const traceLog = trace.toLog();
+  logInfo("recruiter.trace", "request trace", traceLog);
+  emitRequestTraceMetrics(traceLog);
 }
 
 // --- Call-site recorders (no-op when no active trace) -----------------------
