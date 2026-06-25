@@ -121,7 +121,7 @@ flowchart LR
 - **Scope:** system instructions restrict answers to the supplied portfolio context; refuse unrelated requests (enforced in prompts + intent gate + off-topic handling in references builder).
 - **CORS:** Comma-separated **`ALLOWED_ORIGIN`** in Lambda env (handler enforces `403 forbidden_origin`). **Function URL CORS** must list the same origins (handler does not emit `Access-Control-*` on Lambda — response streaming). Local `npm run dev` uses handler CORS. When unset/empty on Lambda, all cross-origin calls are denied — **do not** rely on permissive dev behavior in prod.
 - **Secrets:** OpenAI key in AWS Secrets Manager in production; Lambda execution role reads `OPENAI_SECRET_ARN`.
-- **Feedback endpoint (`POST /feedback`):** same origin check, rate limit, and CORS as the chat path. Zod-validated body; no raw question/response text stored — only SHA-256 hex (first 16 chars) of each. Records are append-only; Lambda role has `s3:PutObject` on the feedback bucket only (no `GetObject`, no delete). If `FEEDBACK_S3_BUCKET` is unset the endpoint is a silent no-op.
+- **Feedback endpoint (`POST /feedback`):** same origin check, rate limit, and CORS as the chat path. Zod-validated body; stores rating, optional reason/comment, session/message/request identifiers, SHA-256 hex hashes, and the submitted question/assistant response text so negative feedback remains manually reviewable. Records are append-only; Lambda role has `s3:PutObject` on the feedback bucket only (no `GetObject`, no delete). If `FEEDBACK_S3_BUCKET` is unset the endpoint is a silent no-op. Public terms disclose this reviewable feedback storage.
 
 ---
 
