@@ -50,7 +50,7 @@ describe("RequestTrace.recordStage", () => {
     expect(stages[0]).toMatchObject({
       stage: "pitch",
       promptId: "pitch",
-      promptVersion: "1.0.0",
+      promptVersion: "1.0.1",
     });
   });
 

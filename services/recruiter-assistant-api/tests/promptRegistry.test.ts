@@ -50,7 +50,7 @@ describe("promptRegistry lookup", () => {
   it("finds a registered prompt by stage without throwing", () => {
     const pitch = findPromptByStage("pitch");
     expect(pitch?.promptId).toBe("pitch");
-    expect(pitch?.version).toBe("1.0.0");
+    expect(pitch?.version).toBe("1.0.1");
   });
 
   it("returns undefined for unregistered technical stages", () => {

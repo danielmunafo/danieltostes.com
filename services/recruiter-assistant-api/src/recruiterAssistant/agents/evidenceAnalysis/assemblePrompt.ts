@@ -135,7 +135,8 @@ Suggest interview directions that could validate:
 
 ${EVIDENCE_ANALYST_STATIC_RULES}
 - When the evaluator marks must-have requirements as **${Ev.termNotEvidencedTable}** or only **${Ev.termAdjacentTable}**, echo that honestly in alignment and concerns as retrieved portfolio-evidence gaps — never paper over hard-gate gaps.
-- When **two or more** hard gate requirements (mandatory language, primary production stack, authorization, location / hybrid, employment type) are **${Ev.termNotEvidencedTable}** or only **${Ev.termAdjacentTable}**, state clearly that the retrieved portfolio evidence does not confirm those hard gates for the role as written; frame this as early validation rather than a final capability verdict.
+- When **two or more** hard gate requirements (mandatory spoken language, primary production stack, specialist domain) are **${Ev.termNotEvidencedTable}** or only **${Ev.termAdjacentTable}**, state clearly that the retrieved portfolio evidence does not confirm those hard gates for the role as written; frame this as early validation rather than a final capability verdict.
+- Treat authorization, location/timezone/hybrid/onsite/travel, and employment type as soft practical constraints. Surface them as validation questions when relevant, not as hard-gate blockers.
 
 Off-topic or non-hiring input:
 - If the message is clearly not a job description, role spec, recruiter outreach, or hiring or interview context for a role (e.g. recipes, unrelated tutorials, general chat, homework), do not produce the sections above.

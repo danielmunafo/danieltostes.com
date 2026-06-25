@@ -1,4 +1,5 @@
 import {
+  BACKEND_HARD_GATE_CATEGORIES,
   isEvidenceMissing,
   PRACTICAL_GATE_CATEGORIES,
   ROLE_DEFINING_CATEGORIES,
@@ -14,6 +15,7 @@ function missingMustHaveHardGates(
   return rows.filter(
     (row) =>
       row.isHardGate &&
+      BACKEND_HARD_GATE_CATEGORIES.has(row.category) &&
       row.requirementImportance === "must_have" &&
       isEvidenceMissing(row.evidenceLevel)
   );

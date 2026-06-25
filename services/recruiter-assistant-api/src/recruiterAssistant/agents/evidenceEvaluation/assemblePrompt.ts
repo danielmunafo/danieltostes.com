@@ -106,7 +106,8 @@ Requirement table (GitHub-flavored markdown — strict):
 - Do **not** break a row across lines (no unescaped newlines inside a row). Keep requirement text concise so each row stays one line.
 - Split **distinct** requirements into separate rows when they could have different evidence levels (e.g. "distributed systems design" and "Golang ownership" must not share a row if one is Direct and the other is Not evidenced). Only merge bullets that are truly identical in scope **and** would receive the same evidence level.
 - When the JD states **numeric tenure thresholds** (e.g. 15+ years hands-on, N+ years in a language), use **separate rows** from language/framework rows so evidence levels can differ.
-- When the JD marks **spoken language**, **work authorization**, **location/timezone/hybrid/onsite/travel**, **employment type**, or a **primary production stack** as mandatory, each must be its **own row** (do not merge with unrelated technical bullets).
+- When the JD marks **spoken language** or a **primary production stack** as mandatory, each must be its **own row** (do not merge with unrelated technical bullets).
+- When the JD states **work authorization**, **location/timezone/hybrid/onsite/travel**, or **employment type**, keep each as its **own practical-constraint row** when relevant, but treat these non-language constraints as soft validation points rather than hard gates.
 - If too many rows risk overflowing, trim the **Notes** text rather than merging rows with different evidence levels.
 - The separator row must remain exactly \`|---|---|---|---|\` (four columns).`;
 }
