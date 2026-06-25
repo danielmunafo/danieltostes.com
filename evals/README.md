@@ -22,9 +22,9 @@ Unit evals tell you _where_ a failure occurred. E2E evals tell you _whether_ the
 evals/
   retrieval/        # R-xx: cosine recall against labeled queries
   grounding/        # G-xx: per-stage LLM output stays within evidence
-  hard-gates/       # HG-xx: gate extraction + deterministic clamp rules
+  hard-gates/       # HG-xx: deterministic clamp/recommendation rule fixtures
   recommendation/   # REC-xx: final recommendation consistent with evidence
-  references/       # REF-xx: citations support claims; gaps are surfaced
+  references/       # REF-xx: deterministic reference helper fixtures
   e2e/              # E2E-xx: full JD → complete pipeline output
 ```
 
@@ -85,7 +85,20 @@ Requires `OPENAI_API_KEY` to embed the queries. Everything else is pure math aga
 
 The gate hard-fails same-repository PRs and `main` pushes before uploading a new index to S3. Fork PRs skip the gate with a GitHub Actions notice because `OPENAI_API_KEY` and AWS artifacts are intentionally unavailable to untrusted `pull_request` workflows. Full E2E LLM evals are not part of this CI gate.
 
-### Step 3 — E2E evals (full pipeline)
+### Step 3 — Deterministic fixture tests (Vitest)
+
+```bash
+npm test -- --run tests/evalFixtures.test.ts
+```
+
+`tests/evalFixtures.test.ts` loads committed JSON fixtures and runs them through normal Vitest assertions:
+
+- `evals/hard-gates/cases.json` contains explicit `HardGateRequirementRow` fixtures for deterministic clamp/recommendation rules.
+- `evals/references/cases.json` contains synthetic reference chunks and embeddings for deterministic citation, gap, support-level, source-link, and legacy-chunk exclusion checks.
+
+These cases do not call OpenAI, do not run the live hard-gate extractor, and do not depend on a generated corpus snapshot. LLM stage behavior and full-pipeline quality remain covered by E2E evals or future managed eval tooling, not by ad hoc script runners.
+
+### Step 4 — E2E evals (full pipeline)
 
 ```bash
 # Terminal 1: start the dev server in E2E mode (skips reCAPTCHA)
@@ -101,12 +114,14 @@ The e2e runner checks deterministic assertions (recommendation label, technical 
 
 ### When to run each layer
 
-| When                                   | Run                                                  |
-| -------------------------------------- | ---------------------------------------------------- |
-| Every commit                           | `eval:retrieval` (no LLM cost, fast)                 |
-| Before any prompt change ships         | `eval:retrieval` + `eval:e2e` on the priority-12 set |
-| Before a release                       | Full `eval:e2e` suite                                |
-| After corpus/portfolio content changes | `eval:snapshot` then `eval:retrieval`                |
+| When                                        | Run                                                  |
+| ------------------------------------------- | ---------------------------------------------------- |
+| Every commit                                | `eval:retrieval` (no LLM cost, fast)                 |
+| Before hard-gate rule changes               | `npm test -- --run tests/evalFixtures.test.ts`       |
+| Before reference rendering/matching changes | `npm test -- --run tests/evalFixtures.test.ts`       |
+| Before any prompt change ships              | `eval:retrieval` + `eval:e2e` on the priority-12 set |
+| Before a release                            | Full `eval:e2e` suite                                |
+| After corpus/portfolio content changes      | `eval:snapshot` then `eval:retrieval`                |
 
 ---
 
@@ -123,7 +138,7 @@ Plus for E2E: `E2E-02`, `E2E-03`, `E2E-04`.
 | Metric                                           | Acceptable      | Degraded    |
 | ------------------------------------------------ | --------------- | ----------- |
 | Retrieval recall@30 for labeled queries          | ≥ 90%           | < 80%       |
-| Hard-gate extraction accuracy                    | ≥ 95%           | < 90%       |
+| Deterministic hard-gate fixture assertions       | 100%            | any failure |
 | Grounding (claims with chunk support ≥ 0.4)      | ≥ 80% of claims | < 70%       |
 | Recommendation consistency with evidence         | ≥ 90%           | < 85%       |
 | Reference support ≥ moderate for top 3 citations | ≥ 85%           | < 75%       |

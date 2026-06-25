@@ -1,210 +1,302 @@
 {
-  "description": "Hard-gate eval cases. For each case, feed the JD fragment to the LLM extractor (generateObject) and assert that the extracted rows feed correctly into computeHardGateAssessment, producing the expected cap, blocked recommendations, and clamp result.",
+  "description": "Deterministic hard-gate rule fixtures for Vitest. These cases do not run LLM extraction; each row is an explicit HardGateRequirementRow passed to computeHardGateAssessment.",
   "cases": [
     {
       "test_id": "HG-01",
       "category": "hard-gates",
       "query": "JD: Must be fluent in German. Role is based in Berlin and conducted entirely in German.",
-      "fixture_jd": "fixtures/jd-fragments/HG-01-german-berlin.txt",
-      "expected_outcome": "spoken_language gate fires with not_evidenced + must_have. effectiveMaxTechnicalFit <= 6. strong_pursue blocked.",
-      "evaluation_criteria": "Row with category='spoken_language', evidenceLevel='not_evidenced', requirementImportance='must_have', isHardGate=true. Cap <= 6. blockedRecommendations includes 'strong_pursue'.",
       "severity_if_failed": "CRITICAL",
-      "expected_gate_rows": [
+      "rows": [
         {
+          "requirement": "German fluency",
           "category": "spoken_language",
           "evidenceLevel": "not_evidenced",
           "requirementImportance": "must_have",
-          "isHardGate": true
+          "isHardGate": true,
+          "severity": "major",
+          "jdSuggestsFlexibility": false,
+          "rationale": "The JD requires fluent German and the portfolio evidence does not show it.",
+          "sourceRequirementText": "Must be fluent in German."
+        },
+        {
+          "requirement": "Berlin location",
+          "category": "location",
+          "evidenceLevel": "not_evidenced",
+          "requirementImportance": "must_have",
+          "isHardGate": true,
+          "severity": "moderate",
+          "jdSuggestsFlexibility": false,
+          "rationale": "The JD is based in Berlin and the portfolio evidence does not confirm Berlin presence.",
+          "sourceRequirementText": "Role is based in Berlin."
         }
       ],
-      "expected_max_technical_fit_lte": 6,
-      "blocked_recommendations": ["strong_pursue"],
-      "expected_rules_fired_contains": ["one_role_defining_hard_gate_cap_6"]
+      "expected": {
+        "missingHardGateCount": 2,
+        "effectiveMaxTechnicalFitLte": 4,
+        "blockedRecommendationsIncludes": ["strong_pursue", "pursue"],
+        "allowedRecommendationsSubset": ["maybe_validate", "weak_fit", "skip"],
+        "rulesFiredIncludes": [
+          "practical_plus_other_hard_gate_cap_4",
+          "block_pursue_two_or_more_missing_gates"
+        ]
+      }
     },
     {
       "test_id": "HG-02",
       "category": "hard-gates",
       "query": "JD: Primary language: Go. All services are written in Go. 3+ years Go required.",
-      "fixture_jd": "fixtures/jd-fragments/HG-02-golang-primary.txt",
-      "expected_outcome": "primary_stack gate fires. effectiveMaxTechnicalFit <= 5. Both strong_pursue and pursue blocked.",
-      "evaluation_criteria": "Row with category='primary_stack', evidenceLevel='not_evidenced', requirementImportance='must_have', isHardGate=true. Cap <= 5. blockedRecommendations includes both 'strong_pursue' and 'pursue'.",
       "severity_if_failed": "CRITICAL",
-      "expected_gate_rows": [
+      "rows": [
         {
+          "requirement": "Production Golang",
           "category": "primary_stack",
           "evidenceLevel": "not_evidenced",
           "requirementImportance": "must_have",
-          "isHardGate": true
+          "isHardGate": true,
+          "severity": "major",
+          "jdSuggestsFlexibility": false,
+          "rationale": "The JD centers production Go and the portfolio evidence does not show production Go.",
+          "sourceRequirementText": "Primary language: Go. All services are written in Go. 3+ years Go required."
         }
       ],
-      "expected_max_technical_fit_lte": 5,
-      "blocked_recommendations": ["strong_pursue", "pursue"],
-      "expected_rules_fired_contains": [
-        "primary_stack_missing_cap_5",
-        "block_pursue_single_gate_cap_lte_5"
-      ]
+      "expected": {
+        "missingHardGateCount": 1,
+        "effectiveMaxTechnicalFitLte": 5,
+        "blockedRecommendationsIncludes": ["strong_pursue", "pursue"],
+        "rulesFiredIncludes": [
+          "primary_stack_missing_cap_5",
+          "block_pursue_single_gate_cap_lte_5"
+        ]
+      }
     },
     {
       "test_id": "HG-03",
       "category": "hard-gates",
       "query": "JD: Role requires on-site presence in Copenhagen 3 days/week. EU work authorization required.",
-      "fixture_jd": "fixtures/jd-fragments/HG-03-onsite-copenhagen.txt",
-      "expected_outcome": "Two gates: hybrid_onsite and work_authorization, both not_evidenced and must_have. effectiveMaxTechnicalFit <= 4. Both pursue recommendations blocked.",
-      "evaluation_criteria": "Two gate rows with correct categories. effectiveMaxTechnicalFit <= 4. Both 'strong_pursue' and 'pursue' blocked.",
       "severity_if_failed": "CRITICAL",
-      "expected_gate_rows": [
+      "rows": [
         {
+          "requirement": "On-site presence in Copenhagen",
           "category": "hybrid_onsite",
           "evidenceLevel": "not_evidenced",
           "requirementImportance": "must_have",
-          "isHardGate": true
+          "isHardGate": true,
+          "severity": "moderate",
+          "jdSuggestsFlexibility": false,
+          "rationale": "The JD requires recurring on-site presence and the portfolio evidence does not confirm it.",
+          "sourceRequirementText": "Role requires on-site presence in Copenhagen 3 days/week."
         },
         {
+          "requirement": "EU work authorization",
           "category": "work_authorization",
           "evidenceLevel": "not_evidenced",
           "requirementImportance": "must_have",
-          "isHardGate": true
+          "isHardGate": true,
+          "severity": "moderate",
+          "jdSuggestsFlexibility": false,
+          "rationale": "The JD requires EU work authorization and the portfolio evidence does not confirm it.",
+          "sourceRequirementText": "EU work authorization required."
         }
       ],
-      "expected_max_technical_fit_lte": 4,
-      "blocked_recommendations": ["strong_pursue", "pursue"],
-      "expected_rules_fired_contains": [
-        "practical_plus_other_hard_gate_cap_4",
-        "block_pursue_two_or_more_missing_gates"
-      ]
+      "expected": {
+        "missingHardGateCount": 2,
+        "effectiveMaxTechnicalFitLte": 4,
+        "blockedRecommendationsIncludes": ["strong_pursue", "pursue"],
+        "rulesFiredIncludes": [
+          "practical_plus_other_hard_gate_cap_4",
+          "block_pursue_two_or_more_missing_gates"
+        ]
+      }
     },
     {
       "test_id": "HG-04",
       "category": "hard-gates",
       "query": "JD: Engineering Manager role. Must have 3+ years of direct reports and performance review ownership.",
-      "fixture_jd": "fixtures/jd-fragments/HG-04-engineering-manager.txt",
-      "expected_outcome": "specialist_domain = people_management fires. SPECIALIST_DOMAIN_CAPS.people_management.maxFit = 6. strong_pursue blocked.",
-      "evaluation_criteria": "Row with category='specialist_domain' and requirement matching people_management. specialist_people_management_cap_6 rule fires. Cap = 6. strong_pursue blocked.",
       "severity_if_failed": "HIGH",
-      "expected_gate_rows": [
+      "rows": [
         {
+          "requirement": "People management",
           "category": "specialist_domain",
           "evidenceLevel": "not_evidenced",
           "requirementImportance": "must_have",
-          "isHardGate": true
+          "isHardGate": true,
+          "severity": "major",
+          "jdSuggestsFlexibility": false,
+          "rationale": "The JD requires direct people-management ownership and the portfolio evidence does not show it.",
+          "sourceRequirementText": "Must have 3+ years of direct reports and performance review ownership."
         }
       ],
-      "expected_max_technical_fit_lte": 6,
-      "blocked_recommendations": ["strong_pursue"],
-      "expected_rules_fired_contains": ["specialist_people_management_cap_6"]
+      "expected": {
+        "missingHardGateCount": 1,
+        "effectiveMaxTechnicalFitLte": 6,
+        "blockedRecommendationsIncludes": ["strong_pursue"],
+        "rulesFiredIncludes": ["one_role_defining_hard_gate_cap_6"]
+      }
     },
     {
       "test_id": "HG-05",
       "category": "hard-gates",
       "query": "JD: Senior Node.js/TypeScript engineer. Experience with AWS (Lambda, SQS, CloudWatch) and event-driven systems.",
-      "fixture_jd": "fixtures/jd-fragments/HG-05-nodejs-aws.txt",
-      "expected_outcome": "No hard gates fire. All requirements classified as direct or adjacent. effectiveMaxTechnicalFit = 10. All recommendations allowed.",
-      "evaluation_criteria": "missingHardGateCount == 0. rulesFired == ['no_hard_gate_miss']. allowedRecommendations includes all five labels. effectiveMaxTechnicalFit == 10.",
       "severity_if_failed": "HIGH",
-      "expected_missing_hard_gate_count": 0,
-      "expected_max_technical_fit": 10,
-      "blocked_recommendations": [],
-      "allowed_recommendations": [
-        "strong_pursue",
-        "pursue",
-        "maybe_validate",
-        "weak_fit",
-        "skip"
-      ],
-      "expected_rules_fired_contains": ["no_hard_gate_miss"]
+      "rows": [],
+      "expected": {
+        "missingHardGateCount": 0,
+        "effectiveMaxTechnicalFit": 10,
+        "blockedRecommendations": [],
+        "allowedRecommendations": [
+          "strong_pursue",
+          "pursue",
+          "maybe_validate",
+          "weak_fit",
+          "skip"
+        ],
+        "rulesFiredIncludes": ["no_hard_gate_miss"]
+      }
     },
     {
       "test_id": "HG-06",
       "category": "hard-gates",
       "query": "JD: Go developer required. Must speak German fluently. Remote in DACH region.",
-      "fixture_jd": "fixtures/jd-fragments/HG-06-golang-german.txt",
-      "expected_outcome": "Two gates: primary_stack (Golang) and spoken_language (German), both not_evidenced, must_have. effectiveMaxTechnicalFit <= 4. allowedRecommendations at most ['weak_fit', 'skip'].",
-      "evaluation_criteria": "Both gate rows present and correct. Cap <= 4. 'pursue' and 'strong_pursue' both blocked.",
       "severity_if_failed": "CRITICAL",
-      "expected_gate_rows": [
+      "rows": [
         {
+          "requirement": "Production Golang",
           "category": "primary_stack",
           "evidenceLevel": "not_evidenced",
           "requirementImportance": "must_have",
-          "isHardGate": true
+          "isHardGate": true,
+          "severity": "major",
+          "jdSuggestsFlexibility": false,
+          "rationale": "The JD requires Go and the portfolio evidence does not show production Go.",
+          "sourceRequirementText": "Go developer required."
         },
         {
+          "requirement": "German fluency",
           "category": "spoken_language",
           "evidenceLevel": "not_evidenced",
           "requirementImportance": "must_have",
-          "isHardGate": true
+          "isHardGate": true,
+          "severity": "major",
+          "jdSuggestsFlexibility": false,
+          "rationale": "The JD requires fluent German and the portfolio evidence does not show it.",
+          "sourceRequirementText": "Must speak German fluently."
         }
       ],
-      "expected_max_technical_fit_lte": 4,
-      "blocked_recommendations": ["strong_pursue", "pursue"],
-      "allowed_recommendations_subset": ["weak_fit", "skip"]
+      "expected": {
+        "missingHardGateCount": 2,
+        "effectiveMaxTechnicalFitLte": 4,
+        "blockedRecommendationsIncludes": ["strong_pursue", "pursue"],
+        "allowedRecommendationsSubset": ["weak_fit", "skip"],
+        "rulesFiredIncludes": [
+          "practical_plus_other_hard_gate_cap_4",
+          "primary_stack_missing_cap_5",
+          "block_pursue_practical_and_primary_stack"
+        ]
+      }
     },
     {
       "test_id": "HG-07",
       "category": "hard-gates",
       "query": "JD: Golang experience preferred but not mandatory. TypeScript/Node.js is our primary stack with some Go services.",
-      "fixture_jd": "fixtures/jd-fragments/HG-07-golang-preferred.txt",
-      "expected_outcome": "Golang extracted as nice_to_have (not must_have), isHardGate=false. jdSuggestsFlexibility=true for Golang. No cap fires from Golang. Node.js/TypeScript classified as direct. effectiveMaxTechnicalFit >= 8.",
-      "evaluation_criteria": "Golang row has requirementImportance='nice_to_have' and isHardGate=false. No cap rule fires for Golang. effectiveMaxTechnicalFit >= 8.",
       "severity_if_failed": "HIGH",
-      "expected_golang_row": {
-        "category": "primary_stack",
-        "requirementImportance": "nice_to_have",
-        "isHardGate": false,
-        "jdSuggestsFlexibility": true
-      },
-      "expected_max_technical_fit_gte": 8,
-      "blocked_recommendations": []
+      "rows": [
+        {
+          "requirement": "Golang experience",
+          "category": "primary_stack",
+          "evidenceLevel": "not_evidenced",
+          "requirementImportance": "nice_to_have",
+          "isHardGate": false,
+          "severity": "moderate",
+          "jdSuggestsFlexibility": true,
+          "rationale": "The JD says Go is preferred, not mandatory.",
+          "sourceRequirementText": "Golang experience preferred but not mandatory."
+        }
+      ],
+      "expected": {
+        "missingHardGateCount": 0,
+        "effectiveMaxTechnicalFitGte": 8,
+        "blockedRecommendations": [],
+        "rulesFiredIncludes": ["no_hard_gate_miss"]
+      }
     },
     {
       "test_id": "HG-08",
       "category": "hard-gates",
       "query": "JD: ML model validation engineer. Must have experience validating production ML pipelines and model drift detection.",
-      "fixture_jd": "fixtures/jd-fragments/HG-08-ml-validation.txt",
-      "expected_outcome": "specialist_domain = ml_model_validation fires. SPECIALIST_DOMAIN_CAPS.ml_model_validation.maxFit = 5. Both strong_pursue and pursue blocked.",
-      "evaluation_criteria": "specialist_ml_model_validation_cap_5 rule fires. Cap = 5. Both pursue recommendations blocked.",
       "severity_if_failed": "HIGH",
-      "expected_gate_rows": [
+      "rows": [
         {
+          "requirement": "ML model validation",
           "category": "specialist_domain",
           "evidenceLevel": "not_evidenced",
           "requirementImportance": "must_have",
-          "isHardGate": true
+          "isHardGate": true,
+          "severity": "major",
+          "jdSuggestsFlexibility": false,
+          "rationale": "The JD requires hands-on ML model validation and the portfolio evidence does not show it.",
+          "sourceRequirementText": "Must have experience validating production ML pipelines and model drift detection."
         }
       ],
-      "expected_max_technical_fit_lte": 5,
-      "blocked_recommendations": ["strong_pursue", "pursue"],
-      "expected_rules_fired_contains": ["specialist_ml_model_validation_cap_5"]
+      "expected": {
+        "missingHardGateCount": 1,
+        "effectiveMaxTechnicalFitLte": 5,
+        "blockedRecommendationsIncludes": ["strong_pursue", "pursue"],
+        "rulesFiredIncludes": [
+          "specialist_ml_model_validation_cap_5",
+          "block_pursue_single_gate_cap_lte_5"
+        ]
+      }
     },
     {
       "test_id": "HG-09",
       "category": "hard-gates",
       "query": "JD: Java/Spring backend engineer. RESTful APIs, PostgreSQL, CI/CD experience.",
-      "fixture_jd": "fixtures/jd-fragments/HG-09-java-spring.txt",
-      "expected_outcome": "Java/Spring classified as direct (Five Validation and Itaú evidence). No primary_stack gate fires. missingHardGateCount = 0. All recommendations allowed.",
-      "evaluation_criteria": "Java/Spring row classified 'direct'. No primary_stack_missing_cap_5 rule fires. effectiveMaxTechnicalFit == 10.",
       "severity_if_failed": "HIGH",
-      "expected_java_row": {
-        "category": "primary_stack",
-        "evidenceLevel": "direct",
-        "isHardGate": false
-      },
-      "expected_missing_hard_gate_count": 0,
-      "expected_max_technical_fit": 10,
-      "blocked_recommendations": []
+      "rows": [
+        {
+          "requirement": "Java/Spring",
+          "category": "primary_stack",
+          "evidenceLevel": "direct",
+          "requirementImportance": "must_have",
+          "isHardGate": false,
+          "severity": "minor",
+          "jdSuggestsFlexibility": false,
+          "rationale": "The portfolio evidence directly supports Java/Spring backend experience.",
+          "sourceRequirementText": "Java/Spring backend engineer."
+        }
+      ],
+      "expected": {
+        "missingHardGateCount": 0,
+        "effectiveMaxTechnicalFit": 10,
+        "blockedRecommendations": [],
+        "rulesFiredIncludes": ["no_hard_gate_miss"]
+      }
     },
     {
       "test_id": "HG-10",
       "category": "hard-gates",
       "query": "JD: Staff Engineer. Remote. English required. Strong distributed systems background.",
-      "fixture_jd": "fixtures/jd-fragments/HG-10-staff-engineer-remote.txt",
-      "expected_outcome": "No hard gates fire. English is the default with direct evidence. No location gate. Distributed systems classified as direct. effectiveMaxTechnicalFit = 10. strong_pursue allowed.",
-      "evaluation_criteria": "No gate rows for spoken_language (English). No location gate. missingHardGateCount == 0. strong_pursue in allowedRecommendations.",
       "severity_if_failed": "HIGH",
-      "expected_missing_hard_gate_count": 0,
-      "expected_max_technical_fit": 10,
-      "blocked_recommendations": [],
-      "allowed_recommendations_includes": ["strong_pursue"]
+      "rows": [
+        {
+          "requirement": "English communication",
+          "category": "spoken_language",
+          "evidenceLevel": "direct",
+          "requirementImportance": "must_have",
+          "isHardGate": false,
+          "severity": "minor",
+          "jdSuggestsFlexibility": false,
+          "rationale": "The portfolio evidence directly supports English professional communication.",
+          "sourceRequirementText": "English required."
+        }
+      ],
+      "expected": {
+        "missingHardGateCount": 0,
+        "effectiveMaxTechnicalFit": 10,
+        "blockedRecommendations": [],
+        "allowedRecommendationsIncludes": ["strong_pursue"],
+        "rulesFiredIncludes": ["no_hard_gate_miss"]
+      }
     }
   ]
 }
