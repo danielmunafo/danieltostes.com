@@ -2,10 +2,11 @@
 
 This directory holds **implementation plans** and **execution plans** for features or phases of the project. Each plan documents scope, decisions, and verification steps.
 
-| Plan                                                                       | Description                                                       |
-| -------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [scaffolding-implementation-plan.md](./scaffolding-implementation-plan.md) | Initial scaffolding: stack, i18n, testing, CI, verification steps |
-| [parallax-sections-plan.md](./parallax-sections-plan.md)                   | Parallax two-plane scrolling, glassmorphism, section layout       |
-| [recruiter-assistant-plan.md](./recruiter-assistant-plan.md)               | Recruiter AI chat (RAG), Lambda streaming, AWS runbook, CI        |
+| Plan                                                                                                         | Description                                                       |
+| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| [scaffolding-implementation-plan.md](./scaffolding-implementation-plan.md)                                   | Initial scaffolding: stack, i18n, testing, CI, verification steps |
+| [parallax-sections-plan.md](./parallax-sections-plan.md)                                                     | Parallax two-plane scrolling, glassmorphism, section layout       |
+| [recruiter-assistant-plan.md](./recruiter-assistant-plan.md)                                                 | Recruiter AI chat (RAG), Lambda streaming, AWS runbook, CI        |
+| [recruiter-assistant-production-readiness-roadmap.md](./recruiter-assistant-production-readiness-roadmap.md) | v0.15.0 recruiter assistant operations roadmap and next gaps      |
 
 **Conventions:** See `.cursor/rules/plans.mdc` (plan location and structure) and `.cursor/rules/documentation.mdc` (updating and versioning all docs, including plans).
