@@ -26,6 +26,7 @@ export async function projectBriefingAndChart(params: {
   evidenceAnalysisMarkdown: string;
   hardGateAssessmentMarkdown: string;
   hardGateAssessment: HardGateAssessment | null;
+  streamSignal?: AbortSignal;
 }): Promise<ProjectBriefingAndChartResult> {
   const isOffTopic = evaluateOffTopic(params.evidenceEvaluationMarkdown);
 
@@ -46,6 +47,7 @@ export async function projectBriefingAndChart(params: {
       navLocale: params.navLocale,
       evidenceEvaluationMarkdown: params.evidenceEvaluationMarkdown,
       evidenceAnalysisMarkdown: params.evidenceAnalysisMarkdown,
+      streamSignal: params.streamSignal,
     }),
     chartAgent.projectChart({
       openai: params.openai,

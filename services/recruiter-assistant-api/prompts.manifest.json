@@ -20,36 +20,36 @@
     },
     {
       "promptId": "evidence-evaluation",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "stage": "evidence_evaluation",
       "source": {
         "kind": "file",
         "files": ["agents/evidenceEvaluation/instructions.md"]
       },
-      "contentHash": "e0707fa1393b848c7c4d95cd5d9a14d9067f7ab7633c176dc32d1f9266efd37c",
-      "lastUpdated": "2026-06-22"
+      "contentHash": "567a72eb42d4de72d39cc91945a9fcba279acd4eab7d13377079182e0b1900cb",
+      "lastUpdated": "2026-06-25"
     },
     {
       "promptId": "hard-gates",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "stage": "hard_gates",
       "source": {
         "kind": "file",
         "files": ["agents/hardGates/instructions.md"]
       },
-      "contentHash": "cb79f18468592a9e97559672e8cc1d7b549e3ecf6aaf7c83cdfdf2247d64367d",
-      "lastUpdated": "2026-06-22"
+      "contentHash": "38c48f4253d11ef9a35cb9884308ae95a7933918c0868bdbd51a425d25b87ba2",
+      "lastUpdated": "2026-06-25"
     },
     {
       "promptId": "evidence-analysis",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "stage": "evidence_analysis",
       "source": {
         "kind": "file",
         "files": ["agents/evidenceAnalysis/instructions.md"]
       },
       "contentHash": "1eeaead9e59c61070dff6b942d80198573e055ad3d49e7ca052d86148bbbe598",
-      "lastUpdated": "2026-06-22"
+      "lastUpdated": "2026-06-25"
     },
     {
       "promptId": "briefing",
@@ -78,14 +78,14 @@
     },
     {
       "promptId": "pitch",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "stage": "pitch",
       "source": {
         "kind": "file",
         "files": ["agents/pitch/instructions.md"]
       },
       "contentHash": "55c0d7ca61a459e7d3f0b2f774f0160945b8d04b74cc0ec32ada5b4bdc3a136e",
-      "lastUpdated": "2026-06-22"
+      "lastUpdated": "2026-06-25"
     },
     {
       "promptId": "references-claims",

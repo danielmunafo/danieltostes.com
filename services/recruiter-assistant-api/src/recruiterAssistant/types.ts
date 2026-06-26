@@ -33,6 +33,7 @@ export type RecruiterPipelineParams = {
   request: ValidRecruiterRequest;
   openai: OpenAiProvider;
   dataStream: RecruiterDataStream;
+  streamSignal?: AbortSignal;
 };
 
 export type RecruiterContext = {

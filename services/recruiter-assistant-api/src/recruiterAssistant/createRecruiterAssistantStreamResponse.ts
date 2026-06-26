@@ -8,6 +8,7 @@ import {
   runWithTrace,
   type RequestTrace,
 } from "../tracing/requestTrace.js";
+import { createStreamTextRequestScope } from "../reliability/streamTextReliability.js";
 import { saveChatTrace } from "../feedback/writeFeedbackToS3.js";
 import type {
   RecruiterAssistantDependencies,
@@ -28,6 +29,7 @@ export function createRecruiterAssistantStreamResponse(params: {
       return "stream_error";
     },
     execute: async (dataStream) => {
+      const streamScope = createStreamTextRequestScope();
       writeRequestTraceAnnotation(dataStream, trace.requestId);
       try {
         await runWithTrace(trace, () =>
@@ -35,6 +37,7 @@ export function createRecruiterAssistantStreamResponse(params: {
             request,
             openai: dependencies.openai,
             dataStream,
+            streamSignal: streamScope.signal,
           })
         );
         trace.setOutcome("success");
@@ -42,6 +45,7 @@ export function createRecruiterAssistantStreamResponse(params: {
         trace.setOutcome("error", err);
         throw err;
       } finally {
+        streamScope.cleanup();
         trace.finish();
         logRequestTrace(trace);
         saveChatTrace(trace.requestId, trace.toLog());
