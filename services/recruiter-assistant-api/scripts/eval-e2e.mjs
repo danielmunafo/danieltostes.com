@@ -13,11 +13,21 @@
  * Usage:
  *   node scripts/eval-e2e.mjs
  *   node scripts/eval-e2e.mjs --case E2E-04
+ *   node scripts/eval-e2e.mjs --priority
  *   node scripts/eval-e2e.mjs --timeout 120000
+ *   node scripts/eval-e2e.mjs --json-out ../../evals/history/e2e-latest.json
  */
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  E2E_PRIORITY_CASE_IDS,
+  buildCaseScorecardResult,
+  buildEvalScorecard,
+  readGitSha,
+  selectE2eCases,
+  writeEvalScorecard,
+} from "./lib/eval-scorecard.mjs";
 import {
   formatPromptVersionStamps,
   loadPromptVersionStamps,
@@ -39,9 +49,13 @@ const args = process.argv.slice(2);
 const filterCase = args.includes("--case")
   ? args[args.indexOf("--case") + 1]
   : null;
+const priorityOnly = args.includes("--priority");
 const timeoutMs = args.includes("--timeout")
   ? parseInt(args[args.indexOf("--timeout") + 1], 10)
   : 90_000;
+const jsonOutPath = args.includes("--json-out")
+  ? args[args.indexOf("--json-out") + 1]
+  : null;
 
 const SERVER_URL =
   process.env.EVAL_SERVER_URL?.trim() ?? "http://127.0.0.1:3001";
@@ -379,21 +393,60 @@ function printCaseResult(evalCase, failures, parsedOutput, durationMs) {
 // ---------------------------------------------------------------------------
 
 async function main() {
+  const runStartedAt = new Date();
+  const runStartedMs = Date.now();
   const { cases } = JSON.parse(readFileSync(casesPath, "utf8"));
-  const toRun = filterCase
-    ? cases.filter((c) => c.test_id === filterCase)
-    : cases;
+  const toRun = selectE2eCases(cases, { filterCase, priorityOnly });
 
   if (toRun.length === 0) {
-    console.error(`No cases matched filter: ${filterCase}`);
+    const filterDescription = [
+      filterCase ? `case=${filterCase}` : null,
+      priorityOnly ? "priority=true" : null,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    console.error(`No cases matched filter: ${filterDescription}`);
     process.exit(1);
   }
 
+  const selectedCaseIds = toRun.map((evalCase) => evalCase.test_id);
+  const caseResults = [];
   const promptVersionStamps = loadPromptVersionStamps(serviceRoot);
   const promptVersionLine = formatPromptVersionStamps(promptVersionStamps);
+  const gitSha = readGitSha(repoRoot);
+
+  const buildCurrentScorecard = ({ runStatus = null, runError = null } = {}) =>
+    buildEvalScorecard({
+      runner: "eval:e2e",
+      gitSha,
+      timestamp: runStartedAt.toISOString(),
+      durationMs: Date.now() - runStartedMs,
+      serverUrl: SERVER_URL,
+      promptVersionLine,
+      promptVersions: promptVersionStamps,
+      filters: {
+        case: filterCase,
+        priority: priorityOnly,
+      },
+      timeoutMs,
+      selectedCaseIds,
+      caseResults,
+      runStatus,
+      runError,
+    });
+
+  const writeCurrentScorecard = (scorecard) => {
+    if (!jsonOutPath) return null;
+    return writeEvalScorecard(jsonOutPath, scorecard);
+  };
 
   console.log(`\n[eval:e2e] Server: ${SERVER_URL}`);
   console.log(`[eval:e2e] Prompt versions: ${promptVersionLine}`);
+  if (priorityOnly) {
+    console.log(
+      `[eval:e2e] Priority subset: ${E2E_PRIORITY_CASE_IDS.join(", ")}`
+    );
+  }
   console.log(
     `[eval:e2e] Running ${toRun.length} case(s) — timeout ${timeoutMs}ms each\n`
   );
@@ -412,18 +465,34 @@ async function main() {
         `  Start it with: RECRUITER_E2E=1 npm run dev:server\n` +
         `  Error: ${err.message}`
     );
+    const scorecard = buildCurrentScorecard({
+      runStatus: "error",
+      runError: {
+        phase: "server_health",
+        message: err.message,
+      },
+    });
+    const writtenPath = writeCurrentScorecard(scorecard);
+    if (writtenPath) {
+      console.error(`[eval:e2e] Scorecard written: ${writtenPath}`);
+    }
     process.exit(1);
   }
-
-  const totals = { pass: 0, fail: 0, critical: 0, error: 0 };
 
   for (const evalCase of toRun) {
     const jdPath = join(repoRoot, "evals/e2e", evalCase.jd_file);
     if (!existsSync(jdPath)) {
+      const errorMessage = `fixture not found: ${evalCase.jd_file}`;
       console.log(
-        `  ${RED}ERROR${RESET} ${evalCase.test_id} — fixture not found: ${evalCase.jd_file}`
+        `  ${RED}ERROR${RESET} ${evalCase.test_id} — ${errorMessage}`
       );
-      totals.error++;
+      caseResults.push(
+        buildCaseScorecardResult({
+          evalCase,
+          status: "error",
+          errorMessage,
+        })
+      );
       continue;
     }
 
@@ -435,11 +504,18 @@ async function main() {
     try {
       rawBody = await callDevServer(jdText);
     } catch (err) {
+      const errorMessage = err.message.slice(0, 120);
       process.stdout.write("\r");
       console.log(
-        `  ${RED}ERROR${RESET} ${evalCase.test_id} — ${err.message.slice(0, 120)}`
+        `  ${RED}ERROR${RESET} ${evalCase.test_id} — ${errorMessage}`
       );
-      totals.error++;
+      caseResults.push(
+        buildCaseScorecardResult({
+          evalCase,
+          status: "error",
+          errorMessage,
+        })
+      );
       continue;
     }
 
@@ -468,23 +544,32 @@ async function main() {
     process.stdout.write("\r");
     printCaseResult(evalCase, failures, parsedOutput, durationMs);
 
-    if (failures.length === 0) {
-      totals.pass++;
-    } else {
-      totals.fail++;
-      if (evalCase.severity_if_failed === "CRITICAL") totals.critical++;
-    }
+    caseResults.push(
+      buildCaseScorecardResult({
+        evalCase,
+        status: failures.length === 0 ? "pass" : "fail",
+        durationMs,
+        deterministicFailures: failures,
+        parsedOutput,
+      })
+    );
   }
 
-  const errorStr = totals.error > 0 ? `, ${totals.error} errored` : "";
+  const scorecard = buildCurrentScorecard();
+  const writtenPath = writeCurrentScorecard(scorecard);
+  const { counts } = scorecard;
+  const errorStr = counts.error > 0 ? `, ${counts.error} errored` : "";
   const critStr =
-    totals.critical > 0 ? ` (${RED}${totals.critical} CRITICAL${RESET})` : "";
+    counts.critical > 0 ? ` (${RED}${counts.critical} CRITICAL${RESET})` : "";
   console.log(
-    `\n[eval:e2e] Results: ${totals.pass} passed, ${totals.fail} failed${critStr}${errorStr}`
+    `\n[eval:e2e] Results: ${counts.pass} passed, ${counts.fail} failed${critStr}${errorStr}`
   );
   console.log(`[eval:e2e] Prompt versions: ${promptVersionLine}\n`);
+  if (writtenPath) {
+    console.log(`[eval:e2e] Scorecard written: ${writtenPath}\n`);
+  }
 
-  if (totals.fail > 0 || totals.error > 0) process.exit(1);
+  if (counts.fail > 0 || counts.error > 0) process.exit(1);
 }
 
 main().catch((err) => {

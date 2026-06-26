@@ -108,20 +108,51 @@ RECRUITER_E2E=1 npm run dev:server
 npm run eval:e2e
 # Run a single case:
 npm run eval:e2e -- --case E2E-04
+# Run the documented priority E2E subset:
+npm run eval:e2e -- --priority
+# Save a machine-readable scorecard:
+npm run eval:e2e -- --priority --json-out ../../evals/history/e2e-priority-$(date -u +%Y%m%dT%H%M%SZ).json
 ```
 
 The e2e runner checks deterministic assertions (recommendation label, technical fit score, references/gaps presence) and prints rubric assertions for manual review. Override the server URL with `EVAL_SERVER_URL=http://...`.
 
+### E2E scorecards and history
+
+`eval:e2e` keeps the terminal output human-readable. Add `--json-out <path>` when you need a history artifact for release notes, CI artifacts, or manual comparison.
+
+The JSON scorecard includes:
+
+- the current git SHA and UTC timestamp
+- server URL, timeout, selected filters, selected case IDs, and total duration
+- prompt versions as both the printed line and structured `{ promptId, version, stage }` entries
+- pass/fail/error/critical counts
+- deterministic assertion failures and per-case result details
+
+Recommended local history path from `services/recruiter-assistant-api/`:
+
+```bash
+mkdir -p ../../evals/history
+npm run eval:e2e -- --priority --json-out ../../evals/history/e2e-priority-$(date -u +%Y%m%dT%H%M%SZ).json
+```
+
+For comparison, inspect the stable fields instead of diffing the whole file:
+
+```bash
+jq '{gitSha, timestamp, counts, deterministicAssertionFailures, errors}' ../../evals/history/e2e-priority-*.json
+```
+
+Keep routine scorecards as CI artifacts or local history. Commit only intentional baselines that should be reviewed with code.
+
 ### When to run each layer
 
-| When                                        | Run                                                  |
-| ------------------------------------------- | ---------------------------------------------------- |
-| Every commit                                | `eval:retrieval` (no LLM cost, fast)                 |
-| Before hard-gate rule changes               | `npm test -- --run tests/evalFixtures.test.ts`       |
-| Before reference rendering/matching changes | `npm test -- --run tests/evalFixtures.test.ts`       |
-| Before any prompt change ships              | `eval:retrieval` + `eval:e2e` on the priority-12 set |
-| Before a release                            | Full `eval:e2e` suite                                |
-| After corpus/portfolio content changes      | `eval:snapshot` then `eval:retrieval`                |
+| When                                        | Run                                            |
+| ------------------------------------------- | ---------------------------------------------- |
+| Every commit                                | `eval:retrieval` (no LLM cost, fast)           |
+| Before hard-gate rule changes               | `npm test -- --run tests/evalFixtures.test.ts` |
+| Before reference rendering/matching changes | `npm test -- --run tests/evalFixtures.test.ts` |
+| Before any prompt change ships              | `eval:retrieval` + `eval:e2e -- --priority`    |
+| Before a release                            | Full `eval:e2e` suite                          |
+| After corpus/portfolio content changes      | `eval:snapshot` then `eval:retrieval`          |
 
 ---
 
