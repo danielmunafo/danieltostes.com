@@ -62,6 +62,24 @@ If unset or invalid, the API skips the interests stage and behaves as before.
 - Log group name: `/aws/lambda/recruiter-assistant-api`
 - Retention: **14 days** (or your preference)
 
+## 2b. CloudWatch dashboard and alarms
+
+After the Lambda has emitted `recruiter.metrics` logs at least once, generate
+and install the dashboard/alarm artifacts from
+[docs/cloudwatch-operations.md](./docs/cloudwatch-operations.md):
+
+```bash
+cd services/recruiter-assistant-api
+npm run ops:cloudwatch -- \
+  --environment production \
+  --region "$AWS_REGION" \
+  --output-dir /tmp/recruiter-cloudwatch-production \
+  --alarm-action-arn "$RECRUITER_ALARM_ACTION_ARN"
+```
+
+Use `--environment dev` for the dev Lambda. Keep the value aligned with
+`RECRUITER_METRICS_ENVIRONMENT` or with the runtime's Lambda-name inference.
+
 ---
 
 ## 3. Secrets Manager — OpenAI API key
