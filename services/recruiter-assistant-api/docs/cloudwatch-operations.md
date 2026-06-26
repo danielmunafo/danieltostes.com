@@ -93,18 +93,19 @@ of real traffic.
 
 | Alarm                    | Metric/query                                          | Default threshold                |
 | ------------------------ | ----------------------------------------------------- | -------------------------------- |
-| Request error rate       | `RequestErrorCount / RequestCount`                    | `>= 5%` for 2 of 3 periods       |
+| Request error count      | `SUM(RequestErrorCount)`                              | `>= 1` for 2 of 3 periods        |
 | Request latency average  | `AVG(RequestLatencyMs)`                               | `>= 15000 ms` for 2 of 3 periods |
 | Missing usage count      | `SUM(UsageMissingCallCount)`                          | `>= 3` for 2 of 3 periods        |
 | Missing cost count       | `SUM(CostMissingCallCount)`                           | `>= 3` for 2 of 3 periods        |
 | Low returned chunks      | `AVG(RetrievalReturnedChunks)` on successful requests | `<= 10` for 2 of 3 periods       |
 | Low retrieval similarity | `MIN(RetrievalSimilarityMin)` on successful requests  | `<= 0.2` for 2 of 3 periods      |
 
-The latency alarm uses average latency because CloudWatch Metrics Insights alarm
-queries aggregate across dimension values but do not provide the same percentile
-view used by the dashboard search widget. If p95 paging is needed later, add a
-runtime rollup metric or create targeted per-locale/per-outcome alarms after the
-traffic baseline is known.
+The dashboard shows request error rate with metric math. The deployable alarm
+uses request error count because CloudWatch Metrics Insights alarms accept a
+single query as the alarmed time series. The latency alarm uses average latency
+for the same reason; if p95 paging is needed later, add a runtime rollup metric
+or create targeted per-locale/per-outcome alarms after the traffic baseline is
+known.
 
 ## Runbook
 
@@ -166,7 +167,7 @@ aws cloudwatch delete-dashboards \
 
 aws cloudwatch delete-alarms \
   --alarm-names \
-    recruiter-assistant-production-request-error-rate \
+    recruiter-assistant-production-request-error-count \
     recruiter-assistant-production-request-latency-average \
     recruiter-assistant-production-missing-usage-count \
     recruiter-assistant-production-missing-cost-count \

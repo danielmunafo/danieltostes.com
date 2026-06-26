@@ -30,7 +30,6 @@ const REQUIRED_DASHBOARD_METRICS = [
 ];
 
 const REQUIRED_ALARM_METRICS = [
-  "RequestCount",
   "RequestErrorCount",
   "RequestLatencyMs",
   "UsageMissingCallCount",
@@ -66,6 +65,9 @@ describe("render-cloudwatch-ops", () => {
 
       const dashboard = readJson(path.join(outputDir, "dashboard-body.json"));
       const dashboardJson = JSON.stringify(dashboard);
+      const dashboardBody = dashboard as {
+        widgets: Array<{ properties?: { metrics?: unknown[] } }>;
+      };
       expect(dashboardJson).toContain(METRICS_NAMESPACE);
       expect(dashboardJson).toContain("service = 'recruiter-api'");
       expect(dashboardJson).toContain("environment = 'dev'");
@@ -78,13 +80,18 @@ describe("render-cloudwatch-ops", () => {
       for (const metricName of REQUIRED_DASHBOARD_METRICS) {
         expect(dashboardJson).toContain(metricName);
       }
+      for (const widget of dashboardBody.widgets) {
+        for (const metric of widget.properties?.metrics ?? []) {
+          expect(Array.isArray(metric)).toBe(true);
+        }
+      }
 
       const alarmsDir = path.join(outputDir, "alarms");
       const alarmFiles = readdirSync(alarmsDir).sort();
       expect(alarmFiles).toEqual([
         "missing-cost-count.json",
         "missing-usage-count.json",
-        "request-error-rate.json",
+        "request-error-count.json",
         "request-latency-average.json",
         "retrieval-returned-chunks-low.json",
         "retrieval-similarity-min-low.json",

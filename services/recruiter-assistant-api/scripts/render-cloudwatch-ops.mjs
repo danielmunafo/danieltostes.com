@@ -47,7 +47,7 @@ const STAGE_METRICS = {
 };
 
 const DEFAULT_ALARM_THRESHOLDS = {
-  requestErrorRatePercent: 5,
+  requestErrorCount: 1,
   requestLatencyAverageMs: 15000,
   missingUsageCount: 3,
   missingCostCount: 3,
@@ -135,8 +135,8 @@ function parseCliArgs(args) {
         );
         index += 1;
         break;
-      case "--request-error-rate-percent":
-        options.requestErrorRatePercent = parsePositiveNumber(
+      case "--request-error-count":
+        options.requestErrorCount = parsePositiveNumber(
           readArgValue(args, index, arg),
           arg
         );
@@ -201,7 +201,7 @@ Options:
   --alarm-prefix <name>                Alarm name prefix. Default: recruiter-assistant-<environment>
   --alarm-action-arn <arn>             Optional SNS topic or action ARN. Repeatable
   --period-seconds <seconds>           Metric query period. Default: 300
-  --request-error-rate-percent <n>     Alarm threshold. Default: 5
+  --request-error-count <n>            Alarm threshold. Default: 1
   --request-latency-average-ms <n>     Alarm threshold. Default: 15000
   --missing-usage-count <n>            Alarm threshold. Default: 3
   --missing-cost-count <n>             Alarm threshold. Default: 3
@@ -243,9 +243,8 @@ function normalizeConfig(options = {}) {
     region,
     service,
     thresholds: {
-      requestErrorRatePercent:
-        options.requestErrorRatePercent ??
-        DEFAULT_ALARM_THRESHOLDS.requestErrorRatePercent,
+      requestErrorCount:
+        options.requestErrorCount ?? DEFAULT_ALARM_THRESHOLDS.requestErrorCount,
       requestLatencyAverageMs:
         options.requestLatencyAverageMs ??
         DEFAULT_ALARM_THRESHOLDS.requestLatencyAverageMs,
@@ -302,13 +301,15 @@ function searchMetric({ metricName, statistic, dimensions, config }) {
 
 function expressionMetric({ expression, id, label, visible, yAxis }) {
   return [
-    {
-      expression,
-      id,
-      label,
-      ...(visible === false ? { visible: false } : {}),
-      ...(yAxis ? { yAxis } : {}),
-    },
+    [
+      {
+        expression,
+        id,
+        label,
+        ...(visible === false ? { visible: false } : {}),
+        ...(yAxis ? { yAxis } : {}),
+      },
+    ],
   ];
 }
 
@@ -660,12 +661,6 @@ function queryData({ id, expression, label, period, returnData = false }) {
 }
 
 function buildAlarmInputs(config) {
-  const requestCountQuery = queryMetric({
-    statistic: "SUM",
-    metricName: REQUEST_METRICS.count,
-    dimensions: REQUEST_DIMENSIONS,
-    config,
-  });
   const requestErrorQuery = queryMetric({
     statistic: "SUM",
     metricName: REQUEST_METRICS.errors,
@@ -675,31 +670,19 @@ function buildAlarmInputs(config) {
 
   return [
     {
-      fileName: "request-error-rate.json",
+      fileName: "request-error-count.json",
       payload: queryAlarmPayload({
-        alarmName: `${config.alarmPrefix}-request-error-rate`,
+        alarmName: `${config.alarmPrefix}-request-error-count`,
         description:
-          "Recruiter assistant request error rate is above the configured threshold.",
+          "Recruiter assistant request errors are above the configured threshold.",
         comparisonOperator: "GreaterThanOrEqualToThreshold",
-        threshold: config.thresholds.requestErrorRatePercent,
+        threshold: config.thresholds.requestErrorCount,
         config,
         metrics: [
-          queryData({
-            id: "requests",
-            expression: requestCountQuery,
-            label: "Requests",
-            period: config.periodSeconds,
-          }),
           queryData({
             id: "errors",
             expression: requestErrorQuery,
             label: "Request errors",
-            period: config.periodSeconds,
-          }),
-          queryData({
-            id: "error_rate",
-            expression: "IF(requests > 0, 100 * errors / requests, 0)",
-            label: "Request error rate percent",
             period: config.periodSeconds,
             returnData: true,
           }),
