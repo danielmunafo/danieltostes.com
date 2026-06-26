@@ -58,6 +58,9 @@ Category-specific fields are documented in each `cases.json`.
 
 All commands run from `services/recruiter-assistant-api/`.
 
+Negative production feedback can be reviewed offline and promoted into the eval files below. See
+`services/recruiter-assistant-api/docs/feedback-review-to-eval.md` for the local review-to-eval workflow.
+
 ### Step 1 — Generate the corpus snapshot (once per corpus change)
 
 ```bash
