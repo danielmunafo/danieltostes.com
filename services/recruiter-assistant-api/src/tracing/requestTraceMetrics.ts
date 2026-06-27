@@ -17,6 +17,7 @@ const MAX_DIMENSION_VALUE_LENGTH = 128;
 
 const REQUEST_METRIC_TYPE = "request";
 const STAGE_METRIC_TYPE = "stage";
+const FEEDBACK_METRIC_TYPE = "feedback";
 
 const REQUEST_DIMENSION_SET = [
   "service",
@@ -30,6 +31,13 @@ const STAGE_DIMENSION_SET = [
   "navLocale",
   "stage",
   "outcome",
+] as const;
+const FEEDBACK_DIMENSION_SET = [
+  "service",
+  "environment",
+  "navLocale",
+  "rating",
+  "reason",
 ] as const;
 
 const METRIC_UNITS = {
@@ -59,9 +67,23 @@ const METRIC_UNITS = {
   StageEmbeddingTokens: "Count",
   StageTotalTokens: "Count",
   StageEstimatedCostUSD: "None",
+  FeedbackCount: "Count",
+  PositiveFeedbackCount: "Count",
+  NegativeFeedbackCount: "Count",
 } as const;
 
 const REQUEST_OUTCOMES = ["success", "error", "unknown"] as const;
+const FEEDBACK_RATINGS = ["positive", "negative", "unknown"] as const;
+const FEEDBACK_REASONS = [
+  "wrong_fit",
+  "off_topic",
+  "missing_context",
+  "too_long",
+  "other",
+  "none",
+  "unspecified",
+  "unknown",
+] as const;
 const DIMENSION_UNSAFE_CHARACTER_REGEX = /[^A-Za-z0-9_.:/+=@-]+/g;
 const REPEATED_DASH_REGEX = /-+/g;
 const EDGE_DASH_REGEX = /^-|-$/g;
@@ -69,6 +91,8 @@ const EDGE_DASH_REGEX = /^-|-$/g;
 type MetricName = keyof typeof METRIC_UNITS;
 type MetricUnit = (typeof METRIC_UNITS)[MetricName];
 type RequestOutcomeDimension = (typeof REQUEST_OUTCOMES)[number];
+type FeedbackRatingDimension = (typeof FEEDBACK_RATINGS)[number];
+type FeedbackReasonDimension = (typeof FEEDBACK_REASONS)[number];
 
 type EmfMetricDefinition = {
   Name: MetricName;
@@ -81,21 +105,41 @@ type EmfMetricDirective = {
   Metrics: EmfMetricDefinition[];
 };
 
-export type RequestTraceMetricPayload = Record<string, unknown> & {
+export type RecruiterMetricPayload = Record<string, unknown> & {
   _aws: {
     Timestamp: number;
     CloudWatchMetrics: EmfMetricDirective[];
   };
   service: typeof SERVICE_DIMENSION_VALUE;
   environment: string;
+  metricType:
+    | typeof REQUEST_METRIC_TYPE
+    | typeof STAGE_METRIC_TYPE
+    | typeof FEEDBACK_METRIC_TYPE;
+};
+
+export type RequestTraceMetricPayload = RecruiterMetricPayload & {
   navLocale: string;
   outcome: RequestOutcomeDimension;
   metricType: typeof REQUEST_METRIC_TYPE | typeof STAGE_METRIC_TYPE;
 };
 
+export type FeedbackMetricPayload = RecruiterMetricPayload & {
+  navLocale: string;
+  rating: FeedbackRatingDimension;
+  reason: FeedbackReasonDimension;
+  metricType: typeof FEEDBACK_METRIC_TYPE;
+};
+
 export type RequestTraceMetricOptions = {
   environment?: string;
   timestampMs?: number;
+};
+
+export type FeedbackMetricInput = {
+  rating: unknown;
+  reason?: unknown;
+  locale?: unknown;
 };
 
 function safeDimensionValue(value: unknown, fallback: string): string {
@@ -147,6 +191,31 @@ function outcomeDimension(value: unknown): RequestOutcomeDimension {
   return UNKNOWN_DIMENSION_VALUE;
 }
 
+function feedbackRatingDimension(value: unknown): FeedbackRatingDimension {
+  if (
+    typeof value === "string" &&
+    (FEEDBACK_RATINGS as readonly string[]).includes(value)
+  ) {
+    return value as FeedbackRatingDimension;
+  }
+  return UNKNOWN_DIMENSION_VALUE;
+}
+
+function feedbackReasonDimension(
+  rating: FeedbackRatingDimension,
+  value: unknown
+): FeedbackReasonDimension {
+  if (rating === "positive") return "none";
+  if (
+    typeof value === "string" &&
+    (FEEDBACK_REASONS as readonly string[]).includes(value)
+  ) {
+    return value as FeedbackReasonDimension;
+  }
+  if (rating === "negative") return "unspecified";
+  return UNKNOWN_DIMENSION_VALUE;
+}
+
 function finiteNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value)
     ? value
@@ -171,7 +240,7 @@ function buildMetricPayload(params: {
   metricDefinitions: EmfMetricDefinition[];
   metricValues: Record<string, number>;
   fields: Record<string, unknown>;
-}): RequestTraceMetricPayload {
+}): RecruiterMetricPayload {
   return {
     _aws: {
       Timestamp: params.timestampMs,
@@ -186,7 +255,7 @@ function buildMetricPayload(params: {
     service: SERVICE_DIMENSION_VALUE,
     ...params.fields,
     ...params.metricValues,
-  } as RequestTraceMetricPayload;
+  } as RecruiterMetricPayload;
 }
 
 function buildRequestMetricPayload(params: {
@@ -311,7 +380,7 @@ function buildRequestMetricPayload(params: {
       outcome,
       ...retrievalFields,
     },
-  });
+  }) as RequestTraceMetricPayload;
 }
 
 function stageTokenTotal(stage: StageRecord): number | undefined {
@@ -390,7 +459,51 @@ function buildStageMetricPayload(params: {
       stage: safeDimensionValue(stage.stage, UNKNOWN_DIMENSION_VALUE),
       outcome: stageOutcome,
     },
-  });
+  }) as RequestTraceMetricPayload;
+}
+
+export function buildFeedbackMetricEnvelope(
+  feedback: FeedbackMetricInput,
+  options: RequestTraceMetricOptions = {}
+): FeedbackMetricPayload {
+  const timestampMs = options.timestampMs ?? Date.now();
+  const environment = safeDimensionValue(
+    options.environment ?? readRecruiterMetricsEnvironment(),
+    UNKNOWN_DIMENSION_VALUE
+  );
+  const navLocale = navLocaleDimension(feedback.locale);
+  const rating = feedbackRatingDimension(feedback.rating);
+  const reason = feedbackReasonDimension(rating, feedback.reason);
+  const metricValues: Record<string, number> = {};
+  const metricDefinitions: EmfMetricDefinition[] = [];
+
+  addMetric(metricValues, metricDefinitions, "FeedbackCount", 1);
+  addMetric(
+    metricValues,
+    metricDefinitions,
+    "PositiveFeedbackCount",
+    rating === "positive" ? 1 : 0
+  );
+  addMetric(
+    metricValues,
+    metricDefinitions,
+    "NegativeFeedbackCount",
+    rating === "negative" ? 1 : 0
+  );
+
+  return buildMetricPayload({
+    timestampMs,
+    dimensions: [FEEDBACK_DIMENSION_SET],
+    metricDefinitions,
+    metricValues,
+    fields: {
+      metricType: FEEDBACK_METRIC_TYPE,
+      environment,
+      navLocale,
+      rating,
+      reason,
+    },
+  }) as FeedbackMetricPayload;
 }
 
 export function buildRequestTraceMetricEnvelopes(
@@ -430,4 +543,12 @@ export function emitRequestTraceMetrics(
   for (const metricEnvelope of buildRequestTraceMetricEnvelopes(traceLog)) {
     logInfo(METRICS_SCOPE, METRICS_MESSAGE, metricEnvelope);
   }
+}
+
+export function emitFeedbackMetrics(feedback: FeedbackMetricInput): void {
+  logInfo(
+    METRICS_SCOPE,
+    "feedback metrics",
+    buildFeedbackMetricEnvelope(feedback)
+  );
 }

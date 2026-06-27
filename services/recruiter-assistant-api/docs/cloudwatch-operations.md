@@ -20,6 +20,14 @@ Stage metrics use dimensions:
 - `stage`
 - `outcome`
 
+Feedback metrics use dimensions:
+
+- `service`
+- `environment`
+- `navLocale`
+- `rating`
+- `reason`
+
 The runtime service dimension is `recruiter-api`. The `environment` dimension comes
 from `RECRUITER_METRICS_ENVIRONMENT`; when that variable is unset, Lambda names
 ending in `-dev` infer `dev`, other Lambda names infer `production`, and local
@@ -81,6 +89,7 @@ The generated dashboard includes:
 - Prompt, completion, embedding, and total token sums.
 - Estimated cost plus missing usage/cost counters.
 - Retrieval returned chunks plus minimum and maximum similarity.
+- Feedback volume by rating and negative feedback by reason.
 
 The dashboard uses CloudWatch Metrics Insights for rollups across
 `navLocale`/`outcome` and CloudWatch search expressions for latency percentile
@@ -101,6 +110,7 @@ of real traffic.
 | Missing cost count       | `SUM(CostMissingCallCount)`                           | `>= 3` for 2 of 3 periods        |
 | Low returned chunks      | `AVG(RetrievalReturnedChunks)` on successful requests | `<= 10` for 2 of 3 periods       |
 | Low retrieval similarity | `MIN(RetrievalSimilarityMin)` on successful requests  | `<= 0.2` for 2 of 3 periods      |
+| Negative feedback count  | `SUM(NegativeFeedbackCount)` on negative feedback     | `>= 1` for 1 period              |
 
 The dashboard shows request error ratio with `AVG(RequestErrorCount)` in its own
 widget instead of cross-query metric math so the widget stays deployable and
@@ -162,6 +172,19 @@ per-locale/per-outcome alarms after the traffic baseline is known.
 4. If similarity dropped after content changes, rebuild and upload the
    LlamaIndex index.
 
+### Negative feedback alarm
+
+1. Open the negative feedback widget and identify the reason dimension:
+   `wrong_fit`, `off_topic`, `missing_context`, `too_long`, `other`, or
+   `unspecified`.
+2. Use the feedback `requestId` stored in S3 to find the matching chat trace
+   object under the trace prefix, or search CloudWatch Logs for the same
+   request id.
+3. If the issue is an answer-quality problem, inspect the request trace stages,
+   retrieved chunks, and prompt versions before changing prompts.
+4. If the feedback is about product behavior rather than answer quality, treat
+   it as UX work and do not relax model safeguards to suppress the alarm.
+
 ## Remove artifacts
 
 ```bash
@@ -175,7 +198,8 @@ aws cloudwatch delete-alarms \
     recruiter-assistant-production-missing-usage-count \
     recruiter-assistant-production-missing-cost-count \
     recruiter-assistant-production-retrieval-returned-chunks-low \
-    recruiter-assistant-production-retrieval-similarity-min-low
+    recruiter-assistant-production-retrieval-similarity-min-low \
+    recruiter-assistant-production-negative-feedback-count
 ```
 
 ## References

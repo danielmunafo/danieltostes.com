@@ -27,6 +27,8 @@ const REQUIRED_DASHBOARD_METRICS = [
   "RetrievalReturnedChunks",
   "RetrievalSimilarityMin",
   "RetrievalSimilarityMax",
+  "FeedbackCount",
+  "NegativeFeedbackCount",
 ];
 
 const REQUIRED_ALARM_METRICS = [
@@ -36,6 +38,7 @@ const REQUIRED_ALARM_METRICS = [
   "CostMissingCallCount",
   "RetrievalReturnedChunks",
   "RetrievalSimilarityMin",
+  "NegativeFeedbackCount",
 ];
 
 function readJson(filePath: string): unknown {
@@ -74,6 +77,8 @@ describe("render-cloudwatch-ops", () => {
       expect(dashboardJson).toContain("navLocale");
       expect(dashboardJson).toContain("outcome");
       expect(dashboardJson).toContain("stage");
+      expect(dashboardJson).toContain("rating");
+      expect(dashboardJson).toContain("reason");
       expect(dashboardJson).toContain("p95");
       expect(dashboardJson).toContain("p50");
       expect(dashboardJson).toContain("AVG(RequestErrorCount)");
@@ -105,6 +110,7 @@ describe("render-cloudwatch-ops", () => {
       expect(alarmFiles).toEqual([
         "missing-cost-count.json",
         "missing-usage-count.json",
+        "negative-feedback-count.json",
         "request-error-count.json",
         "request-latency-average.json",
         "retrieval-returned-chunks-low.json",

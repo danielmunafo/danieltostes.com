@@ -19,6 +19,13 @@ const STAGE_DIMENSIONS = [
   "stage",
   "outcome",
 ];
+const FEEDBACK_DIMENSIONS = [
+  "service",
+  "environment",
+  "navLocale",
+  "rating",
+  "reason",
+];
 
 const DIMENSION_VALUE_REGEX = /^[A-Za-z0-9_.:/+=@-]{1,128}$/;
 
@@ -46,6 +53,12 @@ const STAGE_METRICS = {
   estimatedCost: "StageEstimatedCostUSD",
 };
 
+const FEEDBACK_METRICS = {
+  count: "FeedbackCount",
+  positive: "PositiveFeedbackCount",
+  negative: "NegativeFeedbackCount",
+};
+
 const DEFAULT_ALARM_THRESHOLDS = {
   requestErrorCount: 1,
   requestLatencyAverageMs: 15000,
@@ -53,6 +66,7 @@ const DEFAULT_ALARM_THRESHOLDS = {
   missingCostCount: 3,
   retrievalReturnedChunksMin: 10,
   retrievalSimilarityMin: 0.2,
+  negativeFeedbackCount: 1,
 };
 
 const ALARM_EVALUATION_PERIODS = 3;
@@ -177,6 +191,13 @@ function parseCliArgs(args) {
         );
         index += 1;
         break;
+      case "--negative-feedback-count":
+        options.negativeFeedbackCount = parsePositiveNumber(
+          readArgValue(args, index, arg),
+          arg
+        );
+        index += 1;
+        break;
       case "--help":
       case "-h":
         options.help = true;
@@ -206,7 +227,8 @@ Options:
   --missing-usage-count <n>            Alarm threshold. Default: 3
   --missing-cost-count <n>             Alarm threshold. Default: 3
   --retrieval-returned-chunks-min <n>  Alarm threshold. Default: 10
-  --retrieval-similarity-min <n>       Alarm threshold. Default: 0.2`);
+  --retrieval-similarity-min <n>       Alarm threshold. Default: 0.2
+  --negative-feedback-count <n>        Alarm threshold. Default: 1`);
 }
 
 function normalizeConfig(options = {}) {
@@ -258,6 +280,9 @@ function normalizeConfig(options = {}) {
       retrievalSimilarityMin:
         options.retrievalSimilarityMin ??
         DEFAULT_ALARM_THRESHOLDS.retrievalSimilarityMin,
+      negativeFeedbackCount:
+        options.negativeFeedbackCount ??
+        DEFAULT_ALARM_THRESHOLDS.negativeFeedbackCount,
     },
   };
 }
@@ -696,6 +721,51 @@ function buildDashboardBody(config) {
           }),
         ],
       }),
+      widget({
+        title: "Feedback by rating",
+        x: 0,
+        y: 38,
+        width: 12,
+        height: 6,
+        config,
+        metrics: [
+          ...expressionMetric({
+            expression: queryMetric({
+              statistic: "SUM",
+              metricName: FEEDBACK_METRICS.count,
+              dimensions: FEEDBACK_DIMENSIONS,
+              config,
+              groupBy: "rating",
+              orderBy: "SUM() DESC",
+            }),
+            id: "feedback_by_rating",
+            label: "Feedback",
+          }),
+        ],
+      }),
+      widget({
+        title: "Negative feedback by reason",
+        x: 12,
+        y: 38,
+        width: 12,
+        height: 6,
+        config,
+        metrics: [
+          ...expressionMetric({
+            expression: queryMetric({
+              statistic: "SUM",
+              metricName: FEEDBACK_METRICS.negative,
+              dimensions: FEEDBACK_DIMENSIONS,
+              config,
+              where: ["rating = 'negative'"],
+              groupBy: "reason",
+              orderBy: "SUM() DESC",
+            }),
+            id: "negative_feedback_by_reason",
+            label: "Negative feedback",
+          }),
+        ],
+      }),
     ],
   };
 }
@@ -708,6 +778,8 @@ function queryAlarmPayload({
   treatMissingData = "notBreaching",
   metrics,
   config,
+  evaluationPeriods = ALARM_EVALUATION_PERIODS,
+  datapointsToAlarm = ALARM_DATAPOINTS_TO_ALARM,
 }) {
   return {
     AlarmName: alarmName,
@@ -715,8 +787,8 @@ function queryAlarmPayload({
     ActionsEnabled: config.alarmActionArns.length > 0,
     AlarmActions: config.alarmActionArns,
     OKActions: config.alarmActionArns,
-    EvaluationPeriods: ALARM_EVALUATION_PERIODS,
-    DatapointsToAlarm: ALARM_DATAPOINTS_TO_ALARM,
+    EvaluationPeriods: evaluationPeriods,
+    DatapointsToAlarm: datapointsToAlarm,
     ComparisonOperator: comparisonOperator,
     Threshold: threshold,
     TreatMissingData: treatMissingData,
@@ -884,6 +956,33 @@ function buildAlarmInputs(config) {
               where: ["outcome = 'success'"],
             }),
             label: "Retrieval similarity minimum",
+            period: config.periodSeconds,
+            returnData: true,
+          }),
+        ],
+      }),
+    },
+    {
+      fileName: "negative-feedback-count.json",
+      payload: queryAlarmPayload({
+        alarmName: `${config.alarmPrefix}-negative-feedback-count`,
+        description: "Recruiter assistant received negative user feedback.",
+        comparisonOperator: "GreaterThanOrEqualToThreshold",
+        threshold: config.thresholds.negativeFeedbackCount,
+        evaluationPeriods: 1,
+        datapointsToAlarm: 1,
+        config,
+        metrics: [
+          queryData({
+            id: "negative_feedback",
+            expression: queryMetric({
+              statistic: "SUM",
+              metricName: FEEDBACK_METRICS.negative,
+              dimensions: FEEDBACK_DIMENSIONS,
+              config,
+              where: ["rating = 'negative'"],
+            }),
+            label: "Negative feedback",
             period: config.periodSeconds,
             returnData: true,
           }),

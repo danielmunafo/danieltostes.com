@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildFeedbackMetricEnvelope,
   buildRequestTraceMetricEnvelopes,
   readRecruiterMetricsEnvironment,
 } from "../src/tracing/requestTraceMetrics.js";
@@ -282,5 +283,79 @@ describe("readRecruiterMetricsEnvironment", () => {
         process.env.AWS_LAMBDA_FUNCTION_NAME = previousFunctionName;
       }
     }
+  });
+});
+
+describe("buildFeedbackMetricEnvelope", () => {
+  it("builds a negative feedback EMF payload without feedback contents", () => {
+    const payload = buildFeedbackMetricEnvelope(
+      {
+        rating: "negative",
+        reason: "wrong_fit",
+        locale: "en",
+      },
+      {
+        environment: "production",
+        timestampMs: 123456,
+      }
+    );
+
+    expect(payload).toMatchObject({
+      _aws: {
+        Timestamp: 123456,
+        CloudWatchMetrics: [
+          {
+            Namespace: "DanielTostes/RecruiterAssistant",
+            Dimensions: [
+              ["service", "environment", "navLocale", "rating", "reason"],
+            ],
+          },
+        ],
+      },
+      service: "recruiter-api",
+      environment: "production",
+      navLocale: "en",
+      rating: "negative",
+      reason: "wrong_fit",
+      metricType: "feedback",
+      FeedbackCount: 1,
+      PositiveFeedbackCount: 0,
+      NegativeFeedbackCount: 1,
+    });
+    expect(metricNames(payload)).toEqual([
+      "FeedbackCount",
+      "PositiveFeedbackCount",
+      "NegativeFeedbackCount",
+    ]);
+
+    const serializedPayload = JSON.stringify(payload);
+    expect(serializedPayload).not.toContain("requestId");
+    expect(serializedPayload).not.toContain("questionText");
+    expect(serializedPayload).not.toContain("responseText");
+    expect(serializedPayload).not.toContain("comment");
+  });
+
+  it("normalizes positive feedback to a non-reason dimension", () => {
+    const payload = buildFeedbackMetricEnvelope(
+      {
+        rating: "positive",
+        reason: "wrong_fit",
+        locale: "pt-BR",
+      },
+      {
+        environment: "dev",
+        timestampMs: 1,
+      }
+    );
+
+    expect(payload).toMatchObject({
+      environment: "dev",
+      navLocale: "pt-BR",
+      rating: "positive",
+      reason: "none",
+      FeedbackCount: 1,
+      PositiveFeedbackCount: 1,
+      NegativeFeedbackCount: 0,
+    });
   });
 });
