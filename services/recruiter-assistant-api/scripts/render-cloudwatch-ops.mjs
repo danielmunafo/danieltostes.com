@@ -980,7 +980,6 @@ function buildAlarmInputs(config) {
               metricName: FEEDBACK_METRICS.negative,
               dimensions: FEEDBACK_DIMENSIONS,
               config,
-              where: ["rating = 'negative'"],
             }),
             label: "Negative feedback",
             period: config.periodSeconds,
