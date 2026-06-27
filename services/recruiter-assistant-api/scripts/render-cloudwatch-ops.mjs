@@ -346,18 +346,16 @@ function buildDashboardBody(config) {
     metricName: REQUEST_METRICS.count,
     dimensions: REQUEST_DIMENSIONS,
     config,
-  });
-  const requestErrorQuery = queryMetric({
-    statistic: "SUM",
-    metricName: REQUEST_METRICS.errors,
-    dimensions: REQUEST_DIMENSIONS,
-    config,
+    groupBy: "outcome",
+    orderBy: "SUM() DESC",
   });
   const requestErrorRatioQuery = queryMetric({
     statistic: "AVG",
     metricName: REQUEST_METRICS.errors,
     dimensions: REQUEST_DIMENSIONS,
     config,
+    groupBy: "outcome",
+    orderBy: "AVG() DESC",
   });
 
   return {
@@ -380,7 +378,7 @@ function buildDashboardBody(config) {
         },
       },
       widget({
-        title: "Requests and error ratio",
+        title: "Requests by outcome",
         x: 0,
         y: 2,
         width: 12,
@@ -392,23 +390,27 @@ function buildDashboardBody(config) {
             id: "requests",
             label: "Requests",
           }),
-          ...expressionMetric({
-            expression: requestErrorQuery,
-            id: "errors",
-            label: "Request errors",
-          }),
+        ],
+      }),
+      widget({
+        title: "Request error ratio by outcome",
+        x: 12,
+        y: 2,
+        width: 12,
+        height: 6,
+        config,
+        metrics: [
           ...expressionMetric({
             expression: requestErrorRatioQuery,
             id: "error_ratio",
             label: "Error ratio",
-            yAxis: "right",
           }),
         ],
       }),
       widget({
         title: "Request latency p95 by locale/outcome",
-        x: 12,
-        y: 2,
+        x: 0,
+        y: 8,
         width: 12,
         height: 6,
         config,
@@ -427,7 +429,7 @@ function buildDashboardBody(config) {
       }),
       widget({
         title: "Request latency p50 by locale/outcome",
-        x: 0,
+        x: 12,
         y: 8,
         width: 12,
         height: 6,
@@ -447,8 +449,8 @@ function buildDashboardBody(config) {
       }),
       widget({
         title: "Stage latency average by stage",
-        x: 12,
-        y: 8,
+        x: 0,
+        y: 14,
         width: 12,
         height: 6,
         config,
@@ -470,7 +472,7 @@ function buildDashboardBody(config) {
       }),
       widget({
         title: "Stage errors by stage",
-        x: 0,
+        x: 12,
         y: 14,
         width: 12,
         height: 6,
@@ -492,43 +494,13 @@ function buildDashboardBody(config) {
         ],
       }),
       widget({
-        title: "Token totals",
-        x: 12,
-        y: 14,
-        width: 12,
+        title: "Total tokens",
+        x: 0,
+        y: 20,
+        width: 6,
         height: 6,
         config,
         metrics: [
-          ...expressionMetric({
-            expression: queryMetric({
-              statistic: "SUM",
-              metricName: REQUEST_METRICS.promptTokens,
-              dimensions: REQUEST_DIMENSIONS,
-              config,
-            }),
-            id: "prompt_tokens",
-            label: "Prompt tokens",
-          }),
-          ...expressionMetric({
-            expression: queryMetric({
-              statistic: "SUM",
-              metricName: REQUEST_METRICS.completionTokens,
-              dimensions: REQUEST_DIMENSIONS,
-              config,
-            }),
-            id: "completion_tokens",
-            label: "Completion tokens",
-          }),
-          ...expressionMetric({
-            expression: queryMetric({
-              statistic: "SUM",
-              metricName: REQUEST_METRICS.embeddingTokens,
-              dimensions: REQUEST_DIMENSIONS,
-              config,
-            }),
-            id: "embedding_tokens",
-            label: "Embedding tokens",
-          }),
           ...expressionMetric({
             expression: queryMetric({
               statistic: "SUM",
@@ -542,10 +514,70 @@ function buildDashboardBody(config) {
         ],
       }),
       widget({
-        title: "Estimated cost and missing accounting",
-        x: 0,
+        title: "Prompt tokens",
+        x: 6,
         y: 20,
-        width: 12,
+        width: 6,
+        height: 6,
+        config,
+        metrics: [
+          ...expressionMetric({
+            expression: queryMetric({
+              statistic: "SUM",
+              metricName: REQUEST_METRICS.promptTokens,
+              dimensions: REQUEST_DIMENSIONS,
+              config,
+            }),
+            id: "prompt_tokens",
+            label: "Prompt tokens",
+          }),
+        ],
+      }),
+      widget({
+        title: "Completion tokens",
+        x: 12,
+        y: 20,
+        width: 6,
+        height: 6,
+        config,
+        metrics: [
+          ...expressionMetric({
+            expression: queryMetric({
+              statistic: "SUM",
+              metricName: REQUEST_METRICS.completionTokens,
+              dimensions: REQUEST_DIMENSIONS,
+              config,
+            }),
+            id: "completion_tokens",
+            label: "Completion tokens",
+          }),
+        ],
+      }),
+      widget({
+        title: "Embedding tokens",
+        x: 18,
+        y: 20,
+        width: 6,
+        height: 6,
+        config,
+        metrics: [
+          ...expressionMetric({
+            expression: queryMetric({
+              statistic: "SUM",
+              metricName: REQUEST_METRICS.embeddingTokens,
+              dimensions: REQUEST_DIMENSIONS,
+              config,
+            }),
+            id: "embedding_tokens",
+            label: "Embedding tokens",
+          }),
+        ],
+      }),
+      widget({
+        title: "Estimated cost",
+        x: 0,
+        y: 26,
+        width: 8,
         height: 6,
         config,
         metrics: [
@@ -559,6 +591,16 @@ function buildDashboardBody(config) {
             id: "estimated_cost",
             label: "Estimated cost USD",
           }),
+        ],
+      }),
+      widget({
+        title: "Missing usage calls",
+        x: 8,
+        y: 26,
+        width: 8,
+        height: 6,
+        config,
+        metrics: [
           ...expressionMetric({
             expression: queryMetric({
               statistic: "SUM",
@@ -568,8 +610,17 @@ function buildDashboardBody(config) {
             }),
             id: "missing_usage",
             label: "Missing usage calls",
-            yAxis: "right",
           }),
+        ],
+      }),
+      widget({
+        title: "Missing cost calls",
+        x: 16,
+        y: 26,
+        width: 8,
+        height: 6,
+        config,
+        metrics: [
           ...expressionMetric({
             expression: queryMetric({
               statistic: "SUM",
@@ -579,15 +630,14 @@ function buildDashboardBody(config) {
             }),
             id: "missing_cost",
             label: "Missing cost calls",
-            yAxis: "right",
           }),
         ],
       }),
       widget({
-        title: "Retrieval health",
-        x: 12,
-        y: 20,
-        width: 12,
+        title: "Retrieval returned chunks",
+        x: 0,
+        y: 32,
+        width: 8,
         height: 6,
         config,
         metrics: [
@@ -602,6 +652,16 @@ function buildDashboardBody(config) {
             id: "retrieval_chunks",
             label: "Returned chunks avg",
           }),
+        ],
+      }),
+      widget({
+        title: "Retrieval similarity min",
+        x: 8,
+        y: 32,
+        width: 8,
+        height: 6,
+        config,
+        metrics: [
           ...expressionMetric({
             expression: queryMetric({
               statistic: "MIN",
@@ -612,8 +672,17 @@ function buildDashboardBody(config) {
             }),
             id: "retrieval_similarity_min",
             label: "Similarity min",
-            yAxis: "right",
           }),
+        ],
+      }),
+      widget({
+        title: "Retrieval similarity max",
+        x: 16,
+        y: 32,
+        width: 8,
+        height: 6,
+        config,
+        metrics: [
           ...expressionMetric({
             expression: queryMetric({
               statistic: "MAX",
@@ -624,7 +693,6 @@ function buildDashboardBody(config) {
             }),
             id: "retrieval_similarity_max",
             label: "Similarity max",
-            yAxis: "right",
           }),
         ],
       }),

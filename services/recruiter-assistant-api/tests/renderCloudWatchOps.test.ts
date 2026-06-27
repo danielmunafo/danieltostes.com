@@ -77,15 +77,27 @@ describe("render-cloudwatch-ops", () => {
       expect(dashboardJson).toContain("p95");
       expect(dashboardJson).toContain("p50");
       expect(dashboardJson).toContain("AVG(RequestErrorCount)");
+      expect(dashboardJson).toContain("GROUP BY outcome");
       expect(dashboardJson).not.toContain("IF(requests > 0");
 
       for (const metricName of REQUIRED_DASHBOARD_METRICS) {
         expect(dashboardJson).toContain(metricName);
       }
       for (const widget of dashboardBody.widgets) {
+        let metricsInsightsQueryCount = 0;
         for (const metric of widget.properties?.metrics ?? []) {
           expect(Array.isArray(metric)).toBe(true);
+          const [metricConfig] = metric as Array<{
+            expression?: unknown;
+          }>;
+          if (
+            typeof metricConfig?.expression === "string" &&
+            metricConfig.expression.startsWith("SELECT ")
+          ) {
+            metricsInsightsQueryCount += 1;
+          }
         }
+        expect(metricsInsightsQueryCount).toBeLessThanOrEqual(1);
       }
 
       const alarmsDir = path.join(outputDir, "alarms");
