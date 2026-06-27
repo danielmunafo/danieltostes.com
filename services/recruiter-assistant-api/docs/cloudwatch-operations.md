@@ -112,6 +112,10 @@ of real traffic.
 | Low retrieval similarity | `MIN(RetrievalSimilarityMin)` on successful requests  | `<= 0.2` for 2 of 3 periods      |
 | Negative feedback count  | `SUM(NegativeFeedbackCount)` on negative feedback     | `>= 1` for 1 period              |
 
+The negative feedback alarm intentionally omits `OKActions` so creating or
+updating the alarm does not send an OK notification when missing data is treated
+as non-breaching. It only pages on the ALARM transition.
+
 The dashboard shows request error ratio with `AVG(RequestErrorCount)` in its own
 widget instead of cross-query metric math so the widget stays deployable and
 renderable in the CloudWatch console. The deployable alarm uses request error

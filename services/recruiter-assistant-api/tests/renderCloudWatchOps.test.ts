@@ -140,4 +140,43 @@ describe("render-cloudwatch-ops", () => {
       rmSync(outputDir, { recursive: true, force: true });
     }
   });
+
+  it("does not send OK notifications for the negative feedback alarm", () => {
+    const outputDir = mkdtempSync(
+      path.join(tmpdir(), "recruiter-cloudwatch-test-")
+    );
+
+    try {
+      const alarmActionArn =
+        "arn:aws:sns:us-east-1:123456789012:recruiter-assistant-alerts";
+
+      execFileSync(
+        process.execPath,
+        [
+          "scripts/render-cloudwatch-ops.mjs",
+          "--environment",
+          "production",
+          "--region",
+          "us-east-1",
+          "--output-dir",
+          outputDir,
+          "--alarm-action-arn",
+          alarmActionArn,
+        ],
+        { cwd: SERVICE_ROOT, stdio: "pipe" }
+      );
+
+      const negativeFeedbackAlarm = readJson(
+        path.join(outputDir, "alarms", "negative-feedback-count.json")
+      );
+
+      expect(negativeFeedbackAlarm).toMatchObject({
+        ActionsEnabled: true,
+        AlarmActions: [alarmActionArn],
+        OKActions: [],
+      });
+    } finally {
+      rmSync(outputDir, { recursive: true, force: true });
+    }
+  });
 });

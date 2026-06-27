@@ -780,13 +780,14 @@ function queryAlarmPayload({
   config,
   evaluationPeriods = ALARM_EVALUATION_PERIODS,
   datapointsToAlarm = ALARM_DATAPOINTS_TO_ALARM,
+  okActions = config.alarmActionArns,
 }) {
   return {
     AlarmName: alarmName,
     AlarmDescription: description,
     ActionsEnabled: config.alarmActionArns.length > 0,
     AlarmActions: config.alarmActionArns,
-    OKActions: config.alarmActionArns,
+    OKActions: okActions,
     EvaluationPeriods: evaluationPeriods,
     DatapointsToAlarm: datapointsToAlarm,
     ComparisonOperator: comparisonOperator,
@@ -971,6 +972,7 @@ function buildAlarmInputs(config) {
         threshold: config.thresholds.negativeFeedbackCount,
         evaluationPeriods: 1,
         datapointsToAlarm: 1,
+        okActions: [],
         config,
         metrics: [
           queryData({
