@@ -14,6 +14,7 @@ import {
 import { checkRateLimit } from "./security/rateLimit.js";
 import { feedbackBodySchema } from "./feedback/feedbackSchema.js";
 import { writeFeedbackToS3 } from "./feedback/writeFeedbackToS3.js";
+import { emitFeedbackMetrics } from "./tracing/requestTraceMetrics.js";
 
 export async function handleFeedbackRequest(
   event: LambdaHttpEvent
@@ -52,6 +53,7 @@ export async function handleFeedbackRequest(
 
   try {
     await writeFeedbackToS3(parsed.data);
+    emitFeedbackMetrics(parsed.data);
   } catch (err) {
     logInternalServerError("handleFeedbackRequest", err);
     return internalErrorResponse(origin);
