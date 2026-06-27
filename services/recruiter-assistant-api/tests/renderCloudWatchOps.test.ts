@@ -76,6 +76,8 @@ describe("render-cloudwatch-ops", () => {
       expect(dashboardJson).toContain("stage");
       expect(dashboardJson).toContain("p95");
       expect(dashboardJson).toContain("p50");
+      expect(dashboardJson).toContain("AVG(RequestErrorCount)");
+      expect(dashboardJson).not.toContain("IF(requests > 0");
 
       for (const metricName of REQUIRED_DASHBOARD_METRICS) {
         expect(dashboardJson).toContain(metricName);

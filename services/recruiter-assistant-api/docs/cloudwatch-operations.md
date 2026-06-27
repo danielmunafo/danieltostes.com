@@ -75,7 +75,7 @@ value is the optional alarm action ARN supplied at generation time.
 
 The generated dashboard includes:
 
-- Requests, request errors, and error rate.
+- Requests, request errors, and error ratio.
 - Request latency p95 and p50 using `RequestLatencyMs` by locale/outcome.
 - Stage latency and stage errors grouped by `stage`.
 - Prompt, completion, embedding, and total token sums.
@@ -100,12 +100,13 @@ of real traffic.
 | Low returned chunks      | `AVG(RetrievalReturnedChunks)` on successful requests | `<= 10` for 2 of 3 periods       |
 | Low retrieval similarity | `MIN(RetrievalSimilarityMin)` on successful requests  | `<= 0.2` for 2 of 3 periods      |
 
-The dashboard shows request error rate with metric math. The deployable alarm
-uses request error count because CloudWatch Metrics Insights alarms accept a
-single query as the alarmed time series. The latency alarm uses average latency
-for the same reason; if p95 paging is needed later, add a runtime rollup metric
-or create targeted per-locale/per-outcome alarms after the traffic baseline is
-known.
+The dashboard shows request error ratio with `AVG(RequestErrorCount)` instead of
+cross-query metric math so the widget stays deployable and renderable in the
+CloudWatch console. The deployable alarm uses request error count because
+CloudWatch Metrics Insights alarms accept a single query as the alarmed time
+series. The latency alarm uses average latency for the same reason; if p95
+paging is needed later, add a runtime rollup metric or create targeted
+per-locale/per-outcome alarms after the traffic baseline is known.
 
 ## Runbook
 

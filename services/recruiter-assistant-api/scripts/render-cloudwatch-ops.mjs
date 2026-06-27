@@ -353,6 +353,12 @@ function buildDashboardBody(config) {
     dimensions: REQUEST_DIMENSIONS,
     config,
   });
+  const requestErrorRatioQuery = queryMetric({
+    statistic: "AVG",
+    metricName: REQUEST_METRICS.errors,
+    dimensions: REQUEST_DIMENSIONS,
+    config,
+  });
 
   return {
     start: "-PT6H",
@@ -374,7 +380,7 @@ function buildDashboardBody(config) {
         },
       },
       widget({
-        title: "Requests and error rate",
+        title: "Requests and error ratio",
         x: 0,
         y: 2,
         width: 12,
@@ -392,9 +398,9 @@ function buildDashboardBody(config) {
             label: "Request errors",
           }),
           ...expressionMetric({
-            expression: "IF(requests > 0, 100 * errors / requests, 0)",
-            id: "error_rate",
-            label: "Error rate (%)",
+            expression: requestErrorRatioQuery,
+            id: "error_ratio",
+            label: "Error ratio",
             yAxis: "right",
           }),
         ],
