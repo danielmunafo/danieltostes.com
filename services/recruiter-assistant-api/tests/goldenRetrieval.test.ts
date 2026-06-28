@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
 import { createOpenAI } from "@ai-sdk/openai";
 import {
   cosineSimilarity,
@@ -27,13 +27,14 @@ vi.mock("../src/retrieval/embedRetrievalQueries.js", () => ({
 
 describe("goldenRetrieval", () => {
   it("staff full-stack JD surfaces TypeScript experience", () => {
-    const jd = readFileSync(
+    const jdFixture = readFileSync(
       join(__dirname, "fixtures", "staff-fullstack-jd.txt"),
       "utf8"
     );
     const file = loadGoldenEmbeddingsFixture();
     const chunks = filterChunksByNavigationLocale(file.chunks, "en");
     const top = retrieveMergedTopK(chunks, [[0.92, 0.08, 0.02, 0.01]], 3);
+    expect(jdFixture).toContain("TypeScript");
     expect(top[0]?.id).toBe("en-section-experience-item-0-s0-p0");
   });
 

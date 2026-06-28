@@ -20,7 +20,8 @@
     "eval:snapshot": "node scripts/eval-snapshot-corpus.mjs",
     "eval:retrieval": "node scripts/eval-retrieval.mjs",
     "eval:e2e": "node scripts/eval-e2e.mjs",
-    "feedback:review": "node scripts/feedback-review-queue.mjs"
+    "feedback:review": "node scripts/feedback-review-queue.mjs",
+    "ops:cloudwatch": "node scripts/render-cloudwatch-ops.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.24",
