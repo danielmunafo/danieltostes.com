@@ -297,13 +297,11 @@ export function buildEntriesFromProfessionalContext(
 
 /**
  * @param {object} params
- * @param {string} params.repoRoot
  * @param {string} params.messagesDir
  * @param {string} params.contentDir
  * @param {string} params.professionalContextDir
  */
 export function buildLogicalPortfolioChunks({
-  repoRoot,
   messagesDir,
   contentDir,
   professionalContextDir,

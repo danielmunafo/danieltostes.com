@@ -26,13 +26,16 @@ function parseTechnicalFitScore(
   navLocale: RecruiterNavLocale
 ): { value: number; lineIndex: number; line: string } | null {
   const headings = RECRUITER_EXECUTIVE_BRIEF_HEADINGS[navLocale];
-  const pattern = new RegExp(
-    `(^|\\n)(\\s*[-*]?\\s*\\*\\*Technical fit:\\*\\*|\\s*[-*]?\\s*\\*\\*${escapeRegExp(headings.scores === "Punteggi" ? "Aderenza tecnica" : "Technical fit")}:\\*\\*)\\s*(\\d{1,2})\\s*/\\s*10`,
+  const technicalFitLabel =
+    headings.scores === "Punteggi" ? "Aderenza tecnica" : "Technical fit";
+  const localizedTechnicalFitPattern = new RegExp(
+    `(?:^|\\n)\\s*[-*]?\\s*\\*\\*(?:Technical fit|${escapeRegExp(technicalFitLabel)}):\\*\\*\\s*(\\d{1,2})\\s*/\\s*10`,
     "im"
   );
   const enPattern = /Technical fit:\s*(\d{1,2})\s*\/\s*10/i;
   const match =
     scoresSection.match(enPattern) ??
+    scoresSection.match(localizedTechnicalFitPattern) ??
     scoresSection.match(
       new RegExp(
         `${escapeRegExp(headings.scores)}[\\s\\S]*?(\\d{1,2})\\s*/\\s*10`

@@ -1,7 +1,4 @@
-import {
-  RECRUITER_RECOMMENDATION_LABELS,
-  type RecruiterNavLocale,
-} from "../../constants.js";
+import { RECRUITER_RECOMMENDATION_LABELS } from "../../constants.js";
 import type { HardGateAssessment } from "./schema.js";
 import { RECOMMENDATION_LABELS, type RecommendationLabel } from "./schema.js";
 
@@ -38,8 +35,7 @@ function formatRecommendationList(
  * Stable English block injected into analyst and pitch prompts (backend-enforced).
  */
 export function formatHardGateAssessmentBlock(
-  assessment: HardGateAssessment,
-  _navLocale: RecruiterNavLocale = "en"
+  assessment: HardGateAssessment
 ): string {
   const evaluatorLine =
     assessment.evaluatorRecommendedFit === null

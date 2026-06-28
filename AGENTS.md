@@ -37,6 +37,12 @@ Symlinks resolve in the working tree (where these tools read). Formatters skip t
 
 ## Git workflow
 
+## CI and release safety
+
+- Protected branches are immutable from GitHub Actions unless the workflow is explicitly granted a bypass through repository settings. Release workflows must not commit or push back to `main`; they may create tags/releases from the already-merged commit.
+- Any generated version files that require a commit must be updated in a normal PR before merge, not in the post-merge release job.
+- Treat ESLint warnings as merge blockers. `npm run lint` must fail on warnings (for example unused variables/imports), and every PR must run it before merge.
+
 **Branch naming — every PR branch describes its work.** The name is `<type>/<kebab-slug>` where `<type>` is a Conventional-Commits prefix (`feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `perf`). The slug is 2–5 words naming the change, and matches the existing family for related work.
 
 - ✅ `feat/recruiter-assistant-prompt-registry` (sibling of `feat/recruiter-assistant-tracing`), `docs/branch-naming-convention`, `fix/chart-clamp-off-by-one`

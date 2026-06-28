@@ -72,11 +72,6 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Update package.json and package-lock.json
-        if: steps.version.outputs.skip == 'false' && steps.check-tag.outputs.exists == 'false'
-        run: |
-          node scripts/update-package-version.mjs "${{ steps.version.outputs.version }}"
-
       - name: Build
         if: steps.version.outputs.skip == 'false' && steps.check-tag.outputs.exists == 'false'
         run: npm run build
@@ -139,18 +134,8 @@ jobs:
       - name: Create tag
         if: steps.version.outputs.skip == 'false' && steps.check-tag.outputs.exists == 'false'
         run: |
-          git add package.json package-lock.json
-          if ! git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"; then
-            COMMIT_STATUS=$?
-            if [ "$COMMIT_STATUS" -ne 1 ]; then
-              echo "git commit failed with status $COMMIT_STATUS"
-              exit "$COMMIT_STATUS"
-            else
-              echo "No changes to commit, continuing to tag current HEAD."
-            fi
-          fi
           git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
-          git push origin main --follow-tags
+          git push origin "v${{ steps.version.outputs.version }}"
 
       - name: Create zip archive
         if: steps.version.outputs.skip == 'false' && steps.check-tag.outputs.exists == 'false'
