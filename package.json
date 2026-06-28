@@ -9,7 +9,7 @@
     "build-search-index": "node scripts/build-search-index.mjs",
     "render-mermaid": "node scripts/render-mermaid.mjs",
     "start": "serve out -p 3000",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",

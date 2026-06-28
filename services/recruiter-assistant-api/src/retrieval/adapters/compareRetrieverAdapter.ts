@@ -1,7 +1,5 @@
 import { logInfo } from "../../logging/logger.js";
-import { formatPortfolioChunks } from "../../rag/formatPortfolioChunks.js";
 import { mergeRetrievalResults } from "../mergeRetrievalResults.js";
-import { toEmbeddingChunks } from "../normalizeEvidence.js";
 import { RAG_TOP_K } from "../../constants.js";
 import type { OpenAiProvider } from "../../recruiterAssistant/types.js";
 import type {
@@ -10,7 +8,6 @@ import type {
   RecruiterRetrieverResult,
 } from "../types.js";
 import { createCustomRetrieverAdapter } from "./customRetrieverAdapter.js";
-import { retrieveCustomEvidencePerQuery } from "./customRetrieverAdapter.js";
 import {
   retrieveLlamaIndexEvidencePerQuery,
   type LlamaIndexRetrieverMode,
@@ -52,7 +49,7 @@ export function createCompareRetrieverAdapter(
       const started = Date.now();
 
       const queries = buildRetrievalQueries(input.query);
-      const queryEmbeddings = await embedRetrievalQueries(openai, queries);
+      await embedRetrievalQueries(openai, queries);
 
       const customStarted = Date.now();
       const custom = await customAdapter.retrieve(input);
