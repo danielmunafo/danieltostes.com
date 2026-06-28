@@ -39,6 +39,10 @@ Object key patterns (prefix defaults to `v2/`):
 
 Correlate feedback with its trace by matching `requestId` across the two object types.
 
+For local review, export the prefix to `private/` and run the offline review-to-eval tooling documented in
+[`docs/feedback-review-to-eval.md`](./docs/feedback-review-to-eval.md). The script joins feedback and traces
+from local JSON files only; it does not need AWS credentials or access to the live bucket.
+
 If `FEEDBACK_S3_BUCKET` is not set on the Lambda, the `/feedback` endpoint still returns `200 { ok: true }` (no-op) — safe to deploy without configuring this bucket.
 
 ---
