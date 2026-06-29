@@ -1,4 +1,3 @@
-import { streamText } from "ai";
 import {
   BRIEFING_PREP_STATUS_MAX_TOKENS,
   CHAT_MODEL,
@@ -10,7 +9,7 @@ import {
   buildBriefingPrepStatusSystemPrompt,
   buildBriefingPrepStatusUserPrompt,
 } from "./assembleBriefingPrompt.js";
-import { makeStreamTraceOnFinish } from "../../../tracing/requestTrace.js";
+import { traceStreamText } from "../../../reliability/streamTextReliability.js";
 
 export async function streamBriefingPrep(params: {
   openai: OpenAiProvider;
@@ -18,9 +17,12 @@ export async function streamBriefingPrep(params: {
   navLocale: RecruiterNavLocale;
   evidenceEvaluationMarkdown: string;
   evidenceAnalysisMarkdown: string;
+  streamSignal?: AbortSignal;
 }): Promise<void> {
-  const startedAt = Date.now();
-  const briefingPrepStatusResult = streamText({
+  const briefingPrepStatusStream = traceStreamText({
+    traceStage: "briefing_prep",
+    traceModel: CHAT_MODEL,
+    traceSignal: params.streamSignal,
     model: params.openai(CHAT_MODEL),
     system: buildBriefingPrepStatusSystemPrompt(params.navLocale),
     prompt: buildBriefingPrepStatusUserPrompt(
@@ -29,10 +31,9 @@ export async function streamBriefingPrep(params: {
     ),
     maxTokens: BRIEFING_PREP_STATUS_MAX_TOKENS,
     experimental_transform: recruiterStreamTextSmoothTransform,
-    onFinish: makeStreamTraceOnFinish("briefing_prep", CHAT_MODEL, startedAt),
   });
-  briefingPrepStatusResult.mergeIntoDataStream(params.dataStream, {
+  briefingPrepStatusStream.result.mergeIntoDataStream(params.dataStream, {
     experimental_sendFinish: false,
   });
-  await briefingPrepStatusResult.text;
+  await briefingPrepStatusStream.text;
 }

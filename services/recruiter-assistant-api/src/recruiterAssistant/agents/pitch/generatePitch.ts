@@ -1,4 +1,3 @@
-import { streamText } from "ai";
 import {
   CHAT_MODEL,
   RECRUITER_PITCH_MAX_TOKENS,
@@ -13,7 +12,7 @@ import type {
   ValidRecruiterRequest,
 } from "../../types.js";
 import { buildRecruiterPitchSystemPrompt } from "./assemblePrompt.js";
-import { makeStreamTraceOnFinish } from "../../../tracing/requestTrace.js";
+import { traceStreamText } from "../../../reliability/streamTextReliability.js";
 
 export async function generatePitch(params: {
   openai: OpenAiProvider;
@@ -24,9 +23,12 @@ export async function generatePitch(params: {
   hardGateAssessmentMarkdown: string;
   hardGateAssessment: HardGateAssessment | null;
   maxTechnicalFitAllowedByHardGates: number;
+  streamSignal?: AbortSignal;
 }): Promise<PitchGenerationResult> {
-  const startedAt = Date.now();
-  const pitchResult = streamText({
+  const pitchStream = traceStreamText({
+    traceStage: "pitch",
+    traceModel: CHAT_MODEL,
+    traceSignal: params.streamSignal,
     model: params.openai(CHAT_MODEL),
     system: buildRecruiterPitchSystemPrompt(
       params.evidenceBriefForPitch,
@@ -39,13 +41,12 @@ export async function generatePitch(params: {
     messages: params.request.coreMessages,
     maxTokens: RECRUITER_PITCH_MAX_TOKENS,
     experimental_transform: recruiterStreamTextSmoothTransform,
-    onFinish: makeStreamTraceOnFinish("pitch", CHAT_MODEL, startedAt),
   });
-  pitchResult.mergeIntoDataStream(params.dataStream, {
+  pitchStream.result.mergeIntoDataStream(params.dataStream, {
     experimental_sendStart: false,
   });
 
-  let assistantText = await pitchResult.text;
+  let assistantText = await pitchStream.text;
   if (params.hardGateAssessment) {
     const clamped = validateAndClampPitchHardGates(
       assistantText,

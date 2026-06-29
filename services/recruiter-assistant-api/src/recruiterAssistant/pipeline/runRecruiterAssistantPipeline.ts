@@ -32,6 +32,7 @@ export async function runRecruiterAssistantPipeline(
     navLocale,
     userText,
     sourceExcerpts: recruiterContext.sourceExcerpts,
+    streamSignal: params.streamSignal,
   });
 
   const isOffTopic = recruiterAgent.evaluateOffTopic(
@@ -62,6 +63,7 @@ export async function runRecruiterAssistantPipeline(
     sourceExcerpts: recruiterContext.sourceExcerpts,
     evidenceEvaluationMarkdown: evaluation.evidenceEvaluationMarkdown,
     hardGateAssessmentMarkdown: hardGates.hardGateAssessmentMarkdown,
+    streamSignal: params.streamSignal,
   });
 
   writeThinkingClose(dataStream);
@@ -80,6 +82,7 @@ export async function runRecruiterAssistantPipeline(
     evidenceAnalysisMarkdown: analysis.evidenceAnalysisMarkdown,
     hardGateAssessmentMarkdown: hardGates.hardGateAssessmentMarkdown,
     hardGateAssessment: hardGates.assessment,
+    streamSignal: params.streamSignal,
   });
 
   const pitch = await recruiterAgent.generatePitch({
@@ -92,6 +95,7 @@ export async function runRecruiterAssistantPipeline(
     hardGateAssessment: hardGates.assessment,
     maxTechnicalFitAllowedByHardGates:
       hardGates.maxTechnicalFitAllowedByHardGates,
+    streamSignal: params.streamSignal,
   });
 
   await recruiterAgent.syncChartWithPitch({

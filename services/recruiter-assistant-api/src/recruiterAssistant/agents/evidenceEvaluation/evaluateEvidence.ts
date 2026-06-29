@@ -1,4 +1,4 @@
-import { formatDataStreamPart, streamText } from "ai";
+import { formatDataStreamPart } from "ai";
 import {
   CHAT_MODEL,
   EVIDENCE_EVALUATOR_MAX_TOKENS,
@@ -14,7 +14,7 @@ import {
   buildEvidenceEvaluatorSystemPrompt,
   buildEvidenceEvaluatorUserPrompt,
 } from "./assemblePrompt.js";
-import { makeStreamTraceOnFinish } from "../../../tracing/requestTrace.js";
+import { traceStreamText } from "../../../reliability/streamTextReliability.js";
 
 export async function evaluateEvidence(params: {
   openai: OpenAiProvider;
@@ -22,6 +22,7 @@ export async function evaluateEvidence(params: {
   navLocale: RecruiterNavLocale;
   userText: string;
   sourceExcerpts: string;
+  streamSignal?: AbortSignal;
 }): Promise<EvidenceEvaluationResult> {
   const prompt = buildEvidenceEvaluatorUserPrompt(
     params.navLocale,
@@ -29,24 +30,21 @@ export async function evaluateEvidence(params: {
     params.sourceExcerpts
   );
 
-  const startedAt = Date.now();
-  const evaluatorResult = streamText({
+  const evaluatorStream = traceStreamText({
+    traceStage: "evidence_evaluation",
+    traceModel: CHAT_MODEL,
+    traceSignal: params.streamSignal,
     model: params.openai(CHAT_MODEL),
     system: buildEvidenceEvaluatorSystemPrompt(params.navLocale),
     prompt,
     maxTokens: EVIDENCE_EVALUATOR_MAX_TOKENS,
     experimental_transform: recruiterStreamTextSmoothTransform,
-    onFinish: makeStreamTraceOnFinish(
-      "evidence_evaluation",
-      CHAT_MODEL,
-      startedAt
-    ),
   });
-  evaluatorResult.mergeIntoDataStream(params.dataStream, {
+  evaluatorStream.result.mergeIntoDataStream(params.dataStream, {
     experimental_sendFinish: false,
   });
 
-  const evidenceEvaluationMarkdown = (await evaluatorResult.text).trim();
+  const evidenceEvaluationMarkdown = (await evaluatorStream.text).trim();
 
   params.dataStream.write(formatDataStreamPart("text", "\n\n---\n\n"));
 
