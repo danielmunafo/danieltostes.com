@@ -1,5 +1,8 @@
 import { smoothStream } from "ai";
+import { RECRUITER_USER_MESSAGE_MAX_CHARS } from "../../../src/features/recruiter-assistant/constants/request-contract.js";
 import { RECRUITER_EVIDENCE_BRIEF_LABELS } from "./recruiterTranslationConstants.js";
+
+export { RECRUITER_USER_MESSAGE_MAX_CHARS as MAX_USER_MESSAGE_CHARS };
 
 /** Site locales accepted on the recruiter assistant (must match `src/i18n/request.ts`). */
 export const RECRUITER_NAV_LOCALES = ["en", "pt-BR", "es", "it"] as const;
@@ -74,12 +77,6 @@ export type {
   RecruiterReferencesLabels,
   RecruiterRiskSeverityLabels,
 } from "./recruiterTranslationConstants.js";
-
-/**
- * Max characters accepted for the latest user turn (job description paste).
- * ~4.5k for long postings; cap leaves room for formatting / unicode.
- */
-export const MAX_USER_MESSAGE_CHARS = 8192;
 
 /** Max chat turns accepted in one request (abuse guard). */
 export const MAX_CHAT_MESSAGES = 50;

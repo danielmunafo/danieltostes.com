@@ -25,6 +25,7 @@
     "jobContextLabel": "Contexto da vaga",
     "jobDescriptionSectionLabel": "Descrição da vaga",
     "placeholder": "Cole a descrição da vaga para gerar um briefing de aderência do candidato em cerca de um minuto…",
+    "jobDescriptionTooLong": "A descrição da vaga é muito longa ({count, number}/{max, number} caracteres). Remova {over, number} caracteres para enviar.",
     "send": "Enviar",
     "sending": "Pensando…",
     "unavailable": "Assistente não configurado (URL da API ausente).",
