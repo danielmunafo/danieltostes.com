@@ -25,6 +25,7 @@
     "jobContextLabel": "Contexto del rol",
     "jobDescriptionSectionLabel": "Descripción del puesto",
     "placeholder": "Pega la descripción del puesto para generar un briefing de encaje del candidato en aproximadamente un minuto…",
+    "jobDescriptionTooLong": "La descripción del puesto es demasiado larga ({count, number}/{max, number} caracteres). Elimina {over, number} caracteres para enviarla.",
     "send": "Enviar",
     "sending": "Pensando…",
     "unavailable": "Asistente no configurado (falta la URL de la API).",

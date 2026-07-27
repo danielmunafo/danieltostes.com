@@ -47,6 +47,7 @@ import {
   RECRUITER_JOB_CONTEXT_PANEL_MAX_WIDTH_PERCENT,
   RECRUITER_TERMS_ACCEPTANCE_STORAGE_KEY,
 } from "../constants/recruiter-assistant";
+import { RECRUITER_USER_MESSAGE_MAX_CHARS } from "../constants/request-contract";
 import { useRecruiterAssistantUi } from "../context/RecruiterAssistantUiContext";
 import {
   readRecruiterChatSessionBoot,
@@ -71,6 +72,7 @@ import {
 import { shouldRequestJobContextCollapse } from "../lib/should-request-job-context-collapse";
 import { shouldRetryRecruiterChatAfterFailedTurn } from "../lib/should-retry-recruiter-chat-after-failed-turn";
 import { getRecruiterAssistantMessagePlainText } from "../lib/getRecruiterAssistantMessagePlainText";
+import { getRecruiterUserMessageValidation } from "../lib/get-recruiter-user-message-validation";
 import { stripMatchScoreGuidanceFromEvidenceReview } from "../lib/strip-match-score-guidance-from-evidence-review";
 import {
   mergedThinkingMarkdownForEvidence,
@@ -150,6 +152,9 @@ const markdownSx = {
   },
   "& a": { color: "primary.main" },
 } as const;
+
+const RECRUITER_COMPOSER_LENGTH_ERROR_ID =
+  "recruiter-assistant-composer-length-error";
 
 function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   const theme = useTheme();
@@ -416,7 +421,15 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
       isLatestJobContextPanelOpen &&
       !briefingComposerDismissed);
 
-  const showComposerJobDescriptionHeading = input.trim().length > 0;
+  const inputValidation = getRecruiterUserMessageValidation(input);
+  const showComposerJobDescriptionHeading = inputValidation.characterCount > 0;
+  const canSubmitComposerInput =
+    inputValidation.characterCount > 0 && !inputValidation.isTooLong;
+  const isComposerSubmitDisabled =
+    !canSubmitComposerInput ||
+    isBusy ||
+    !termsHydrated ||
+    !isComposerInteractive;
 
   const reserveTallBottomDock = messages.length > 0 && showComposerChrome;
 
@@ -498,6 +511,9 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
 
   const submitChatRequest = useCallback(
     async (event?: FormEvent<HTMLFormElement>) => {
+      if (!canSubmitComposerInput) {
+        return;
+      }
       const trimmedInput = input.trim();
       if (
         shouldRetryRecruiterChatAfterFailedTurn(status, messages, trimmedInput)
@@ -527,7 +543,15 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
         await handleSubmit();
       }
     },
-    [handleSubmit, input, messages, reload, setMessages, status]
+    [
+      canSubmitComposerInput,
+      handleSubmit,
+      input,
+      messages,
+      reload,
+      setMessages,
+      status,
+    ]
   );
 
   const submitWithRecaptchaFromModal = useCallback(
@@ -556,6 +580,9 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
 
   const requestComposerSubmit = useCallback(
     (event?: FormEvent<HTMLFormElement>) => {
+      if (isComposerSubmitDisabled) {
+        return;
+      }
       if (!termsFromStorage) {
         pendingSubmitRef.current = { event };
         openTermsModal();
@@ -572,6 +599,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
     },
     [
       isRecaptchaEnabled,
+      isComposerSubmitDisabled,
       openCaptchaModal,
       openTermsModal,
       submitChatRequest,
@@ -580,11 +608,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
   );
 
   const onFormSubmit = (e: FormEvent<HTMLFormElement>) => {
-    if (!termsHydrated) {
-      e.preventDefault();
-      return;
-    }
-    if (!isComposerInteractive) {
+    if (isComposerSubmitDisabled) {
       e.preventDefault();
       return;
     }
@@ -759,19 +783,12 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const isSubmitShortcut =
-        e.key === "Enter" && (e.ctrlKey || e.metaKey) && input.trim();
-      if (
-        !isSubmitShortcut ||
-        isBusy ||
-        !termsHydrated ||
-        !isComposerInteractive
-      )
-        return;
+      const isSubmitShortcut = e.key === "Enter" && (e.ctrlKey || e.metaKey);
+      if (!isSubmitShortcut || isComposerSubmitDisabled) return;
       e.preventDefault();
       requestComposerSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
     },
-    [input, isBusy, isComposerInteractive, requestComposerSubmit, termsHydrated]
+    [isComposerSubmitDisabled, requestComposerSubmit]
   );
 
   const composerBorder =
@@ -1262,6 +1279,12 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                     disabled={isBusy || !isComposerInteractive}
                     name="prompt"
                     variant="standard"
+                    inputProps={{
+                      "aria-describedby": inputValidation.isTooLong
+                        ? RECRUITER_COMPOSER_LENGTH_ERROR_ID
+                        : undefined,
+                      "aria-invalid": inputValidation.isTooLong,
+                    }}
                     InputProps={{
                       disableUnderline: true,
                       inputComponent: "textarea" as const,
@@ -1292,12 +1315,30 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                   <Box
                     sx={{
                       display: "flex",
-                      justifyContent: "flex-end",
+                      justifyContent: inputValidation.isTooLong
+                        ? "space-between"
+                        : "flex-end",
                       alignItems: "center",
+                      gap: 1,
                       flexShrink: 0,
                       pt: 0.75,
                     }}
                   >
+                    {inputValidation.isTooLong ? (
+                      <Typography
+                        id={RECRUITER_COMPOSER_LENGTH_ERROR_ID}
+                        role="alert"
+                        variant="caption"
+                        color="error.main"
+                        sx={{ flex: 1, minWidth: 0, lineHeight: 1.4 }}
+                      >
+                        {t("jobDescriptionTooLong", {
+                          count: inputValidation.characterCount,
+                          max: RECRUITER_USER_MESSAGE_MAX_CHARS,
+                          over: inputValidation.charactersOverLimit,
+                        })}
+                      </Typography>
+                    ) : null}
                     {isBusy ? (
                       <Tooltip
                         title={t("sending")}
@@ -1331,11 +1372,7 @@ function RecruiterChatSession({ apiBaseUrl }: { apiBaseUrl: string }) {
                         <Box component="span" sx={{ display: "inline-flex" }}>
                           <IconButton
                             type="submit"
-                            disabled={
-                              !input.trim() ||
-                              !termsHydrated ||
-                              !isComposerInteractive
-                            }
+                            disabled={isComposerSubmitDisabled}
                             aria-label={t("send")}
                             sx={{
                               width: 36,

@@ -25,6 +25,7 @@
     "jobContextLabel": "Role Context",
     "jobDescriptionSectionLabel": "Job description",
     "placeholder": "Paste the job description to generate a candidate fit briefing in about a minute…",
+    "jobDescriptionTooLong": "Job description is too long ({count, number}/{max, number} characters). Remove {over, number} characters to send.",
     "send": "Send",
     "sending": "Thinking…",
     "unavailable": "Assistant is not configured (missing API URL).",

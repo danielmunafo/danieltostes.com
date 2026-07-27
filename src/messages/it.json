@@ -25,6 +25,7 @@
     "jobContextLabel": "Contesto della posizione",
     "jobDescriptionSectionLabel": "Descrizione della posizione",
     "placeholder": "Incolla la descrizione della posizione per generare un briefing di aderenza del candidato in circa un minuto…",
+    "jobDescriptionTooLong": "La descrizione della posizione è troppo lunga ({count, number}/{max, number} caratteri). Rimuovi {over, number} caratteri per inviarla.",
     "send": "Invia",
     "sending": "Sto pensando…",
     "unavailable": "Assistente non configurato (manca l’URL dell’API).",
